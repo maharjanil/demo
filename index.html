@@ -3,221 +3,340 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Document Viewer</title>
+  <title>Search Documents</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f8fafc;
-      padding: 24px;
-      color: #1e293b;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #0f172a;
-    }
-
-    .dropdown-section {
-      background: white;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      margin-bottom: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fafafa;
+      color: #333;
     }
 
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #334155;
-    }
-
-    select {
-      width: 100%;
-      max-width: 320px;
-      padding: 12px 16px;
-      font-size: 16px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: white;
-      color: #1e293b;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    select:hover,
-    select:focus {
-      border-color: #3b82f6;
-    }
-
-    #image-container {
-      display: grid;
-      gap: 24px;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    }
-
-    .card img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .card-footer {
-      padding: 14px;
+    h2 {
       text-align: center;
+      margin-bottom: 15px;
+      color: #2c3e50;
     }
 
-    .download-btn {
-      background: #3b82f6;
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #searchInput {
+      flex: 1;
+      padding: 14px;
+      font-size: 17px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    #resetBtn {
+      padding: 14px 20px;
+      background: #e74c3c;
       color: white;
       border: none;
-      padding: 8px 20px;
       border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
       cursor: pointer;
-      width: 100%;
-      transition: background 0.2s;
+      font-weight: bold;
+      white-space: nowrap;
     }
 
-    .download-btn:hover {
-      background: #2563eb;
+    #resetBtn:hover {
+      background: #c0392b;
     }
 
-    .empty-state {
+    .hint {
       text-align: center;
-      padding: 40px 20px;
-      color: #64748b;
-      grid-column: 1 / -1;
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: -10px;
+      margin-bottom: 15px;
     }
 
-    @media (max-width: 600px) {
-      #image-container {
-        grid-template-columns: 1fr;
-      }
+    #resultSection {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .image-card {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      display: none;
+    }
+
+    .image-item {
+      margin-bottom: 20px;
+      border-bottom: 1px dashed #eee;
+      padding-bottom: 15px;
+    }
+
+    .image-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .image-item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .image-item .caption {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .image-item .download-btn {
+      padding: 8px 12px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .image-item .download-btn:hover {
+      background: #2980b9;
+    }
+
+    #noMatch {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #e74c3c;
+      font-weight: 600;
+      padding: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Document Gallery</h1>
 
-    <div class="dropdown-section">
-      <label for="doc-select">Select a document type:</label>
-      <select id="doc-select">
-        <option value="">— Choose —</option>
-        <option value="citizenship">Citizenship</option>
-        <option value="pan">PAN Card</option>
-        <option value="voter">Voters ID</option>
-      </select>
+  <h2>Document & QR Search</h2>
+  <p class="hint">Type part of a name (e.g., "pan", "qr", "bank", "licence")</p>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search documents or QR codes..." />
+    <button id="resetBtn">Reset</button>
+  </div>
+
+  <div id="resultSection">
+
+    <!-- Citizenship (2 images) -->
+    <div class="image-card" data-term="citizenship">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1" alt="Citizenship Front">
+        <div class="caption">Citizenship (Front)</div>
+        <a href="https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1" download="citizenship_front.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="image-item">
+        <img src="https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1" alt="Citizenship Back">
+        <div class="caption">Citizenship (Back)</div>
+        <a href="https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1" download="citizenship_back.jpg" class="download-btn">Download</a>
+      </div>
     </div>
 
-    <div id="image-container">
-      <!-- Images will appear here -->
+    <!-- Passport -->
+    <div class="image-card" data-term="passport">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/passport.jpg?dl=1" alt="Passport">
+        <div class="caption">Passport</div>
+        <a href="https://www.dropbox.com/s/passport.jpg?dl=1" download="passport.jpg" class="download-btn">Download</a>
+      </div>
     </div>
+
+    <!-- National ID -->
+    <div class="image-card" data-term="national id">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/national_id.jpg?dl=1" alt="National ID">
+        <div class="caption">National ID</div>
+        <a href="https://www.dropbox.com/s/national_id.jpg?dl=1" download="national_id.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- PAN Card (2 images) -->
+    <div class="image-card" data-term="pan card">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/pan_front.jpg?dl=1" alt="PAN Front">
+        <div class="caption">PAN Card (Front)</div>
+        <a href="https://www.dropbox.com/s/pan_front.jpg?dl=1" download="pan_card_front.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/pan_back.jpg?dl=1" alt="PAN Back">
+        <div class="caption">PAN Card (Back)</div>
+        <a href="https://www.dropbox.com/s/pan_back.jpg?dl=1" download="pan_card_back.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Voter Card -->
+    <div class="image-card" data-term="voter card">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/voter_card.jpg?dl=1" alt="Voter Card">
+        <div class="caption">Voter Card</div>
+        <a href="https://www.dropbox.com/s/voter_card.jpg?dl=1" download="voter_card.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Marriage Certificate -->
+    <div class="image-card" data-term="marriage certificate">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/marriage_cert.jpg?dl=1" alt="Marriage Certificate">
+        <div class="caption">Marriage Certificate</div>
+        <a href="https://www.dropbox.com/s/marriage_cert.jpg?dl=1" download="marriage_certificate.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Licence (2 images) -->
+    <div class="image-card" data-term="licence">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/licence_front.jpg?dl=1" alt="Licence Front">
+        <div class="caption">Driving Licence (Front)</div>
+        <a href="https://www.dropbox.com/s/licence_front.jpg?dl=1" download="licence_front.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/licence_back.jpg?dl=1" alt="Licence Back">
+        <div class="caption">Driving Licence (Back)</div>
+        <a href="https://www.dropbox.com/s/licence_back.jpg?dl=1" download="licence_back.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- KUKL -->
+    <div class="image-card" data-term="kukl">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/kukl_bill.jpg?dl=1" alt="KUKL Bill">
+        <div class="caption">KUKL</div>
+        <a href="https://www.dropbox.com/s/kukl_bill.jpg?dl=1" download="kukl_bill.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- NEA -->
+    <div class="image-card" data-term="nea">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/nea_bill.jpg?dl=1" alt="NEA Bill">
+        <div class="caption">NEA</div>
+        <a href="https://www.dropbox.com/s/nea_bill.jpg?dl=1" download="nea_bill.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Laxmi Sunrise Bank -->
+    <div class="image-card" data-term="laxmi sunrise bank">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/laxmi_sunrise.jpg?dl=1" alt="Laxmi Sunrise Bank">
+        <div class="caption">Laxmi Sunrise Bank</div>
+        <a href="https://www.dropbox.com/s/laxmi_sunrise.jpg?dl=1" download="laxmi_sunrise_bank.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Global IME Bank -->
+    <div class="image-card" data-term="global ime bank">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/global_ime.jpg?dl=1" alt="Global IME Bank">
+        <div class="caption">Global IME Bank</div>
+        <a href="https://www.dropbox.com/s/global_ime.jpg?dl=1" download="global_ime_bank.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Nabil Bank -->
+    <div class="image-card" data-term="nabil bank">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/nabil_bank.jpg?dl=1" alt="Nabil Bank">
+        <div class="caption">Nabil Bank</div>
+        <a href="https://www.dropbox.com/s/nabil_bank.jpg?dl=1" download="nabil_bank.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Share/Stock -->
+    <div class="image-card" data-term="share/stock">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/share_stock.jpg?dl=1" alt="Share Certificate">
+        <div class="caption">Share / Stock</div>
+        <a href="https://www.dropbox.com/s/share_stock.jpg?dl=1" download="share_stock.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- QR Code -->
+    <div class="image-card" data-term="qr code">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/qr_code.jpg?dl=1" alt="QR Code">
+        <div class="caption">QR Code</div>
+        <a href="https://www.dropbox.com/s/qr_code.jpg?dl=1" download="qr_code.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <!-- Milk Payment QR -->
+    <div class="image-card" data-term="milk payment qr">
+      <div class="image-item">
+        <img src="https://www.dropbox.com/s/milk_qr.jpg?dl=1" alt="Milk Payment QR">
+        <div class="caption">Milk Payment QR</div>
+        <a href="https://www.dropbox.com/s/milk_qr.jpg?dl=1" download="milk_payment_qr.jpg" class="download-btn">Download</a>
+      </div>
+    </div>
+
+    <div id="noMatch">No matching documents found.</div>
   </div>
 
   <script>
-    // 🔗 REPLACE THESE WITH YOUR ACTUAL DROPBOX DIRECT LINKS (ending with ?dl=1)
-    const documentImages = {
-      citizenship: [
-        "https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1",
-        "https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1"
-      ],
-      pan: [
-        "https://your-dropbox-link-pan.jpg?dl=1"
-      ],
-      voter: [
-        "https://your-dropbox-link-voter-front.jpg?dl=1",
-        "https://your-dropbox-link-voter-back.jpg?dl=1"
-      ]
-    };
+    // Define searchable terms (for clarity; not strictly needed due to fuzzy search)
+    // But used to ensure all cards are accounted for in reset logic
+    const cards = document.querySelectorAll('.image-card');
+    const input = document.getElementById('searchInput');
+    const resetBtn = document.getElementById('resetBtn');
+    const noMatchMsg = document.getElementById('noMatch');
 
-    const select = document.getElementById('doc-select');
-    const container = document.getElementById('image-container');
+    function filterCards() {
+      const query = input.value.trim().toLowerCase();
+      let visibleCount = 0;
 
-    function getFileNameFromUrl(url) {
-      try {
-        const name = new URL(url).pathname.split('/').pop().split('?')[0];
-        return name || 'document.jpg';
-      } catch {
-        return 'document.jpg';
-      }
-    }
-
-    select.addEventListener('change', function () {
-      const docType = this.value;
-      container.innerHTML = '';
-
-      if (!docType) return;
-
-      const urls = documentImages[docType] || [];
-
-      if (urls.length === 0) {
-        container.innerHTML = `<div class="empty-state">No images available for this document.</div>`;
+      if (!query) {
+        cards.forEach(card => card.style.display = 'none');
+        noMatchMsg.style.display = 'none';
         return;
       }
 
-      urls.forEach(url => {
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = "Document";
-
-        // Handle broken images
-        img.onerror = () => {
-          img.src = 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="200" height="150" fill="%23f1f5f9"/><text x="50%" y="50%" fill="%2394a3b8" font-size="14" text-anchor="middle" dy=".3em">Image not found</text></svg>';
-          img.alt = "Image not found";
-        };
-
-        const footer = document.createElement('div');
-        footer.className = 'card-footer';
-
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url; // Direct Dropbox ?dl=1 link
-        downloadLink.download = getFileNameFromUrl(url); // Suggest filename
-        downloadLink.className = 'download-btn';
-        downloadLink.textContent = 'Download';
-        
-        // Prevent opening in new tab (force download where supported)
-        downloadLink.addEventListener('click', (e) => {
-          // Optional: Add analytics or confirmation here
-        });
-
-        footer.appendChild(downloadLink);
-        card.appendChild(img);
-        card.appendChild(footer);
-        container.appendChild(card);
+      cards.forEach(card => {
+        const term = card.getAttribute('data-term').toLowerCase();
+        if (term.includes(query)) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
       });
+
+      noMatchMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    function resetAll() {
+      input.value = '';
+      cards.forEach(card => card.style.display = 'none');
+      noMatchMsg.style.display = 'none';
+      input.focus();
+    }
+
+    input.addEventListener('input', filterCards);
+    resetBtn.addEventListener('click', resetAll);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') resetAll();
     });
   </script>
+
 </body>
 </html>
