@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Search Documents</title>
+  <title>Document & QR Search</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -69,7 +69,7 @@
     .image-card {
       background: white;
       border-radius: 8px;
-      padding: 12px;
+      padding: 16px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       text-align: center;
       display: none;
@@ -112,10 +112,34 @@
       text-decoration: none;
       display: inline-block;
       width: 100%;
+      margin-top: 5px;
     }
 
     .image-item .download-btn:hover {
       background: #2980b9;
+    }
+
+    .details-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      text-align: left;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .details-section h4 {
+      margin-top: 0;
+      color: #2980b9;
+      font-size: 16px;
+    }
+
+    .details-section p {
+      margin: 6px 0;
+    }
+
+    .details-section strong {
+      color: #2c3e50;
     }
 
     #noMatch {
@@ -131,16 +155,16 @@
 <body>
 
   <h2>Document & QR Search</h2>
-  <p class="hint">Type part of a name (e.g., "pan", "qr", "bank", "licence")</p>
+  <p class="hint">Type exact name (case-insensitive): e.g., "licence", "pan card", "qr code"</p>
 
   <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search documents or QR codes..." />
+    <input type="text" id="searchInput" placeholder="Type full document name..." />
     <button id="resetBtn">Reset</button>
   </div>
 
   <div id="resultSection">
 
-    <!-- Citizenship (2 images) -->
+    <!-- Citizenship -->
     <div class="image-card" data-term="citizenship">
       <div class="image-item">
         <img src="https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1" alt="Citizenship Front">
@@ -148,9 +172,15 @@
         <a href="https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1" download="citizenship_front.jpg" class="download-btn">Download</a>
       </div>
       <div class="image-item">
-        <img src="https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1" alt="Citizenship Back">
+        <img src="https://www.dropbox.com/s/cit_back.jpg?dl=1" alt="Citizenship Back">
         <div class="caption">Citizenship (Back)</div>
-        <a href="https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1" download="citizenship_back.jpg" class="download-btn">Download</a>
+        <a href="https://www.dropbox.com/s/cit_back.jpg?dl=1" download="citizenship_back.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>Citizenship Details</h4>
+        <p><strong>Number:</strong> 123/456789</p>
+        <p><strong>Issued Date:</strong> 10-05-2010</p>
+        <p><strong>Issued By:</strong> District Administration Office</p>
       </div>
     </div>
 
@@ -161,6 +191,13 @@
         <div class="caption">Passport</div>
         <a href="https://www.dropbox.com/s/passport.jpg?dl=1" download="passport.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Passport Details</h4>
+        <p><strong>Passport No:</strong> P1234567</p>
+        <p><strong>Issued Date:</strong> 05-03-2020</p>
+        <p><strong>Expiry Date:</strong> 04-03-2030</p>
+        <p><strong>Issued By:</strong> Department of Passport</p>
+      </div>
     </div>
 
     <!-- National ID -->
@@ -170,9 +207,15 @@
         <div class="caption">National ID</div>
         <a href="https://www.dropbox.com/s/national_id.jpg?dl=1" download="national_id.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>National ID Details</h4>
+        <p><strong>ID Number:</strong> 9876543210</p>
+        <p><strong>Issued Date:</strong> 12-08-2021</p>
+        <p><strong>Issued By:</strong> Department of National ID and Civil Registration</p>
+      </div>
     </div>
 
-    <!-- PAN Card (2 images) -->
+    <!-- PAN Card -->
     <div class="image-card" data-term="pan card">
       <div class="image-item">
         <img src="https://www.dropbox.com/s/pan_front.jpg?dl=1" alt="PAN Front">
@@ -184,6 +227,12 @@
         <div class="caption">PAN Card (Back)</div>
         <a href="https://www.dropbox.com/s/pan_back.jpg?dl=1" download="pan_card_back.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>PAN Card Details</h4>
+        <p><strong>PAN Number:</strong> 600123456</p>
+        <p><strong>Name:</strong> John Doe</p>
+        <p><strong>Issued By:</strong> Inland Revenue Department</p>
+      </div>
     </div>
 
     <!-- Voter Card -->
@@ -192,6 +241,12 @@
         <img src="https://www.dropbox.com/s/voter_card.jpg?dl=1" alt="Voter Card">
         <div class="caption">Voter Card</div>
         <a href="https://www.dropbox.com/s/voter_card.jpg?dl=1" download="voter_card.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>Voter Card Details</h4>
+        <p><strong>Voter ID:</strong> 1234567890</p>
+        <p><strong>Constituency:</strong> Kathmandu-1</p>
+        <p><strong>Issued By:</strong> Election Commission</p>
       </div>
     </div>
 
@@ -202,9 +257,15 @@
         <div class="caption">Marriage Certificate</div>
         <a href="https://www.dropbox.com/s/marriage_cert.jpg?dl=1" download="marriage_certificate.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Marriage Certificate Details</h4>
+        <p><strong>Certificate No:</strong> MC-2020-5678</p>
+        <p><strong>Registration Date:</strong> 15-07-2020</p>
+        <p><strong>Issued By:</strong> Ward Office, Kathmandu</p>
+      </div>
     </div>
 
-    <!-- Licence (2 images) -->
+    <!-- Licence -->
     <div class="image-card" data-term="licence">
       <div class="image-item">
         <img src="https://www.dropbox.com/s/licence_front.jpg?dl=1" alt="Licence Front">
@@ -216,14 +277,27 @@
         <div class="caption">Driving Licence (Back)</div>
         <a href="https://www.dropbox.com/s/licence_back.jpg?dl=1" download="licence_back.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Licence Details</h4>
+        <p><strong>Number:</strong> 01-06-01003951</p>
+        <p><strong>Issued Date:</strong> 18-01-2022</p>
+        <p><strong>Expiry Date:</strong> 17-01-2027</p>
+        <p><strong>Issued By:</strong> DoTM</p>
+      </div>
     </div>
 
     <!-- KUKL -->
     <div class="image-card" data-term="kukl">
       <div class="image-item">
         <img src="https://www.dropbox.com/s/kukl_bill.jpg?dl=1" alt="KUKL Bill">
-        <div class="caption">KUKL</div>
+        <div class="caption">KUKL Bill</div>
         <a href="https://www.dropbox.com/s/kukl_bill.jpg?dl=1" download="kukl_bill.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>KUKL Account Details</h4>
+        <p><strong>Consumer No:</strong> KUKL-98765</p>
+        <p><strong>Category:</strong> Domestic</p>
+        <p><strong>Office:</strong> Kathmandu Upatyaka Khanepani Limited</p>
       </div>
     </div>
 
@@ -231,8 +305,14 @@
     <div class="image-card" data-term="nea">
       <div class="image-item">
         <img src="https://www.dropbox.com/s/nea_bill.jpg?dl=1" alt="NEA Bill">
-        <div class="caption">NEA</div>
+        <div class="caption">NEA Bill</div>
         <a href="https://www.dropbox.com/s/nea_bill.jpg?dl=1" download="nea_bill.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>NEA Account Info</h4>
+        <p><strong>Consumer No:</strong> 123456789</p>
+        <p><strong>Category:</strong> Residential</p>
+        <p><strong>Office:</strong> NEA Kathmandu Office</p>
       </div>
     </div>
 
@@ -243,6 +323,12 @@
         <div class="caption">Laxmi Sunrise Bank</div>
         <a href="https://www.dropbox.com/s/laxmi_sunrise.jpg?dl=1" download="laxmi_sunrise_bank.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Bank Account Details</h4>
+        <p><strong>Account No:</strong> 0123456789</p>
+        <p><strong>Branch:</strong> New Road, Kathmandu</p>
+        <p><strong>Bank:</strong> Laxmi Sunrise Bank Ltd.</p>
+      </div>
     </div>
 
     <!-- Global IME Bank -->
@@ -251,6 +337,12 @@
         <img src="https://www.dropbox.com/s/global_ime.jpg?dl=1" alt="Global IME Bank">
         <div class="caption">Global IME Bank</div>
         <a href="https://www.dropbox.com/s/global_ime.jpg?dl=1" download="global_ime_bank.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>Bank Account Details</h4>
+        <p><strong>Account No:</strong> 9876543210</p>
+        <p><strong>Branch:</strong> Durbar Marg, Kathmandu</p>
+        <p><strong>Bank:</strong> Global IME Bank Ltd.</p>
       </div>
     </div>
 
@@ -261,6 +353,12 @@
         <div class="caption">Nabil Bank</div>
         <a href="https://www.dropbox.com/s/nabil_bank.jpg?dl=1" download="nabil_bank.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Bank Account Details</h4>
+        <p><strong>Account No:</strong> 5678901234</p>
+        <p><strong>Branch:</strong> Thamel, Kathmandu</p>
+        <p><strong>Bank:</strong> Nabil Bank Ltd.</p>
+      </div>
     </div>
 
     <!-- Share/Stock -->
@@ -269,6 +367,12 @@
         <img src="https://www.dropbox.com/s/share_stock.jpg?dl=1" alt="Share Certificate">
         <div class="caption">Share / Stock</div>
         <a href="https://www.dropbox.com/s/share_stock.jpg?dl=1" download="share_stock.jpg" class="download-btn">Download</a>
+      </div>
+      <div class="details-section">
+        <h4>Shareholding Details</h4>
+        <p><strong>Company:</strong> ABC Hydropower Ltd.</p>
+        <p><strong>Share No:</strong> SH-567890</p>
+        <p><strong>Quantity:</strong> 100 Shares</p>
       </div>
     </div>
 
@@ -279,6 +383,11 @@
         <div class="caption">QR Code</div>
         <a href="https://www.dropbox.com/s/qr_code.jpg?dl=1" download="qr_code.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>QR Code Info</h4>
+        <p><strong>Type:</strong> Payment QR</p>
+        <p><strong>Linked To:</strong> Merchant Account</p>
+      </div>
     </div>
 
     <!-- Milk Payment QR -->
@@ -288,14 +397,36 @@
         <div class="caption">Milk Payment QR</div>
         <a href="https://www.dropbox.com/s/milk_qr.jpg?dl=1" download="milk_payment_qr.jpg" class="download-btn">Download</a>
       </div>
+      <div class="details-section">
+        <h4>Milk Payment QR Details</h4>
+        <p><strong>Farmer ID:</strong> FARM-7890</p>
+        <p><strong>Cooperative:</strong> Himalayan Dairy Coop.</p>
+        <p><strong>Used For:</strong> Daily milk collection payment</p>
+      </div>
     </div>
 
-    <div id="noMatch">No matching documents found.</div>
+    <div id="noMatch">No matching document found. Please type an exact name.</div>
   </div>
 
   <script>
-    // Define searchable terms (for clarity; not strictly needed due to fuzzy search)
-    // But used to ensure all cards are accounted for in reset logic
+    const validTerms = [
+      'citizenship',
+      'passport',
+      'national id',
+      'pan card',
+      'voter card',
+      'marriage certificate',
+      'licence',
+      'kukl',
+      'nea',
+      'laxmi sunrise bank',
+      'global ime bank',
+      'nabil bank',
+      'share/stock',
+      'qr code',
+      'milk payment qr'
+    ];
+
     const cards = document.querySelectorAll('.image-card');
     const input = document.getElementById('searchInput');
     const resetBtn = document.getElementById('resetBtn');
@@ -303,25 +434,28 @@
 
     function filterCards() {
       const query = input.value.trim().toLowerCase();
-      let visibleCount = 0;
+      let found = false;
 
-      if (!query) {
-        cards.forEach(card => card.style.display = 'none');
-        noMatchMsg.style.display = 'none';
-        return;
+      cards.forEach(card => card.style.display = 'none');
+      noMatchMsg.style.display = 'none';
+
+      if (!query) return;
+
+      for (const term of validTerms) {
+        if (query === term) {
+          cards.forEach(card => {
+            if (card.getAttribute('data-term').toLowerCase() === term) {
+              card.style.display = 'block';
+              found = true;
+            }
+          });
+          break;
+        }
       }
 
-      cards.forEach(card => {
-        const term = card.getAttribute('data-term').toLowerCase();
-        if (term.includes(query)) {
-          card.style.display = 'block';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      noMatchMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+      if (!found) {
+        noMatchMsg.style.display = 'block';
+      }
     }
 
     function resetAll() {
