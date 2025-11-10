@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Image Document Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 8px;
+      font-weight: bold;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #image-container {
+      margin-top: 20px;
+    }
+
+    .image-item {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .image-item img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .download-btn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      background-color: #0d5bbd;
+    }
+
+    .no-images {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Select a Document</h2>
+
+  <label for="doc-select">Choose a document type:</label>
+  <select id="doc-select">
+    <option value="">-- Select --</option>
+    <option value="citizenship">Citizenship</option>
+    <option value="pan">PAN Card</option>
+    <option value="voter">Voters ID</option>
+  </select>
+
+  <div id="image-container"></div>
+
+  <script>
+    // 🔗 Replace these with your actual Dropbox direct image links (ending with ?dl=1)
+    const documentImages = {
+      citizenship: [
+        "https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1",
+        "https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1"
+      ],
+      pan: [
+        "https://www.dropbox.com/scl/fi/zga55hrs7hkepwl5sgulf/marriage-certificate.jpg?rlkey=be9kbc9dw6zt3vbb2mrpxua0m&dl=1"
+      ],
+      voter: [
+        "https://your-dropbox-link-voter-front.jpg?dl=1",
+        "https://your-dropbox-link-voter-back.jpg?dl=1"
+      ]
+    };
+
+    const select = document.getElementById('doc-select');
+    const container = document.getElementById('image-container');
+
+    select.addEventListener('change', async function () {
+      const docType = this.value;
+      container.innerHTML = ''; // Clear previous content
+
+      if (!docType) return;
+
+      const urls = documentImages[docType] || [];
+
+      if (urls.length === 0) {
+        container.innerHTML = '<p class="no-images">No images available for this document.</p>';
+        return;
+      }
+
+      // Process each image in parallel
+      for (const url of urls) {
+        const imgItem = document.createElement('div');
+        imgItem.className = 'image-item';
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Document image';
+
+        // Handle loading errors
+        img.onerror = () => {
+          img.src = ''; // Clear broken image
+          img.alt = 'Image failed to load';
+        };
+
+        const btn = document.createElement('button');
+        btn.className = 'download-btn';
+        btn.textContent = 'Download';
+
+        // Attach download logic
+        btn.onclick = async () => {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = getFileNameFromUrl(url); // Suggest a filename
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+          } catch (err) {
+            alert('Failed to download image. Please check the link or permissions.');
+            console.error('Download error:', err);
+          }
+        };
+
+        imgItem.appendChild(img);
+        imgItem.appendChild(btn);
+        container.appendChild(imgItem);
+      }
+    });
+
+    // Helper: Extract filename from URL (e.g., from Dropbox link)
+    function getFileNameFromUrl(url) {
+      try {
+        const u = new URL(url);
+        let path = u.pathname;
+        // Dropbox paths often look like /s/abc123/filename.jpg → get last part
+        const parts = path.split('/');
+        let name = parts[parts.length - 1];
+        // Remove query params if any (though ?dl=1 is handled by fetch)
+        name = name.split('?')[0];
+        return name || 'document.jpg';
+      } catch (e) {
+        return 'document.jpg';
+      }
+    }
+  </script>
+
+</body>
+</html>
