@@ -3,92 +3,155 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multi-Image Document Viewer</title>
+  <title>Document Viewer</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8fafc;
+      padding: 24px;
+      color: #1e293b;
+    }
+
+    .container {
       max-width: 900px;
-      margin: auto;
-      line-height: 1.6;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #0f172a;
+    }
+
+    .dropdown-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 32px;
     }
 
     label {
       display: block;
-      margin: 15px 0 8px;
-      font-weight: bold;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #334155;
     }
 
     select {
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 20px;
       width: 100%;
-      max-width: 300px;
+      max-width: 320px;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: white;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:hover,
+    select:focus {
+      border-color: #3b82f6;
     }
 
     #image-container {
-      margin-top: 20px;
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
 
-    .image-item {
-      margin-bottom: 30px;
-      text-align: center;
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .image-item img {
-      max-width: 100%;
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .card img {
+      width: 100%;
       height: auto;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: block;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .card-footer {
+      padding: 14px;
+      text-align: center;
     }
 
     .download-btn {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #1a73e8;
+      background: #3b82f6;
       color: white;
       border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 6px;
       font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
     }
 
     .download-btn:hover {
-      background-color: #0d5bbd;
+      background: #2563eb;
     }
 
-    .no-images {
+    .empty-state {
       text-align: center;
-      color: #666;
-      font-style: italic;
+      padding: 40px 20px;
+      color: #64748b;
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 600px) {
+      #image-container {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Document Gallery</h1>
 
-  <h2>Select a Document</h2>
+    <div class="dropdown-section">
+      <label for="doc-select">Select a document type:</label>
+      <select id="doc-select">
+        <option value="">— Choose —</option>
+        <option value="citizenship">Citizenship</option>
+        <option value="pan">PAN Card</option>
+        <option value="voter">Voters ID</option>
+      </select>
+    </div>
 
-  <label for="doc-select">Choose a document type:</label>
-  <select id="doc-select">
-    <option value="">-- Select --</option>
-    <option value="citizenship">Citizenship</option>
-    <option value="pan">PAN Card</option>
-    <option value="voter">Voters ID</option>
-  </select>
-
-  <div id="image-container"></div>
+    <div id="image-container">
+      <!-- Images will appear here -->
+    </div>
+  </div>
 
   <script>
-    // 🔗 Replace these with your actual Dropbox direct image links (ending with ?dl=1)
+    // 🔗 REPLACE THESE WITH YOUR ACTUAL DROPBOX DIRECT LINKS (ending with ?dl=1)
     const documentImages = {
       citizenship: [
         "https://www.dropbox.com/scl/fi/isx1t8tpvnp5pwxxalze1/front.jpg?rlkey=9143n6wfcgw359zvjzwicz8ol&dl=1",
         "https://www.dropbox.com/scl/fi/e6qkt0zcie9hcgg0m73hd/citizenship_back.jpg?rlkey=q6ch49fuq3mk5uxk7vxrtni4h&dl=1"
       ],
       pan: [
-        "https://www.dropbox.com/scl/fi/zga55hrs7hkepwl5sgulf/marriage-certificate.jpg?rlkey=be9kbc9dw6zt3vbb2mrpxua0m&dl=1"
+        "https://your-dropbox-link-pan.jpg?dl=1"
       ],
       voter: [
         "https://your-dropbox-link-voter-front.jpg?dl=1",
@@ -99,80 +162,62 @@
     const select = document.getElementById('doc-select');
     const container = document.getElementById('image-container');
 
-    select.addEventListener('change', async function () {
+    function getFileNameFromUrl(url) {
+      try {
+        const name = new URL(url).pathname.split('/').pop().split('?')[0];
+        return name || 'document.jpg';
+      } catch {
+        return 'document.jpg';
+      }
+    }
+
+    select.addEventListener('change', function () {
       const docType = this.value;
-      container.innerHTML = ''; // Clear previous content
+      container.innerHTML = '';
 
       if (!docType) return;
 
       const urls = documentImages[docType] || [];
 
       if (urls.length === 0) {
-        container.innerHTML = '<p class="no-images">No images available for this document.</p>';
+        container.innerHTML = `<div class="empty-state">No images available for this document.</div>`;
         return;
       }
 
-      // Process each image in parallel
-      for (const url of urls) {
-        const imgItem = document.createElement('div');
-        imgItem.className = 'image-item';
+      urls.forEach(url => {
+        const card = document.createElement('div');
+        card.className = 'card';
 
         const img = document.createElement('img');
         img.src = url;
-        img.alt = 'Document image';
+        img.alt = "Document";
 
-        // Handle loading errors
+        // Handle broken images
         img.onerror = () => {
-          img.src = ''; // Clear broken image
-          img.alt = 'Image failed to load';
+          img.src = 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="200" height="150" fill="%23f1f5f9"/><text x="50%" y="50%" fill="%2394a3b8" font-size="14" text-anchor="middle" dy=".3em">Image not found</text></svg>';
+          img.alt = "Image not found";
         };
 
-        const btn = document.createElement('button');
-        btn.className = 'download-btn';
-        btn.textContent = 'Download';
+        const footer = document.createElement('div');
+        footer.className = 'card-footer';
 
-        // Attach download logic
-        btn.onclick = async () => {
-          try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = getFileNameFromUrl(url); // Suggest a filename
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(downloadUrl);
-            document.body.removeChild(a);
-          } catch (err) {
-            alert('Failed to download image. Please check the link or permissions.');
-            console.error('Download error:', err);
-          }
-        };
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url; // Direct Dropbox ?dl=1 link
+        downloadLink.download = getFileNameFromUrl(url); // Suggest filename
+        downloadLink.className = 'download-btn';
+        downloadLink.textContent = 'Download';
+        
+        // Prevent opening in new tab (force download where supported)
+        downloadLink.addEventListener('click', (e) => {
+          // Optional: Add analytics or confirmation here
+        });
 
-        imgItem.appendChild(img);
-        imgItem.appendChild(btn);
-        container.appendChild(imgItem);
-      }
+        footer.appendChild(downloadLink);
+        card.appendChild(img);
+        card.appendChild(footer);
+        container.appendChild(card);
+      });
     });
-
-    // Helper: Extract filename from URL (e.g., from Dropbox link)
-    function getFileNameFromUrl(url) {
-      try {
-        const u = new URL(url);
-        let path = u.pathname;
-        // Dropbox paths often look like /s/abc123/filename.jpg → get last part
-        const parts = path.split('/');
-        let name = parts[parts.length - 1];
-        // Remove query params if any (though ?dl=1 is handled by fetch)
-        name = name.split('?')[0];
-        return name || 'document.jpg';
-      } catch (e) {
-        return 'document.jpg';
-      }
-    }
   </script>
-
 </body>
 </html>
