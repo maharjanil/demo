@@ -1,1045 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager with Desktop Notifications</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --warning-color: #f72585;
-            --light-bg: #f8f9fa;
-            --dark-text: #212529;
-        }
-        
-        body {
-            background-color: #f5f7fb;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* FIXED NOTIFICATION STYLES */
-        .desktop-notification {
-            position: fixed;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            padding: 0;
-            width: 350px;
-            z-index: 10000;
-            border-left: 5px solid var(--primary-color);
-            overflow: hidden;
-            animation: slideIn 0.4s ease-out forwards;
-        }
-        
-        .desktop-notification.success {
-            border-left-color: var(--success-color);
-        }
-        
-        .desktop-notification.warning {
-            border-left-color: var(--warning-color);
-        }
-        
-        .desktop-notification.important {
-            border-left-color: #ff6b35;
-            animation: pulse 2s infinite, slideIn 0.4s ease-out forwards;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(400px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3); }
-            50% { box-shadow: 0 8px 35px rgba(255, 107, 53, 0.6); }
-            100% { box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3); }
-        }
-        
-        .notification-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        
-        .notification-header.warning {
-            background: linear-gradient(135deg, #ff6b35, #f72585);
-        }
-        
-        .notification-header.success {
-            background: linear-gradient(135deg, var(--success-color), #4895ef);
-        }
-        
-        .notification-content {
-            padding: 20px;
-        }
-        
-        .notification-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--dark-text);
-        }
-        
-        .notification-message {
-            color: #6c757d;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-        
-        .notification-time {
-            font-size: 0.8rem;
-            color: #adb5bd;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .notification-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .notification-close {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-        
-        .notification-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .notification-progress {
-            height: 3px;
-            background: rgba(255, 255, 255, 0.3);
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-        }
-        
-        .notification-progress-bar {
-            height: 100%;
-            background: white;
-            width: 100%;
-        }
-        
-        .task-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .demo-controls {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .control-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-notification {
-            min-width: 120px;
-        }
-        
-        /* NOTIFICATION STACK - FIXED POSITIONING */
-        .notification-stack {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            pointer-events: none;
-        }
-        
-        .notification-stack > * {
-            pointer-events: auto;
-        }
-        
-        .task-item {
-            padding: 15px;
-            border-bottom: 1px solid #e9ecef;
-            transition: all 0.2s ease;
-        }
-        
-        .task-item:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .task-item.completed {
-            opacity: 0.7;
-            background-color: #f8f9fa;
-        }
-        
-        .task-item.important {
-            border-left: 4px solid var(--warning-color);
-            background-color: rgba(247, 37, 133, 0.05);
-        }
-        
-        .task-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .task-description {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-        
-        .task-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 0.8rem;
-            color: #6c757d;
-            flex-wrap: wrap;
-        }
-        
-        .task-priority {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .priority-high {
-            background-color: rgba(247, 37, 133, 0.1);
-            color: var(--warning-color);
-        }
-        
-        .priority-medium {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
-        }
-        
-        .priority-low {
-            background-color: rgba(40, 167, 69, 0.1);
-            color: #28a745;
-        }
-        
-        .task-actions {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        
-        .task-item:hover .task-actions {
-            opacity: 1;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #6c757d;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #dee2e6;
-        }
-        
-        .task-stats {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            flex: 1;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        /* Debug info */
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 10001;
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Notification Manager</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .priority-high { border-left: 4px solid #dc3545; }
+    .priority-medium { border-left: 4px solid #ffc107; }
+    .priority-low { border-left: 4px solid #28a745; }
+    .task-card { transition: transform 0.2s; }
+    .task-card:hover { transform: scale(1.02); }
+    .countdown { font-size: 0.85em; color: #6c757d; }
+  </style>
 </head>
-<body>
-    <!-- Debug Info -->
-    <div class="debug-info" id="debug-info"></div>
+<body class="bg-light">
+  <div class="container py-4">
+    <h1 class="text-center mb-4">Task Notification Manager</h1>
 
-    <div class="main-container">
-        <!-- Demo Controls -->
-        <div class="demo-controls">
-            <h3><i class="fas fa-bell me-2"></i>Desktop Notification Demo</h3>
-            <p class="text-muted">Test different types of desktop notifications that appear on your screen</p>
-            
-            <div class="mb-3">
-                <label class="form-label">Notification Position</label>
-                <select class="form-select" id="notification-position">
-                    <option value="top-right">Top Right</option>
-                    <option value="top-left">Top Left</option>
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="bottom-left">Bottom Left</option>
-                </select>
+    <!-- Add Task Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Add New Task</h5>
+        <form id="taskForm">
+          <div class="mb-3">
+            <input type="text" class="form-control" id="taskTitle" placeholder="Task Title" required>
+          </div>
+          <div class="mb-3">
+            <textarea class="form-control" id="taskDesc" placeholder="Description (optional)"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <select class="form-select" id="taskPriority" required>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+              </select>
             </div>
-            
-            <div class="control-buttons">
-                <button class="btn btn-primary btn-notification" onclick="showDesktopNotification('info')">
-                    <i class="fas fa-info-circle me-1"></i>Info Alert
-                </button>
-                <button class="btn btn-success btn-notification" onclick="showDesktopNotification('success')">
-                    <i class="fas fa-check-circle me-1"></i>Success Alert
-                </button>
-                <button class="btn btn-warning btn-notification" onclick="showDesktopNotification('warning')">
-                    <i class="fas fa-exclamation-triangle me-1"></i>Warning Alert
-                </button>
-                <button class="btn btn-danger btn-notification" onclick="showDesktopNotification('important')">
-                    <i class="fas fa-bell me-1"></i>Important Alert
-                </button>
-                <button class="btn btn-dark btn-notification" onclick="showMultipleNotifications()">
-                    <i class="fas fa-layer-group me-1"></i>Multiple Alerts
-                </button>
-                <button class="btn btn-outline-secondary" onclick="clearAllNotifications()">
-                    <i class="fas fa-trash me-1"></i>Clear All
-                </button>
-                <button class="btn btn-outline-info" onclick="toggleDebug()">
-                    <i class="fas fa-bug me-1"></i>Debug
-                </button>
+            <div class="col-md-6 mb-3">
+              <input type="datetime-local" class="form-control" id="taskTime" required>
             </div>
-        </div>
-
-        <div class="row">
-            <!-- Task Input Section -->
-            <div class="col-lg-4">
-                <div class="task-container">
-                    <div class="notification-header">
-                        <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Task</h4>
-                    </div>
-                    <div class="p-4">
-                        <form id="task-form">
-                            <div class="mb-3">
-                                <label for="task-title" class="form-label">Task Title *</label>
-                                <input type="text" class="form-control" id="task-title" placeholder="Enter task title" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="task-description" class="form-label">Description</label>
-                                <textarea class="form-control" id="task-description" rows="3" placeholder="Enter task description (optional)"></textarea>
-                            </div>
-                            
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="task-priority" class="form-label">Priority</label>
-                                    <select class="form-select" id="task-priority">
-                                        <option value="low">Low</option>
-                                        <option value="medium" selected>Medium</option>
-                                        <option value="high">High</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="task-category" class="form-label">Category</label>
-                                    <select class="form-select" id="task-category">
-                                        <option value="work">Work</option>
-                                        <option value="personal">Personal</option>
-                                        <option value="shopping">Shopping</option>
-                                        <option value="health">Health</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row g-3 mt-1">
-                                <div class="col-md-6">
-                                    <label for="task-due-date" class="form-label">Due Date</label>
-                                    <input type="date" class="form-control" id="task-due-date">
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="task-alert-time" class="form-label">Set Alert</label>
-                                    <input type="datetime-local" class="form-control" id="task-alert-time">
-                                </div>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="task-important">
-                                    <label class="form-check-label" for="task-important">
-                                        <i class="fas fa-exclamation-circle me-1"></i>Mark as Important
-                                    </label>
-                                </div>
-                                
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" id="task-recurring">
-                                    <label class="form-check-label" for="task-recurring">
-                                        <i class="fas fa-redo me-1"></i>Recurring Alert (Daily)
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-plus me-1"></i> Add Task
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="task-container mt-4">
-                    <div class="notification-header">
-                        <h4 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
-                    </div>
-                    <div class="p-3">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <button class="btn btn-outline-success w-100" onclick="markAllCompleted()">
-                                    <i class="fas fa-check-double me-1"></i>Complete All
-                                </button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-danger w-100" onclick="deleteCompletedTasks()">
-                                    <i class="fas fa-trash me-1"></i>Delete Completed
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Task List Section -->
-            <div class="col-lg-8">
-                <!-- Task Statistics -->
-                <div class="task-stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="total-tasks">0</div>
-                        <div class="stat-label">Total Tasks</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="pending-tasks">0</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="completed-tasks">0</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="important-tasks">0</div>
-                        <div class="stat-label">Important</div>
-                    </div>
-                </div>
-
-                <!-- Task List -->
-                <div class="task-container">
-                    <div class="notification-header d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Your Tasks</h4>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary active" data-filter="all">All</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="pending">Pending</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="completed">Completed</button>
-                            <button class="btn btn-sm btn-outline-primary" data-filter="important">Important</button>
-                        </div>
-                    </div>
-                    
-                    <div id="tasks-list">
-                        <!-- Tasks will be dynamically added here -->
-                    </div>
-                    
-                    <div class="empty-state d-none" id="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <h5>No tasks yet</h5>
-                        <p>Add your first task using the form on the left!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Add Task</button>
+        </form>
+      </div>
     </div>
 
-    <!-- Desktop Notifications Container - FIXED POSITION -->
-    <div class="notification-stack" id="notification-stack"></div>
+    <!-- Task List -->
+    <div id="taskList" class="row"></div>
+  </div>
 
-    <script>
-        let notificationCounter = 0;
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        let nextTaskId = parseInt(localStorage.getItem('nextTaskId')) || 1;
-        const notificationStack = document.getElementById('notification-stack');
-        const debugInfo = document.getElementById('debug-info');
-        let debugEnabled = false;
+  <!-- Bootstrap JS + Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Request Notification Permission on Load
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTasks();
-            updateStats();
-            setupEventListeners();
-            
-            // Show welcome notification
-            setTimeout(() => {
-                showDesktopNotification('info', 'Welcome to Task Manager!', 'Start adding tasks and get notified when they are due.');
-            }, 1000);
-            
-            updateDebugInfo('App initialized successfully');
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    // Save tasks to localStorage
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // Create notification
+    function showNotification(title, desc) {
+      if (Notification.permission === "granted") {
+        new Notification("Task Alert: " + title, {
+          body: desc || "Time to complete your task!",
+          icon: "https://cdn-icons-png.flaticon.com/512/2769/2769347.png"
         });
+      }
+    }
 
-        // Toggle debug info
-        function toggleDebug() {
-            debugEnabled = !debugEnabled;
-            debugInfo.style.display = debugEnabled ? 'block' : 'none';
-            updateDebugInfo('Debug mode: ' + (debugEnabled ? 'ON' : 'OFF'));
+    // Schedule notification for a task
+    function scheduleNotification(task) {
+      const now = new Date();
+      const alertTime = new Date(task.alertTime);
+      const timeDiff = alertTime - now;
+
+      if (timeDiff > 0) {
+        setTimeout(() => {
+          showNotification(task.title, task.description);
+          // Optional: remove task after alert
+          // tasks = tasks.filter(t => t.id !== task.id);
+          // renderTasks();
+          // saveTasks();
+        }, timeDiff);
+      }
+    }
+
+    // Render tasks in UI
+    function renderTasks() {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+
+      if (tasks.length === 0) {
+        taskList.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">No tasks yet. Add one above!</div></div>';
+        return;
+      }
+
+      // Sort by priority (High > Medium > Low), then by alert time
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      tasks.sort((a, b) => {
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
         }
+        return new Date(a.alertTime) - new Date(b.alertTime);
+      });
 
-        // Update debug information
-        function updateDebugInfo(message) {
-            if (!debugEnabled) return;
-            const timestamp = new Date().toLocaleTimeString();
-            debugInfo.innerHTML = `[${timestamp}] ${message}<br>Notifications: ${notificationCounter}`;
-        }
+      tasks.forEach(task => {
+        const alertTime = new Date(task.alertTime);
+        const now = new Date();
+        const isExpired = alertTime < now;
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Task form submission
-            document.getElementById('task-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                addTask();
-            });
-
-            // Filter buttons
-            document.querySelectorAll('[data-filter]').forEach(button => {
-                button.addEventListener('click', function() {
-                    document.querySelectorAll('[data-filter]').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    filterTasks(this.getAttribute('data-filter'));
-                });
-            });
-
-            // Set minimum datetime for alert time
-            const now = new Date();
-            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            document.getElementById('task-alert-time').min = localDateTime;
-
-            // Notification position change
-            document.getElementById('notification-position').addEventListener('change', function() {
-                updateDebugInfo('Notification position changed to: ' + this.value);
-                repositionAllNotifications();
-            });
-        }
-
-        // Reposition all notifications
-        function repositionAllNotifications() {
-            const notifications = document.querySelectorAll('.desktop-notification');
-            notifications.forEach((notification, index) => {
-                positionNotification(notification, index);
-            });
-        }
-
-        // Add a new task
-        function addTask() {
-            const title = document.getElementById('task-title').value;
-            const description = document.getElementById('task-description').value;
-            const priority = document.getElementById('task-priority').value;
-            const category = document.getElementById('task-category').value;
-            const dueDate = document.getElementById('task-due-date').value;
-            const alertTime = document.getElementById('task-alert-time').value;
-            const important = document.getElementById('task-important').checked;
-            const recurring = document.getElementById('task-recurring').checked;
-
-            const newTask = {
-                id: nextTaskId++,
-                title: title,
-                description: description,
-                priority: priority,
-                category: category,
-                dueDate: dueDate,
-                alertTime: alertTime,
-                important: important,
-                recurring: recurring,
-                completed: false,
-                createdAt: new Date().toISOString()
-            };
-
-            tasks.push(newTask);
-            saveTasks();
-            renderTasks();
-            updateStats();
-
-            // Show notification
-            showDesktopNotification(
-                'success',
-                'Task Added Successfully!',
-                `"${title}" has been added to your task list`
-            );
-
-            // Schedule alert if alert time is set
-            if (alertTime) {
-                scheduleTaskAlert(newTask);
-            }
-
-            // Reset form
-            document.getElementById('task-form').reset();
-            
-            // Reset min datetime
-            const now = new Date();
-            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            document.getElementById('task-alert-time').min = localDateTime;
-
-            updateDebugInfo(`Task added: "${title}"`);
-        }
-
-        // Show desktop notification - FIXED VERSION
-        function showDesktopNotification(type = 'info', customTitle = null, customMessage = null) {
-            const notificationId = 'notification-' + notificationCounter++;
-            const position = document.getElementById('notification-position').value;
-            
-            updateDebugInfo(`Creating notification: ${type} - ${customTitle}`);
-
-            const notification = document.createElement('div');
-            notification.className = `desktop-notification ${type}`;
-            notification.id = notificationId;
-            
-            notification.innerHTML = `
-                <div class="notification-header ${type === 'warning' || type === 'important' ? 'warning' : type === 'success' ? 'success' : ''}">
-                    <div class="d-flex align-items-center">
-                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' || type === 'important' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i>
-                        <span>${customTitle}</span>
-                    </div>
-                    <button class="notification-close" onclick="closeNotification('${notificationId}')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-message">${customMessage}</div>
-                    <div class="notification-time">
-                        <i class="fas fa-clock me-1"></i>
-                        ${new Date().toLocaleTimeString()}
-                    </div>
-                    <div class="notification-actions">
-                        <button class="btn btn-sm btn-outline-primary" onclick="handleNotificationAction('${notificationId}', 'view')">
-                            View
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="closeNotification('${notificationId}')">
-                            Dismiss
-                        </button>
-                    </div>
-                </div>
-                <div class="notification-progress">
-                    <div class="notification-progress-bar" id="progress-${notificationId}"></div>
-                </div>
-            `;
-            
-            // Add to stack
-            notificationStack.appendChild(notification);
-            
-            // Position the notification
-            positionNotification(notification, notificationCounter - 1);
-            
-            // Play sound if enabled
-            if (document.getElementById('sound-enabled').checked) {
-                playNotificationSound(type);
-            }
-            
-            // Auto-close if enabled
-            if (document.getElementById('auto-close').checked) {
-                const progressBar = document.getElementById(`progress-${notificationId}`);
-                if (progressBar) {
-                    progressBar.style.width = '0%';
-                    progressBar.style.transition = 'width 5s linear';
-                }
-                
-                setTimeout(() => {
-                    closeNotification(notificationId);
-                }, 5000);
-            }
-
-            updateDebugInfo(`Notification displayed: ${notificationId}`);
-            return notificationId;
-        }
-
-        // Position notification based on settings
-        function positionNotification(notification, index = 0) {
-            const position = document.getElementById('notification-position').value;
-            const gap = 15;
-            const notificationHeight = 180; // Approximate height
-            const topOffset = 20 + (index * (notificationHeight + gap));
-            
-            switch (position) {
-                case 'top-left':
-                    notification.style.top = topOffset + 'px';
-                    notification.style.left = '20px';
-                    notification.style.right = 'auto';
-                    notification.style.bottom = 'auto';
-                    break;
-                case 'bottom-right':
-                    notification.style.top = 'auto';
-                    notification.style.left = 'auto';
-                    notification.style.right = '20px';
-                    notification.style.bottom = (20 + (index * (notificationHeight + gap))) + 'px';
-                    break;
-                case 'bottom-left':
-                    notification.style.top = 'auto';
-                    notification.style.left = '20px';
-                    notification.style.right = 'auto';
-                    notification.style.bottom = (20 + (index * (notificationHeight + gap))) + 'px';
-                    break;
-                default: // top-right
-                    notification.style.top = topOffset + 'px';
-                    notification.style.left = 'auto';
-                    notification.style.right = '20px';
-                    notification.style.bottom = 'auto';
-            }
-
-            updateDebugInfo(`Positioned notification at: ${position} (index: ${index})`);
-        }
-
-        // Close notification
-        function closeNotification(notificationId) {
-            const notification = document.getElementById(notificationId);
-            if (notification) {
-                notification.style.animation = 'slideOut 0.3s ease-in forwards';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                        updateDebugInfo(`Notification closed: ${notificationId}`);
-                    }
-                }, 300);
-            }
-        }
-
-        // Clear all notifications
-        function clearAllNotifications() {
-            const notifications = document.querySelectorAll('.desktop-notification');
-            notifications.forEach(notification => {
-                notification.style.animation = 'slideOut 0.3s ease-in forwards';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            });
-            updateDebugInfo('All notifications cleared');
-        }
-
-        // Play notification sound
-        function playNotificationSound(type) {
-            try {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                let frequency = 800;
-                if (type === 'success') frequency = 1000;
-                if (type === 'warning') frequency = 600;
-                if (type === 'important') frequency = 500;
-                
-                oscillator.frequency.value = frequency;
-                oscillator.type = type === 'important' ? 'sawtooth' : 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-                
-                updateDebugInfo(`Sound played for: ${type} notification`);
-            } catch (e) {
-                console.log('Audio context not supported');
-                updateDebugInfo('Audio context not supported');
-            }
-        }
-
-        function handleNotificationAction(notificationId, action) {
-            updateDebugInfo(`Notification action: ${action} for ${notificationId}`);
-            closeNotification(notificationId);
-        }
-
-        function showMultipleNotifications() {
-            const types = ['info', 'success', 'warning', 'important'];
-            let delay = 0;
-            
-            types.forEach(type => {
-                setTimeout(() => {
-                    showDesktopNotification(type);
-                }, delay);
-                delay += 800;
-            });
-            updateDebugInfo('Multiple notifications scheduled');
-        }
-
-        // [Rest of the task management functions remain the same...]
-        function scheduleTaskAlert(task) {
-            const alertTime = new Date(task.alertTime).getTime();
-            const now = new Date().getTime();
-            const timeUntilAlert = alertTime - now;
-
-            if (timeUntilAlert > 0) {
-                setTimeout(() => {
-                    showDesktopNotification(
-                        'warning',
-                        'Task Reminder!',
-                        `"${task.title}" is due${task.recurring ? ' (Recurring)' : ''}`
-                    );
-
-                    // If recurring, schedule the next alert
-                    if (task.recurring) {
-                        const nextAlertTime = new Date(alertTime + 24 * 60 * 60 * 1000);
-                        task.alertTime = nextAlertTime.toISOString().slice(0, 16);
-                        saveTasks();
-                        scheduleTaskAlert(task);
-                    }
-                }, timeUntilAlert);
-                updateDebugInfo(`Alert scheduled for task: "${task.title}"`);
-            }
-        }
-
-        function renderTasks(filter = 'all') {
-            const tasksList = document.getElementById('tasks-list');
-            const emptyState = document.getElementById('empty-state');
-            
-            tasksList.innerHTML = '';
-
-            let filteredTasks = tasks;
-            if (filter === 'pending') {
-                filteredTasks = tasks.filter(task => !task.completed);
-            } else if (filter === 'completed') {
-                filteredTasks = tasks.filter(task => task.completed);
-            } else if (filter === 'important') {
-                filteredTasks = tasks.filter(task => task.important);
-            }
-
-            if (filteredTasks.length === 0) {
-                emptyState.classList.remove('d-none');
-                tasksList.classList.add('d-none');
-            } else {
-                emptyState.classList.add('d-none');
-                tasksList.classList.remove('d-none');
-
-                filteredTasks.forEach(task => {
-                    const taskElement = createTaskElement(task);
-                    tasksList.appendChild(taskElement);
-                });
-            }
-        }
-
-        function createTaskElement(task) {
-            const taskItem = document.createElement('div');
-            taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.important ? 'important' : ''}`;
-            
-            const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date';
-            const alertTime = task.alertTime ? new Date(task.alertTime).toLocaleString() : 'No alert';
-            
-            taskItem.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1">
-                        <div class="task-title">
-                            ${task.completed ? '<s>' : ''}${task.title}${task.completed ? '</s>' : ''}
-                            ${task.important ? '<i class="fas fa-exclamation-circle text-warning ms-1"></i>' : ''}
-                        </div>
-                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-                        <div class="task-meta">
-                            <span class="task-priority priority-${task.priority}">
-                                <i class="fas fa-flag me-1"></i>${task.priority}
-                            </span>
-                            <span><i class="fas fa-tag me-1"></i>${task.category}</span>
-                            <span><i class="fas fa-calendar me-1"></i>${dueDate}</span>
-                            ${task.alertTime ? `<span><i class="fas fa-bell me-1"></i>${alertTime}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn ${task.completed ? 'btn-outline-secondary' : 'btn-outline-success'}" onclick="toggleTaskCompletion(${task.id})">
-                                <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
-                            </button>
-                            <button class="btn ${task.important ? 'btn-warning' : 'btn-outline-warning'}" onclick="toggleTaskImportance(${task.id})">
-                                <i class="fas fa-star"></i>
-                            </button>
-                            <button class="btn btn-outline-danger" onclick="deleteTask(${task.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            return taskItem;
-        }
-
-        function toggleTaskCompletion(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                task.completed = !task.completed;
-                saveTasks();
-                renderTasks();
-                updateStats();
-
-                showDesktopNotification(
-                    task.completed ? 'success' : 'info',
-                    task.completed ? 'Task Completed!' : 'Task Reopened',
-                    `"${task.title}" has been ${task.completed ? 'completed' : 'reopened'}`
-                );
-            }
-        }
-
-        function toggleTaskImportance(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                task.important = !task.important;
-                saveTasks();
-                renderTasks();
-                updateStats();
-
-                if (task.important) {
-                    showDesktopNotification(
-                        'warning',
-                        'Task Marked as Important',
-                        `"${task.title}" has been marked as important`
-                    );
-                }
-            }
-        }
-
-        function deleteTask(taskId) {
-            const taskIndex = tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                const taskTitle = tasks[taskIndex].title;
-                tasks.splice(taskIndex, 1);
-                saveTasks();
-                renderTasks();
-                updateStats();
-
-                showDesktopNotification(
-                    'warning',
-                    'Task Deleted',
-                    `"${taskTitle}" has been removed from your tasks`
-                );
-            }
-        }
-
-        function markAllCompleted() {
-            if (tasks.length === 0) return;
-            
-            tasks.forEach(task => {
-                task.completed = true;
-            });
-            saveTasks();
-            renderTasks();
-            updateStats();
-
-            showDesktopNotification(
-                'success',
-                'All Tasks Completed!',
-                'All your tasks have been marked as completed'
-            );
-        }
-
-        function deleteCompletedTasks() {
-            const completedCount = tasks.filter(t => t.completed).length;
-            if (completedCount === 0) return;
-            
-            tasks = tasks.filter(t => !t.completed);
-            saveTasks();
-            renderTasks();
-            updateStats();
-
-            showDesktopNotification(
-                'info',
-                'Completed Tasks Cleared',
-                `${completedCount} completed task(s) have been removed`
-            );
-        }
-
-        function filterTasks(filter) {
-            renderTasks(filter);
-        }
-
-        function updateStats() {
-            document.getElementById('total-tasks').textContent = tasks.length;
-            document.getElementById('pending-tasks').textContent = tasks.filter(t => !t.completed).length;
-            document.getElementById('completed-tasks').textContent = tasks.filter(t => t.completed).length;
-            document.getElementById('important-tasks').textContent = tasks.filter(t => t.important).length;
-        }
-
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            localStorage.setItem('nextTaskId', nextTaskId.toString());
-        }
-
-        // Add CSS for slideOut animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideOut {
-                from {
-                    opacity: 1;
-                    transform: translateX(0) scale(1);
-                }
-                to {
-                    opacity: 0;
-                    transform: translateX(400px) scale(0.9);
-                }
-            }
+        const card = document.createElement('div');
+        card.className = `col-12 mb-3 task-card ${isExpired ? '' : 'priority-' + task.priority}`;
+        card.innerHTML = `
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">${task.title} 
+                <span class="badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'} float-end">
+                  ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                </span>
+              </h5>
+              <p class="card-text">${task.description || '<em>No description</em>'}</p>
+              <p class="text-muted">
+                Alert: ${alertTime.toLocaleString()}
+                ${!isExpired ? `<br><span class="countdown" id="count-${task.id}">...</span>` : '<br><span class="text-danger">Expired</span>'}
+              </p>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')">Delete</button>
+            </div>
+          </div>
         `;
-        document.head.appendChild(style);
-    </script>
+        taskList.appendChild(card);
+
+        // Update countdown if not expired
+        if (!isExpired) {
+          updateCountdown(task.id, alertTime);
+        }
+      });
+    }
+
+    // Update countdown timer
+    function updateCountdown(taskId, alertTime) {
+      const element = document.getElementById(`count-${taskId}`);
+      if (!element) return;
+
+      const update = () => {
+        const now = new Date();
+        const diff = alertTime - now;
+
+        if (diff <= 0) {
+          element.textContent = "Alerting now!";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        let str = "";
+        if (days > 0) str += `${days}d `;
+        if (hours > 0) str += `${hours}h `;
+        if (mins > 0) str += `${mins}m `;
+        str += `${secs}s`;
+        element.textContent = str;
+      };
+
+      update();
+      setInterval(update, 1000);
+    }
+
+    // Delete task
+    window.deleteTask = function(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      saveTasks();
+      renderTasks();
+    };
+
+    // Handle form submission
+    document.getElementById('taskForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('taskTitle').value.trim();
+      const desc = document.getElementById('taskDesc').value.trim();
+      const priority = document.getElementById('taskPriority').value;
+      const alertTimeStr = document.getElementById('taskTime').value;
+
+      if (!title || !alertTimeStr) return;
+
+      const newTask = {
+        id: Date.now().toString(),
+        title,
+        description: desc,
+        priority,
+        alertTime: alertTimeStr
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+      scheduleNotification(newTask);
+      renderTasks();
+
+      // Reset form
+      this.reset();
+    });
+
+    // Initialize
+    renderTasks();
+    tasks.forEach(task => scheduleNotification(task));
+  </script>
 </body>
 </html>
