@@ -30,10 +30,9 @@
             margin: 0 auto;
         }
         
+        /* FIXED NOTIFICATION STYLES */
         .desktop-notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -41,13 +40,8 @@
             width: 350px;
             z-index: 10000;
             border-left: 5px solid var(--primary-color);
-            transform: translateX(400px);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden;
-        }
-        
-        .desktop-notification.show {
-            transform: translateX(0);
+            animation: slideIn 0.4s ease-out forwards;
         }
         
         .desktop-notification.success {
@@ -60,7 +54,18 @@
         
         .desktop-notification.important {
             border-left-color: #ff6b35;
-            animation: pulse 2s infinite;
+            animation: pulse 2s infinite, slideIn 0.4s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(400px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
         }
         
         @keyframes pulse {
@@ -74,8 +79,9 @@
             color: white;
             padding: 15px 20px;
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
+            position: relative;
         }
         
         .notification-header.warning {
@@ -118,9 +124,6 @@
         }
         
         .notification-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             background: rgba(255, 255, 255, 0.2);
             border: none;
             border-radius: 50%;
@@ -152,7 +155,6 @@
             height: 100%;
             background: white;
             width: 100%;
-            transition: width 5s linear;
         }
         
         .task-container {
@@ -181,14 +183,20 @@
             min-width: 120px;
         }
         
+        /* NOTIFICATION STACK - FIXED POSITIONING */
         .notification-stack {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 9999;
+            z-index: 10000;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
+            pointer-events: none;
+        }
+        
+        .notification-stack > * {
+            pointer-events: auto;
         }
         
         .task-item {
@@ -227,6 +235,7 @@
             gap: 15px;
             font-size: 0.8rem;
             color: #6c757d;
+            flex-wrap: wrap;
         }
         
         .task-priority {
@@ -297,9 +306,26 @@
             font-size: 0.9rem;
             color: #6c757d;
         }
+
+        /* Debug info */
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 10001;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Debug Info -->
+    <div class="debug-info" id="debug-info"></div>
+
     <div class="main-container">
         <!-- Demo Controls -->
         <div class="demo-controls">
@@ -334,6 +360,9 @@
                 </button>
                 <button class="btn btn-outline-secondary" onclick="clearAllNotifications()">
                     <i class="fas fa-trash me-1"></i>Clear All
+                </button>
+                <button class="btn btn-outline-info" onclick="toggleDebug()">
+                    <i class="fas fa-bug me-1"></i>Debug
                 </button>
             </div>
         </div>
@@ -484,48 +513,9 @@
                 </div>
             </div>
         </div>
-
-        <!-- Notification Settings -->
-        <div class="task-container mt-4">
-            <div class="notification-header">
-                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Notification Settings</h4>
-            </div>
-            <div class="p-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="auto-close" checked>
-                            <label class="form-check-label" for="auto-close">
-                                Auto-close notifications after 5 seconds
-                            </label>
-                        </div>
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="sound-enabled" checked>
-                            <label class="form-check-label" for="sound-enabled">
-                                Enable notification sound
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="animation-enabled" checked>
-                            <label class="form-check-label" for="animation-enabled">
-                                Enable animations
-                            </label>
-                        </div>
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="stack-enabled" checked>
-                            <label class="form-check-label" for="stack-enabled">
-                                Stack multiple notifications
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Desktop Notifications Container -->
+    <!-- Desktop Notifications Container - FIXED POSITION -->
     <div class="notification-stack" id="notification-stack"></div>
 
     <script>
@@ -533,7 +523,8 @@
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let nextTaskId = parseInt(localStorage.getItem('nextTaskId')) || 1;
         const notificationStack = document.getElementById('notification-stack');
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const debugInfo = document.getElementById('debug-info');
+        let debugEnabled = false;
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -545,7 +536,23 @@
             setTimeout(() => {
                 showDesktopNotification('info', 'Welcome to Task Manager!', 'Start adding tasks and get notified when they are due.');
             }, 1000);
+            
+            updateDebugInfo('App initialized successfully');
         });
+
+        // Toggle debug info
+        function toggleDebug() {
+            debugEnabled = !debugEnabled;
+            debugInfo.style.display = debugEnabled ? 'block' : 'none';
+            updateDebugInfo('Debug mode: ' + (debugEnabled ? 'ON' : 'OFF'));
+        }
+
+        // Update debug information
+        function updateDebugInfo(message) {
+            if (!debugEnabled) return;
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.innerHTML = `[${timestamp}] ${message}<br>Notifications: ${notificationCounter}`;
+        }
 
         // Setup event listeners
         function setupEventListeners() {
@@ -573,10 +580,16 @@
 
             // Notification position change
             document.getElementById('notification-position').addEventListener('change', function() {
-                const notifications = document.querySelectorAll('.desktop-notification');
-                notifications.forEach(notification => {
-                    positionNotification(notification);
-                });
+                updateDebugInfo('Notification position changed to: ' + this.value);
+                repositionAllNotifications();
+            });
+        }
+
+        // Reposition all notifications
+        function repositionAllNotifications() {
+            const notifications = document.querySelectorAll('.desktop-notification');
+            notifications.forEach((notification, index) => {
+                positionNotification(notification, index);
             });
         }
 
@@ -629,9 +642,192 @@
             const now = new Date();
             const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('task-alert-time').min = localDateTime;
+
+            updateDebugInfo(`Task added: "${title}"`);
         }
 
-        // Schedule task alert
+        // Show desktop notification - FIXED VERSION
+        function showDesktopNotification(type = 'info', customTitle = null, customMessage = null) {
+            const notificationId = 'notification-' + notificationCounter++;
+            const position = document.getElementById('notification-position').value;
+            
+            updateDebugInfo(`Creating notification: ${type} - ${customTitle}`);
+
+            const notification = document.createElement('div');
+            notification.className = `desktop-notification ${type}`;
+            notification.id = notificationId;
+            
+            notification.innerHTML = `
+                <div class="notification-header ${type === 'warning' || type === 'important' ? 'warning' : type === 'success' ? 'success' : ''}">
+                    <div class="d-flex align-items-center">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' || type === 'important' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i>
+                        <span>${customTitle}</span>
+                    </div>
+                    <button class="notification-close" onclick="closeNotification('${notificationId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-message">${customMessage}</div>
+                    <div class="notification-time">
+                        <i class="fas fa-clock me-1"></i>
+                        ${new Date().toLocaleTimeString()}
+                    </div>
+                    <div class="notification-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="handleNotificationAction('${notificationId}', 'view')">
+                            View
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="closeNotification('${notificationId}')">
+                            Dismiss
+                        </button>
+                    </div>
+                </div>
+                <div class="notification-progress">
+                    <div class="notification-progress-bar" id="progress-${notificationId}"></div>
+                </div>
+            `;
+            
+            // Add to stack
+            notificationStack.appendChild(notification);
+            
+            // Position the notification
+            positionNotification(notification, notificationCounter - 1);
+            
+            // Play sound if enabled
+            if (document.getElementById('sound-enabled').checked) {
+                playNotificationSound(type);
+            }
+            
+            // Auto-close if enabled
+            if (document.getElementById('auto-close').checked) {
+                const progressBar = document.getElementById(`progress-${notificationId}`);
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    progressBar.style.transition = 'width 5s linear';
+                }
+                
+                setTimeout(() => {
+                    closeNotification(notificationId);
+                }, 5000);
+            }
+
+            updateDebugInfo(`Notification displayed: ${notificationId}`);
+            return notificationId;
+        }
+
+        // Position notification based on settings
+        function positionNotification(notification, index = 0) {
+            const position = document.getElementById('notification-position').value;
+            const gap = 15;
+            const notificationHeight = 180; // Approximate height
+            const topOffset = 20 + (index * (notificationHeight + gap));
+            
+            switch (position) {
+                case 'top-left':
+                    notification.style.top = topOffset + 'px';
+                    notification.style.left = '20px';
+                    notification.style.right = 'auto';
+                    notification.style.bottom = 'auto';
+                    break;
+                case 'bottom-right':
+                    notification.style.top = 'auto';
+                    notification.style.left = 'auto';
+                    notification.style.right = '20px';
+                    notification.style.bottom = (20 + (index * (notificationHeight + gap))) + 'px';
+                    break;
+                case 'bottom-left':
+                    notification.style.top = 'auto';
+                    notification.style.left = '20px';
+                    notification.style.right = 'auto';
+                    notification.style.bottom = (20 + (index * (notificationHeight + gap))) + 'px';
+                    break;
+                default: // top-right
+                    notification.style.top = topOffset + 'px';
+                    notification.style.left = 'auto';
+                    notification.style.right = '20px';
+                    notification.style.bottom = 'auto';
+            }
+
+            updateDebugInfo(`Positioned notification at: ${position} (index: ${index})`);
+        }
+
+        // Close notification
+        function closeNotification(notificationId) {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                        updateDebugInfo(`Notification closed: ${notificationId}`);
+                    }
+                }, 300);
+            }
+        }
+
+        // Clear all notifications
+        function clearAllNotifications() {
+            const notifications = document.querySelectorAll('.desktop-notification');
+            notifications.forEach(notification => {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            });
+            updateDebugInfo('All notifications cleared');
+        }
+
+        // Play notification sound
+        function playNotificationSound(type) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                let frequency = 800;
+                if (type === 'success') frequency = 1000;
+                if (type === 'warning') frequency = 600;
+                if (type === 'important') frequency = 500;
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type === 'important' ? 'sawtooth' : 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+                updateDebugInfo(`Sound played for: ${type} notification`);
+            } catch (e) {
+                console.log('Audio context not supported');
+                updateDebugInfo('Audio context not supported');
+            }
+        }
+
+        function handleNotificationAction(notificationId, action) {
+            updateDebugInfo(`Notification action: ${action} for ${notificationId}`);
+            closeNotification(notificationId);
+        }
+
+        function showMultipleNotifications() {
+            const types = ['info', 'success', 'warning', 'important'];
+            let delay = 0;
+            
+            types.forEach(type => {
+                setTimeout(() => {
+                    showDesktopNotification(type);
+                }, delay);
+                delay += 800;
+            });
+            updateDebugInfo('Multiple notifications scheduled');
+        }
+
+        // [Rest of the task management functions remain the same...]
         function scheduleTaskAlert(task) {
             const alertTime = new Date(task.alertTime).getTime();
             const now = new Date().getTime();
@@ -653,10 +849,10 @@
                         scheduleTaskAlert(task);
                     }
                 }, timeUntilAlert);
+                updateDebugInfo(`Alert scheduled for task: "${task.title}"`);
             }
         }
 
-        // Render tasks
         function renderTasks(filter = 'all') {
             const tasksList = document.getElementById('tasks-list');
             const emptyState = document.getElementById('empty-state');
@@ -686,7 +882,6 @@
             }
         }
 
-        // Create task element
         function createTaskElement(task) {
             const taskItem = document.createElement('div');
             taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.important ? 'important' : ''}`;
@@ -730,7 +925,6 @@
             return taskItem;
         }
 
-        // Toggle task completion
         function toggleTaskCompletion(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
@@ -747,7 +941,6 @@
             }
         }
 
-        // Toggle task importance
         function toggleTaskImportance(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
@@ -766,7 +959,6 @@
             }
         }
 
-        // Delete task
         function deleteTask(taskId) {
             const taskIndex = tasks.findIndex(t => t.id === taskId);
             if (taskIndex !== -1) {
@@ -784,7 +976,6 @@
             }
         }
 
-        // Mark all tasks as completed
         function markAllCompleted() {
             if (tasks.length === 0) return;
             
@@ -802,7 +993,6 @@
             );
         }
 
-        // Delete completed tasks
         function deleteCompletedTasks() {
             const completedCount = tasks.filter(t => t.completed).length;
             if (completedCount === 0) return;
@@ -819,12 +1009,10 @@
             );
         }
 
-        // Filter tasks
         function filterTasks(filter) {
             renderTasks(filter);
         }
 
-        // Update statistics
         function updateStats() {
             document.getElementById('total-tasks').textContent = tasks.length;
             document.getElementById('pending-tasks').textContent = tasks.filter(t => !t.completed).length;
@@ -832,182 +1020,26 @@
             document.getElementById('important-tasks').textContent = tasks.filter(t => t.important).length;
         }
 
-        // Save tasks to localStorage
         function saveTasks() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
             localStorage.setItem('nextTaskId', nextTaskId.toString());
         }
 
-        // [Previous notification functions remain the same]
-        function showDesktopNotification(type = 'info', customTitle = null, customMessage = null) {
-            const notificationId = 'notification-' + notificationCounter++;
-            
-            const notification = document.createElement('div');
-            notification.className = `desktop-notification ${type}`;
-            notification.id = notificationId;
-            
-            notification.innerHTML = `
-                <div class="notification-header ${type === 'warning' || type === 'important' ? 'warning' : type === 'success' ? 'success' : ''}">
-                    <div class="d-flex align-items-center">
-                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' || type === 'important' ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2"></i>
-                        <span>${customTitle}</span>
-                    </div>
-                    <button class="notification-close" onclick="closeNotification('${notificationId}')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-message">${customMessage}</div>
-                    <div class="notification-time">
-                        <i class="fas fa-clock me-1"></i>
-                        ${new Date().toLocaleTimeString()}
-                    </div>
-                    <div class="notification-actions">
-                        <button class="btn btn-sm btn-outline-primary" onclick="handleNotificationAction('${notificationId}', 'view')">
-                            View
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="closeNotification('${notificationId}')">
-                            Dismiss
-                        </button>
-                    </div>
-                </div>
-                <div class="notification-progress">
-                    <div class="notification-progress-bar" id="progress-${notificationId}"></div>
-                </div>
-            `;
-            
-            notificationStack.appendChild(notification);
-            positionNotification(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-                
-                if (document.getElementById('sound-enabled').checked) {
-                    playNotificationSound(type);
+        // Add CSS for slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from {
+                    opacity: 1;
+                    transform: translateX(0) scale(1);
                 }
-                
-                if (document.getElementById('auto-close').checked) {
-                    const progressBar = document.getElementById(`progress-${notificationId}`);
-                    if (progressBar) {
-                        progressBar.style.width = '0%';
-                        progressBar.style.transition = 'width 5s linear';
-                    }
-                    
-                    setTimeout(() => {
-                        closeNotification(notificationId);
-                    }, 5000);
+                to {
+                    opacity: 0;
+                    transform: translateX(400px) scale(0.9);
                 }
-            }, 100);
-            
-            return notificationId;
-        }
-
-        function closeNotification(notificationId) {
-            const notification = document.getElementById(notificationId);
-            if (notification) {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 400);
             }
-        }
-
-        function clearAllNotifications() {
-            const notifications = document.querySelectorAll('.desktop-notification');
-            notifications.forEach(notification => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 400);
-            });
-        }
-
-        function positionNotification(notification) {
-            const position = document.getElementById('notification-position').value;
-            notification.style.position = 'fixed';
-            notification.style.zIndex = '10000';
-            
-            switch (position) {
-                case 'top-left':
-                    notification.style.top = '20px';
-                    notification.style.left = '20px';
-                    notification.style.right = 'auto';
-                    notification.style.bottom = 'auto';
-                    notification.style.transform = 'translateX(-400px)';
-                    break;
-                case 'bottom-right':
-                    notification.style.top = 'auto';
-                    notification.style.left = 'auto';
-                    notification.style.right = '20px';
-                    notification.style.bottom = '20px';
-                    notification.style.transform = 'translateX(400px)';
-                    break;
-                case 'bottom-left':
-                    notification.style.top = 'auto';
-                    notification.style.left = '20px';
-                    notification.style.right = 'auto';
-                    notification.style.bottom = '20px';
-                    notification.style.transform = 'translateX(-400px)';
-                    break;
-                default: // top-right
-                    notification.style.top = '20px';
-                    notification.style.left = 'auto';
-                    notification.style.right = '20px';
-                    notification.style.bottom = 'auto';
-                    notification.style.transform = 'translateX(400px)';
-            }
-            
-            if (notification.classList.contains('show')) {
-                notification.style.transform = 'translateX(0)';
-            }
-        }
-
-        function playNotificationSound(type) {
-            try {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                let frequency = 800;
-                if (type === 'success') frequency = 1000;
-                if (type === 'warning') frequency = 600;
-                if (type === 'important') frequency = 500;
-                
-                oscillator.frequency.value = frequency;
-                oscillator.type = type === 'important' ? 'sawtooth' : 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (e) {
-                console.log('Audio context not supported');
-            }
-        }
-
-        function handleNotificationAction(notificationId, action) {
-            console.log(`Notification ${notificationId}: ${action} action clicked`);
-            closeNotification(notificationId);
-        }
-
-        function showMultipleNotifications() {
-            const types = ['info', 'success', 'warning', 'important'];
-            let delay = 0;
-            
-            types.forEach(type => {
-                setTimeout(() => {
-                    showDesktopNotification(type);
-                }, delay);
-                delay += 800;
-            });
-        }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
