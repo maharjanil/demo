@@ -13,6 +13,7 @@
     .task-card { transition: transform 0.2s; }
     .task-card:hover { transform: scale(1.02); }
     .countdown { font-size: 0.85em; color: #6c757d; }
+    .expired { opacity: 0.6; }
   </style>
 </head>
 <body class="bg-light">
@@ -51,49 +52,90 @@
     <div id="taskList" class="row"></div>
   </div>
 
-  <!-- Bootstrap JS + Popper -->
+  <!-- Hidden Audio for Sound Alert -->
+  <audio id="alertSound" preload="auto">
+    <source src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Toast Container -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-primary text-white">
+        <strong class="me-auto">Task Alert</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        Time to complete your task!
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Request Notification Permission on Load
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
+    // Audio element
+    const alertSound = document.getElementById('alertSound');
+    const toastEl = document.getElementById('liveToast');
+    const toast = new bootstrap.Toast(toastEl);
+
+    // Request notification permission (if supported)
+    let notificationSupported = false;
+    if (typeof Notification !== 'undefined') {
+      notificationSupported = true;
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
     }
 
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-    // Save tasks to localStorage
     function saveTasks() {
       localStorage.setItem('tasks', JSON.stringify(tasks));
     }
 
-    // Create notification
-    function showNotification(title, desc) {
-      if (Notification.permission === "granted") {
+    // Unified alert handler
+    function triggerAlert(title, desc) {
+      // Play sound
+      alertSound.currentTime = 0;
+      alertSound.play().catch(e => console.log("Sound play blocked:", e));
+
+      // Desktop notification (if supported & permitted)
+      if (notificationSupported && Notification.permission === "granted") {
         new Notification("Task Alert: " + title, {
           body: desc || "Time to complete your task!",
           icon: "https://cdn-icons-png.flaticon.com/512/2769/2769347.png"
         });
+      } else {
+        // Fallback: Show in-app toast
+        document.querySelector('.toast-body').textContent = (desc || "Time to complete your task!");
+        toast.show();
+      }
+
+      // On mobile, also fallback to alert if needed (optional)
+      if (!notificationSupported || Notification.permission !== "granted") {
+        // Optional: Uncomment if you want JS alert on mobile
+        // alert(`🔔 Task Alert!\n${title}\n${desc || ''}`);
       }
     }
 
-    // Schedule notification for a task
-    function scheduleNotification(task) {
-      const now = new Date();
+    function scheduleTask(task) {
       const alertTime = new Date(task.alertTime);
-      const timeDiff = alertTime - now;
+      const now = new Date();
+      const delay = alertTime - now;
 
-      if (timeDiff > 0) {
-        setTimeout(() => {
-          showNotification(task.title, task.description);
-          // Optional: remove task after alert
-          // tasks = tasks.filter(t => t.id !== task.id);
-          // renderTasks();
-          // saveTasks();
-        }, timeDiff);
-      }
+      if (delay <= 0) return; // Skip if already expired
+
+      setTimeout(() => {
+        triggerAlert(task.title, task.description);
+
+        // Auto-delete task after alert
+        tasks = tasks.filter(t => t.id !== task.id);
+        saveTasks();
+        renderTasks();
+      }, delay);
     }
 
-    // Render tasks in UI
     function renderTasks() {
       const taskList = document.getElementById('taskList');
       taskList.innerHTML = '';
@@ -103,7 +145,6 @@
         return;
       }
 
-      // Sort by priority (High > Medium > Low), then by alert time
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       tasks.sort((a, b) => {
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
@@ -118,12 +159,12 @@
         const isExpired = alertTime < now;
 
         const card = document.createElement('div');
-        card.className = `col-12 mb-3 task-card ${isExpired ? '' : 'priority-' + task.priority}`;
+        card.className = `col-12 mb-3 task-card ${isExpired ? 'expired' : 'priority-' + task.priority}`;
         card.innerHTML = `
           <div class="card h-100 shadow-sm">
             <div class="card-body">
               <h5 class="card-title">${task.title} 
-                <span class="badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'} float-end">
+                <span class="badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning text-dark' : 'success'} float-end">
                   ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                 </span>
               </h5>
@@ -138,82 +179,77 @@
         `;
         taskList.appendChild(card);
 
-        // Update countdown if not expired
         if (!isExpired) {
           updateCountdown(task.id, alertTime);
         }
       });
     }
 
-    // Update countdown timer
     function updateCountdown(taskId, alertTime) {
-      const element = document.getElementById(`count-${taskId}`);
-      if (!element) return;
+      const el = document.getElementById(`count-${taskId}`);
+      if (!el) return;
 
       const update = () => {
-        const now = new Date();
-        const diff = alertTime - now;
-
+        const diff = alertTime - new Date();
         if (diff <= 0) {
-          element.textContent = "Alerting now!";
+          el.textContent = "Alerting...";
           return;
         }
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
         let str = "";
-        if (days > 0) str += `${days}d `;
-        if (hours > 0) str += `${hours}h `;
-        if (mins > 0) str += `${mins}m `;
-        str += `${secs}s`;
-        element.textContent = str;
+        if (d > 0) str += `${d}d `;
+        if (h > 0) str += `${h}h `;
+        if (m > 0) str += `${m}m `;
+        str += `${s}s`;
+        el.textContent = str;
       };
-
       update();
       setInterval(update, 1000);
     }
 
-    // Delete task
+    // Expose deleteTask globally for inline onclick
     window.deleteTask = function(id) {
       tasks = tasks.filter(task => task.id !== id);
       saveTasks();
       renderTasks();
     };
 
-    // Handle form submission
+    // Form submit
     document.getElementById('taskForm').addEventListener('submit', function(e) {
       e.preventDefault();
-
       const title = document.getElementById('taskTitle').value.trim();
       const desc = document.getElementById('taskDesc').value.trim();
       const priority = document.getElementById('taskPriority').value;
-      const alertTimeStr = document.getElementById('taskTime').value;
+      const timeStr = document.getElementById('taskTime').value;
 
-      if (!title || !alertTimeStr) return;
+      if (!title || !timeStr) return;
 
       const newTask = {
         id: Date.now().toString(),
         title,
         description: desc,
         priority,
-        alertTime: alertTimeStr
+        alertTime: timeStr
       };
 
       tasks.push(newTask);
       saveTasks();
-      scheduleNotification(newTask);
+      scheduleTask(newTask);
       renderTasks();
-
-      // Reset form
       this.reset();
     });
 
-    // Initialize
+    // Init
     renderTasks();
-    tasks.forEach(task => scheduleNotification(task));
+    tasks.forEach(task => {
+      const alertTime = new Date(task.alertTime);
+      if (alertTime > new Date()) {
+        scheduleTask(task);
+      }
+    });
   </script>
 </body>
 </html>
