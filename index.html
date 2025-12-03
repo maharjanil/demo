@@ -3,385 +3,741 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Website Library</title>
+  <title>Learning Center</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
-      min-height: 100vh;
-      margin: 0;
       font-family: 'Segoe UI', system-ui, sans-serif;
-      overflow-x: hidden;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: #1a1a1a;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      padding: 1rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid #333;
+      position: relative;
+    }
+
+    #sidebarToggle {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #333;
+      border: none;
+      color: #ccc;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
     }
-    .search-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      padding: 2rem;
-      max-width: 700px;
-      width: 90%;
+
+    #sidebarToggle:hover {
+      background: #444;
+      color: #fff;
     }
-    h1 {
+
+    .header h1 {
       font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      font-size: 1.8rem;
+      color: #e0e0e0;
+      margin: 0;
+      font-size: 1.6rem;
+      cursor: pointer;
     }
-    #searchBox {
-      border: none;
-      padding: 0.9rem 2.8rem 0.9rem 1.2rem;
-      font-size: 1.05rem;
-      outline: none !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: 12px;
+
+    .main-layout {
+      display: flex;
+      flex: 1;
+      padding: 1.5rem;
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
       width: 100%;
+      transition: padding 0.3s ease;
     }
-    #clearBtn {
+
+    .main-layout.centered {
+      justify-content: center;
+      padding: 1.5rem 0;
+    }
+
+    .main-layout.centered .video-panel {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 1.5rem;
+    }
+
+    .title-sidebar {
+      width: 300px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 2rem);
+      overflow: hidden;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    .title-sidebar.hidden {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .video-panel {
+      flex: 1;
+      background: #1a1a1a;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .search-box-container {
+      padding: 1.2rem 1rem 0.8rem;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    #searchBox {
+      width: 100%;
+      padding: 0.75rem 36px 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #252525;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    #searchBox:focus {
+      border-color: #4a90e2;
+    }
+
+    .search-icon {
       position: absolute;
-      right: 12px;
+      right: 2.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 1rem;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
+      color: #aaa;
+      cursor: pointer;
       font-size: 1.1rem;
-      color: #adb5bd;
-      cursor: pointer;
       display: none;
-      z-index: 10;
-    }
-    #clearBtn:hover {
-      color: #6c757d;
-    }
-    .results-list {
-      margin-top: 1.5rem;
-      max-height: 300px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .result-item {
-      padding: 0.85rem;
-      border-radius: 10px;
-      margin-bottom: 0.6rem;
-      background: #f8f9ff;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid #e9ecef;
-    }
-    .result-item:hover {
-      background: #edf2ff;
-      border-color: #cbd5ff;
-    }
-    .result-source {
-      font-size: 0.82rem;
-      color: #6c757d;
-      margin-top: 0.25rem;
-    }
-    .no-results {
-      display: none;
-      text-align: center;
-      margin-top: 1.5rem;
-      color: #e74c3c;
-      font-style: italic;
-    }
-    .footer-note {
-      text-align: center;
-      margin-top: 1.5rem;
-      color: #95a5a6;
-      font-size: 0.85rem;
     }
 
-    /* 🔥 Website Overlay */
-    #websiteOverlay {
+    .clear-search:hover {
+      color: #fff;
+    }
+
+    .title-list {
+      padding: 0.5rem 0;
+      overflow-y: auto;
+      flex: 1;
+      max-height: calc(100vh - 180px);
+      scrollbar-width: thin;
+      scrollbar-color: #000 #222;
+    }
+
+    .title-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .title-list::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    .title-list::-webkit-scrollbar-thumb {
+      background: #000;
+      border-radius: 4px;
+    }
+    .title-list::-webkit-scrollbar-thumb:hover {
+      background: #333;
+    }
+
+    .category-header {
+      padding: 0.7rem 1.2rem;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #222;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s;
+      border-top: 1px solid #333;
+    }
+
+    .category-header:first-child {
+      border-top: none;
+    }
+
+    .category-header:hover {
+      background: #2a2a2a;
+    }
+
+    .category-header i.chevron {
+      margin-right: 0.6rem;
+      font-size: 0.8rem;
+      transition: transform 0.25s ease;
+    }
+
+    .category-header i.chevron.rotated {
+      transform: rotate(90deg);
+    }
+
+    .category-items {
+      overflow: hidden;
+      transition: padding 0.35s ease;
+      padding: 0;
+    }
+
+    .category-items.expanded {
+      padding: 0.2rem 0;
+    }
+
+    .title-item {
+      padding: 0.85rem 1.2rem 0.85rem 2.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    .title-item:hover {
+      background: #2a2a2a;
+    }
+
+    .title-item.active {
+      background: #2d3748;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .title-item i {
+      margin-right: 10px;
+      font-size: 0.9rem;
+      color: #888;
+      width: 16px;
+      text-align: center;
+    }
+
+    .title-item.protected i {
+      color: #d97706;
+    }
+
+    .video-header {
+      padding: 1rem 1.5rem;
+      background: #252525;
+      border-bottom: 1px solid #333;
+    }
+
+    .video-header h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #e0e0e0;
+    }
+
+    .video-header .source {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 0.25rem;
+    }
+
+    .video-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      background: #0f0f0f;
+      position: relative;
+    }
+
+    .video-placeholder {
+      color: #666;
+      font-style: italic;
+      text-align: center;
+      max-width: 80%;
+    }
+
+    .video-container.video-active .video-placeholder {
+      display: none;
+    }
+
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
+      max-width: 900px;
+      max-height: 540px;
+      border-radius: 8px;
+      border: none;
+      display: none;
+    }
+
+    .video-container.video-active iframe {
+      display: block;
+    }
+
+    /* Login Modal */
+    #loginModal {
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 3000;
       justify-content: center;
       align-items: center;
-      z-index: 1050;
     }
-
-    #websiteOverlay.active {
-      display: flex;
-    }
-
-    #websiteOverlay .website-container {
-      position: relative;
-      width: 967px;
-      height: 544px;
-      max-width: 95vw;
-      max-height: 90vh;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    #websiteOverlay .website-title {
-      position: absolute;
-      top: -40px;
-      left: 0;
-      width: 100%;
+    #loginModal .modal-content {
+      background: #1a1a1a;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      border: 1px solid #444;
+      color: #f0f0f0;
       text-align: center;
-      color: black;
-      font-size: 1.4rem;
-      font-weight: 600;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      pointer-events: none;
     }
-
-    #websiteOverlay iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
+    #loginError {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
     }
-
-    #websiteOverlay .close-btn {
-      position: absolute;
-      top: -32px;
-      right: -10px;
-      background: none;
-      color: black;
-      width: 32px;
-      height: 32px;
-      border: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.6rem;
-      font-weight: bold;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      outline: none;
-    }
-
-    #websiteOverlay .resize-handle {
-      position: absolute;
-      bottom: -8px;
-      right: -8px;
-      width: 20px;
-      height: 20px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 3px;
-      cursor: nwse-resize;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      z-index: 10;
-    }
-
-    #websiteOverlay:hover .website-title,
-    #websiteOverlay:hover .close-btn,
-    #websiteOverlay:hover .resize-handle {
-      opacity: 1;
-    }
-
-    @media (max-width: 1024px) {
-      #websiteOverlay .website-container {
-        width: 90vw;
-        height: auto;
-        aspect-ratio: 16 / 9;
-      }
+    .divider {
+      margin: 1rem 0;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <div class="search-card">
-    <h1><i class="fas fa-link me-2 text-primary"></i>Website Library</h1>
-    <div class="position-relative">
-      <input
-        type="text"
-        id="searchBox"
-        class="form-control"
-        placeholder="Type to search websites..."
-        autocomplete="off"
-      />
-      <button id="clearBtn" class="btn">
-        <i class="fas fa-times"></i>
+
+  <div class="header">
+    <button id="sidebarToggle" title="Toggle sidebar (Ctrl+E)">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1 id="headerTitle"><i class="fas fa-graduation-cap me-2"></i>Learning Center</h1>
+  </div>
+
+  <div class="main-layout" id="mainLayout">
+    <div class="title-sidebar" id="sidebar">
+      <div class="search-box-container">
+        <input
+          type="text"
+          id="searchBox"
+          placeholder="Search lessons or categories..."
+          autocomplete="off"
+        />
+        <i class="fas fa-search search-icon"></i>
+        <button id="clearSearch" class="clear-search">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="title-list" id="titleList"></div>
+    </div>
+
+    <div class="video-panel">
+      <div class="video-header">
+        <h2 id="currentTitle">Lesson Details</h2>
+        <div class="source" id="currentSource"></div>
+      </div>
+      <div class="video-container" id="videoContainer">
+        <div class="video-placeholder">
+          Select a lesson to begin
+        </div>
+        <iframe id="videoFrame" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Login Modal -->
+  <div id="loginModal">
+    <div class="modal-content">
+      <h4 class="mb-3"><i class="fas fa-user-lock me-2"></i>Sign In</h4>
+      <p class="mb-3">Please sign in to access video content.</p>
+      
+      <button id="signInGoogle" class="btn btn-danger w-100 mb-3">
+        <i class="fab fa-google me-2"></i> Continue with Google
       </button>
-    </div>
 
-    <div id="resultsContainer" class="results-list" style="display: none;"></div>
-    <div id="noResults" class="no-results"></div>
+      <div class="divider">or</div>
 
-    <div class="footer-note">
-      Click a result to open the website in a popup.
-    </div>
-  </div>
+      <div class="mb-3">
+        <input type="email" id="emailInput" class="form-control mb-2" placeholder="Email">
+        <input type="password" id="passwordInput" class="form-control" placeholder="Password">
+      </div>
+      <button id="signInEmail" class="btn btn-primary w-100 mb-2">Sign In</button>
+      <button id="signUpEmail" class="btn btn-outline-light w-100 mb-3">Create Account</button>
 
-  <!-- 🔥 Overlay for Websites -->
-  <div id="websiteOverlay">
-    <div class="website-container" id="websiteContainer">
-      <div class="website-title" id="overlayTitle">Website</div>
-      <iframe id="overlayFrame" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
-      <button class="close-btn" id="overlayClose">&times;</button>
-      <div class="resize-handle" id="resizeHandle"></div>
+      <p id="loginError"></p>
     </div>
   </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
   <script>
-    // 🌐 Websites
-    const websites = [
-      { title: "Ratopati", url: "https://www.ratopati.com/" },
-      { title: "YouTube", url: "https://www.youtube.com" },
-      { title: "GitHub", url: "https://github.com" },
-      { title: "MDN Web Docs", url: "https://developer.mozilla.org" },
-      { title: "Bootstrap", url: "https://getbootstrap.com" },
-      { title: "Font Awesome", url: "https://fontawesome.com" },
-      { title: "Dropbox", url: "https://www.dropbox.com" },
-      { title: "Stack Overflow", url: "https://stackoverflow.com" }
+    // ✅ YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyBd_xfPttl6i5smhZ_PT71cZj5qv3HHqEI",
+      authDomain: "learning-center-app-46176.firebaseapp.com",
+      projectId: "learning-center-app-46176",
+      storageBucket: "learning-center-app-46176.firebasestorage.app",
+      messagingSenderId: "765499084020",
+      appId: "1:765499084020:web:01826e6c5ecdd188e6e2a1",
+      measurementId: "G-6X2HX14WSH"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Video data
+    const videos = [
+      { title: "Animation as a Career", type: "drive", id: "1D2eXhun3BpgQkUwgXqupLIzEfU4W6ikT", protected: true, category: "Animation Mentor" },
+      { title: "Intro to Overlapping Action", type: "drive", id: "1NyFqEII1wTu0TeHBBD9d8SZOcfTMQKmc", protected: true, category: "Animation Mentor" },
+      { title: "01-A Lamp & A Ball | Part - I", type: "drive", id: "1E47FngraJieAL3SjqxZ0k1zPo_J-LcNW", protected: true, category: "Blue Shuttle" },
+      { title: "02-A Lamp & A Ball | Part - II", type: "drive", id: "1m9xjrGfY38T8fB0LFVidLEhgaZ1tkPjX", protected: true, category: "Blue Shuttle" },
+      { title: "03-The Graph Editor", type: "drive", id: "1mUMXroAUQMYNTIf-g12I84bfBrNYLM0u", protected: true, category: "Blue Shuttle" },
+      { title: "04-The Bouncing Ball", type: "drive", id: "1-vvLqCv7LgxKM6mou_HV-1lv8S8SxeFZ", protected: true, category: "Blue Shuttle" },
+      { title: "05-Animating A Pendulum", type: "drive", id: "1WtbimRpQju4GDSP1xjRdGWWMhbE1EVGj", protected: true, category: "Blue Shuttle" },
+      { title: "06-A Ball & His Tail | Part - I", type: "drive", id: "1mr7DKUVRB25Pq5r2OF--9HHWld3qDwc7", protected: true, category: "Blue Shuttle" },
+      { title: "07-A Ball & His Tail | Part - II", type: "drive", id: "1EZXuEKGfZS_kSe78jhvD9n3zOKJAT-9c", protected: true, category: "Blue Shuttle" },
+      { title: "08-The Lamp Jump", type: "drive", id: "1Nw6s3UrV-5z2STzSDWfAUoBXNSUeJE-a", protected: true, category: "Blue Shuttle" },
+      { title: "09-Motion Trail", type: "drive", id: "1zx1fEskT7bLwQ9mjFc0oUXKuBhk5hESs", protected: true, category: "Blue Shuttle" },
+      { title: "10-The Walk Cycle | Lyd 1", type: "drive", id: "1gfGiA_e-U-iPAFhE6UsQNM2RLJ0urQsF", protected: true, category: "Blue Shuttle" },
+      { title: "11-The Walk Cycle | Lyd 2", type: "drive", id: "1QZlbF_4Ihp4nqIDuwjCpn52g0tUW4OTE", protected: true, category: "Blue Shuttle" },
+      { title: "12-IK VS FK Body Mechanics Shot", type: "drive", id: "1m209yazDT8sEjbM_8RtbTxthgZ2Ny-of", protected: true, category: "Blue Shuttle" },
+      { title: "13-Walk Cycle | Pose to Pose - P1", type: "drive", id: "1n4SvbDVwbHANbNhL8yi9-tt5H84zIbkt", protected: true, category: "Blue Shuttle" },
+      { title: "14-Walk Cycle | Pose to Pose - P2", type: "drive", id: "1SKlMXo9CSRWOrBqo2wiNAtbl0ozDp2jm", protected: true, category: "Blue Shuttle" },
+      { title: "15-Full Body Run - P1", type: "drive", id: "1vrrboIzmydFK4E-x79p3m0zROJKT7WZY", protected: true, category: "Blue Shuttle" },
+      { title: "16-Full Body Run - P2", type: "drive", id: "1pInFnCiD2XtbwpHjkxYB6-fxmZ2eP4WL", protected: true, category: "Blue Shuttle" },
+      { title: "17-Full Body Run - P3", type: "drive", id: "14WiMSIwMpPDl8uFs1hNQaiZO81eiaLFL", protected: true, category: "Blue Shuttle" },
+      { title: "18-Constraints - P1", type: "drive", id: "187NFHGql8eODcQuQjGuGJVlOQB2lfLJC", protected: true, category: "Blue Shuttle" },
+      { title: "19-Constraints - P2", type: "drive", id: "1RQerCtoJ46h062t0Nd_wM2V0EuBn9mhB", protected: true, category: "Blue Shuttle" },
+      { title: "20-Constraints - P3", type: "drive", id: "17dehY-J_MBLSpgiawvj1-RqpIC_nzTW3", protected: true, category: "Blue Shuttle" },
+      { title: "Top 10 Animation Exercises", type: "youtube", url: "https://youtu.be/qFLsNoiZts0", protected: false, category: "Maya Animation" },
+      { title: "Walk Cycle | Rusty Animator", type: "youtube", url: "https://www.youtube.com/watch?v=STjKkhROdWE", category: "Maya Animation" },
+      { title: "Basic Ball with Tail Animation", type: "youtube", url: "https://youtu.be/RJfc7RIvIjk?si=l__-G2ZgGteu4kq8", category: "Maya Animation" },
+      { title: "Follow through and overlapping Action", type: "youtube", url: "https://youtu.be/W64m8yx_8PA", category: "Principles Of Animation" },
+      { title: "How to Use Reference Videos? | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/vR57xYTQa_E", category: "Maya Animation" },
+      { title: "Import video reference into Maya | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/0w7_5UfrmHE", category: "Maya Animation" },
+      { title: "Unlock the Secret to Perfect Splining Animation! | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/Z6SSW5Kw9yo", category: "Maya Animation" },
+      { title: "Animation Blocking - You are doing it Wrong! - Part 1 | Jean-Denis Haas", type: "youtube", url: "https://youtu.be/xJ7hmvbl_1c?si=pHyJ25vufillI-Hf", category: "Maya Animation" },
+      { title: "Animation Blocking - Cheat Sheet - Part 2 | Jean-Denis Haas", type: "youtube", url: "https://youtu.be/M3hGbCfb_r8?si=IEj3PMnPPkXStwFP", category: "Maya Animation" },
+      { title: "Get rid of floaty movements and jerks from your animation | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/WzKJOuzV7dE", category: "Maya Animation" },
+      { title: "Front Walk Cycle Animation In After Effects | Jafar Fazel", type: "youtube", url: "https://youtu.be/UaWq3cEzrKc", category: "After Effects" },
+      { title: "Front Run Cycle Animation In After Effects | Jafar Fazel", type: "youtube", url: "https://youtu.be/O0a_gu3lYXo", category: "After Effects" },
+      { title: "Adding Path to Your Animation | Maya Motion Path", type: "youtube", url: "https://youtu.be/RKA09A_tJt4", category: "Maya Animation" },
+      { title: "Master Posing for Animators | Animators Journey", type: "youtube", url: "https://www.youtube.com/watch?v=VrFhQcmM0nw", category: "Maya Animation" },
+      { title: "Blocking workflow & simplifying animations | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/rWxeZbwEV70", category: "Maya Animation" }
     ];
 
     // DOM Elements
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainLayout = document.getElementById('mainLayout');
     const searchBox = document.getElementById('searchBox');
-    const clearBtn = document.getElementById('clearBtn');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const noResults = document.getElementById('noResults');
-    const overlay = document.getElementById('websiteOverlay');
-    const overlayFrame = document.getElementById('overlayFrame');
-    const overlayTitle = document.getElementById('overlayTitle');
-    const overlayClose = document.getElementById('overlayClose');
-    const websiteContainer = document.getElementById('websiteContainer');
-    const resizeHandle = document.getElementById('resizeHandle');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const titleList = document.getElementById('titleList');
+    const currentTitle = document.getElementById('currentTitle');
+    const currentSource = document.getElementById('currentSource');
+    const videoFrame = document.getElementById('videoFrame');
+    const videoContainer = document.getElementById('videoContainer');
+    const loginModal = document.getElementById('loginModal');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const signInGoogle = document.getElementById('signInGoogle');
+    const signInEmail = document.getElementById('signInEmail');
+    const signUpEmail = document.getElementById('signUpEmail');
+    const loginError = document.getElementById('loginError');
+    const headerTitle = document.getElementById('headerTitle');
 
-    // Clear search
-    function clearSearch() {
+    let pendingVideo = null;
+    let activeItem = null;
+    let allCategoriesState = {};
+    let sidebarVisible = true;
+
+    const allCats = [...new Set(videos.map(v => v.category || "Uncategorized"))];
+    allCats.forEach(cat => {
+      allCategoriesState[cat] = false;
+    });
+
+    // Auth state observer
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        loginModal.style.display = 'none';
+        if (pendingVideo) {
+          loadVideo(pendingVideo);
+          pendingVideo = null;
+        }
+      } else {
+        resetPage();
+        loginModal.style.display = 'flex';
+      }
+    });
+
+    // UI Functions
+    function toggleSidebar() {
+      sidebarVisible = !sidebarVisible;
+      sidebar.classList.toggle('hidden', !sidebarVisible);
+      mainLayout.classList.toggle('centered', !sidebarVisible);
+      const icon = sidebarToggle.querySelector('i');
+      icon.className = sidebarVisible ? 'fas fa-bars' : 'fas fa-times';
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+
+    function resetPage() {
       searchBox.value = '';
-      resultsContainer.style.display = 'none';
-      noResults.style.display = 'none';
-      clearBtn.style.display = 'none';
-      searchBox.focus();
+      clearSearchBtn.style.display = 'none';
+      allCats.forEach(cat => allCategoriesState[cat] = false);
+      renderGroupedList(videos, false);
+      if (activeItem) activeItem.classList.remove('active');
+      activeItem = null;
+      videoFrame.src = '';
+      currentTitle.textContent = 'Lesson Details';
+      currentSource.textContent = '';
+      videoContainer.classList.remove('video-active');
+      pendingVideo = null;
     }
 
-    // Hide overlay
-    function hideWebsiteOverlay(clearInput = true) {
-      overlay.classList.remove('active');
-      overlayFrame.src = '';
-      if (clearInput) clearSearch();
+    headerTitle.addEventListener('click', resetPage);
+
+    // Video helpers
+    function getYouTubeId(url) {
+      const cleanUrl = url.trim();
+      const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = cleanUrl.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    // Event Listeners
-    overlayClose.addEventListener('click', () => hideWebsiteOverlay(true));
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) hideWebsiteOverlay(true);
-    });
-
-    clearBtn.addEventListener('click', clearSearch);
-
-    // Search input handler
-    searchBox.addEventListener('input', () => {
-      clearBtn.style.display = searchBox.value.trim() ? 'block' : 'none';
-      performSearch();
-    });
-
-    // Open website in overlay
-    function handleResultClick(site) {
-      overlayTitle.textContent = site.title;
-      overlayFrame.src = site.url;
-      overlay.classList.add('active');
-      resultsContainer.style.display = 'none';
-      noResults.style.display = 'none';
+    function getEmbedUrl(video) {
+      if (video.type === "youtube") {
+        const id = getYouTubeId(video.url);
+        return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : null;
+      } else if (video.type === "drive") {
+        const fileId = (video.id || "").trim();
+        return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+      }
+      return null;
     }
 
-    // Perform search
+    function getSourceLabel(type) {
+      return type === "youtube" ? "YouTube" : "Google Drive";
+    }
+
+    function loadVideo(video) {
+      const embedUrl = getEmbedUrl(video);
+      if (embedUrl) {
+        currentTitle.textContent = video.title;
+        currentSource.textContent = `Source: ${getSourceLabel(video.type)}`;
+        videoFrame.src = embedUrl;
+        videoContainer.classList.add('video-active');
+      } else {
+        currentTitle.textContent = "Video Not Available";
+        currentSource.textContent = "Invalid video URL or file ID.";
+        videoFrame.src = "";
+        videoContainer.classList.remove('video-active');
+      }
+    }
+
+    function selectVideo(video, element) {
+      const user = auth.currentUser;
+      if (!user) {
+        pendingVideo = video;
+        loginModal.style.display = 'flex';
+        return;
+      }
+
+      if (activeItem) activeItem.classList.remove('active');
+      if (element) {
+        element.classList.add('active');
+        activeItem = element;
+      }
+      loadVideo(video);
+    }
+
+    function toggleCategory(header, itemsContainer, chevron, categoryName) {
+      const isExpanded = allCategoriesState[categoryName];
+      if (isExpanded) {
+        itemsContainer.classList.remove('expanded');
+        chevron.classList.remove('rotated');
+        allCategoriesState[categoryName] = false;
+      } else {
+        itemsContainer.classList.add('expanded');
+        chevron.classList.add('rotated');
+        allCategoriesState[categoryName] = true;
+      }
+    }
+
+    function renderGroupedList(videoList, isSearching = false) {
+      if (isSearching) {
+        const grouped = {};
+        videoList.forEach(v => {
+          const cat = v.category || "Uncategorized";
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(v);
+        });
+
+        titleList.innerHTML = '';
+        Object.keys(grouped).sort().forEach(cat => {
+          const header = document.createElement('div');
+          header.className = 'category-header';
+          header.innerHTML = `<i class="fas fa-chevron-right chevron rotated"></i> ${cat} <span class="text-muted ms-2">(${grouped[cat].length})</span>`;
+          titleList.appendChild(header);
+
+          const itemsContainer = document.createElement('div');
+          itemsContainer.className = 'category-items expanded';
+          grouped[cat].forEach(video => {
+            const item = document.createElement('div');
+            item.className = 'title-item ' + (video.protected ? 'protected' : '');
+            item.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${video.title}`;
+            item.addEventListener('click', () => selectVideo(video, item));
+            itemsContainer.appendChild(item);
+          });
+          titleList.appendChild(itemsContainer);
+        });
+      } else {
+        const grouped = {};
+        videos.forEach(v => {
+          const cat = v.category || "Uncategorized";
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(v);
+        });
+
+        titleList.innerHTML = '';
+        Object.keys(grouped).sort().forEach(cat => {
+          const isExpanded = allCategoriesState[cat];
+          const header = document.createElement('div');
+          header.className = 'category-header';
+          header.innerHTML = `<i class="fas fa-chevron-right chevron ${isExpanded ? 'rotated' : ''}"></i> ${cat}`;
+          titleList.appendChild(header);
+
+          const itemsContainer = document.createElement('div');
+          itemsContainer.className = 'category-items ' + (isExpanded ? 'expanded' : '');
+          grouped[cat].forEach(video => {
+            const item = document.createElement('div');
+            item.className = 'title-item ' + (video.protected ? 'protected' : '');
+            item.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${video.title}`;
+            item.addEventListener('click', () => selectVideo(video, item));
+            itemsContainer.appendChild(item);
+          });
+          titleList.appendChild(itemsContainer);
+
+          header.addEventListener('click', () => {
+            toggleCategory(header, itemsContainer, header.querySelector('.chevron'), cat);
+          });
+        });
+      }
+    }
+
+    // Search
     function performSearch() {
       const query = searchBox.value.trim().toLowerCase();
       if (!query) {
-        resultsContainer.style.display = 'none';
-        noResults.style.display = 'none';
+        renderGroupedList(videos, false);
+        clearSearchBtn.style.display = 'none';
         return;
       }
-      const matches = websites.filter(site =>
-        site.title.toLowerCase().includes(query)
+      const filtered = videos.filter(v =>
+        v.title.toLowerCase().includes(query) ||
+        (v.category && v.category.toLowerCase().includes(query))
       );
-      if (matches.length === 0) {
-        noResults.textContent = 'No websites found.';
-        noResults.style.display = 'block';
-        resultsContainer.style.display = 'none';
-      } else {
-        noResults.style.display = 'none';
-        resultsContainer.innerHTML = '';
-        matches.forEach(site => {
-          const div = document.createElement('div');
-          div.className = 'result-item';
-          div.setAttribute('role', 'button');
-          div.setAttribute('tabindex', '0');
-          div.innerHTML = `
-            <strong>${site.title}</strong>
-            <div class="result-source">${site.url}</div>
-          `;
-          div.addEventListener('click', () => handleResultClick(site));
-          div.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleResultClick(site);
-            }
-          });
-          resultsContainer.appendChild(div);
-        });
-        resultsContainer.style.display = 'block';
-      }
+      renderGroupedList(filtered, true);
+      clearSearchBtn.style.display = 'block';
     }
 
-    // Enter key support
-    searchBox.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const matches = websites.filter(site =>
-          site.title.toLowerCase().includes(searchBox.value.trim().toLowerCase())
-        );
-        if (matches.length > 0) {
-          handleResultClick(matches[0]);
-        }
+    searchBox.addEventListener('input', performSearch);
+    clearSearchBtn.addEventListener('click', () => {
+      searchBox.value = '';
+      clearSearchBtn.style.display = 'none';
+      renderGroupedList(videos);
+      searchBox.focus();
+    });
+
+    // Auth Handlers
+    signInGoogle.addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => {
+        loginError.textContent = err.message || "Sign-in failed.";
+        loginError.style.display = 'block';
+        setTimeout(() => loginError.style.display = 'none', 3000);
+      });
+    });
+
+    signInEmail.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      if (!email || !password) {
+        loginError.textContent = "Please enter email and password.";
+        loginError.style.display = 'block';
+        return;
       }
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(err => {
+          loginError.textContent = err.message;
+          loginError.style.display = 'block';
+          setTimeout(() => loginError.style.display = 'none', 3000);
+        });
     });
 
-    // Escape key to close
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.classList.contains('active')) {
-        hideWebsiteOverlay(false);
+    signUpEmail.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      if (!email || !password) {
+        loginError.textContent = "Please enter email and password.";
+        loginError.style.display = 'block';
+        return;
       }
+      auth.createUserWithEmailAndPassword(email, password)
+        .catch(err => {
+          loginError.textContent = err.message;
+          loginError.style.display = 'block';
+          setTimeout(() => loginError.style.display = 'none', 3000);
+        });
     });
 
-    // Resize logic
-    let isResizing = false;
-    let startX, startWidth, startY, startHeight;
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      const rect = websiteContainer.getBoundingClientRect();
-      startWidth = rect.width;
-      startHeight = rect.height;
-      e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      let newWidth = startWidth + dx;
-      let newHeight = startHeight + dy;
-      newWidth = Math.max(320, Math.min(newWidth, window.innerWidth * 0.95));
-      newHeight = Math.max(180, Math.min(newHeight, window.innerHeight * 0.8));
-      websiteContainer.style.width = newWidth + 'px';
-      websiteContainer.style.height = newHeight + 'px';
-    });
-
-    document.addEventListener('mouseup', () => {
-      isResizing = false;
-    });
+    // Init
+    renderGroupedList(videos);
+    searchBox.focus();
   </script>
 </body>
 </html>
