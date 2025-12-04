@@ -215,10 +215,14 @@
       overflow: hidden;
       transition: padding 0.35s ease;
       padding: 0;
+      max-height: 0;
+      opacity: 0;
     }
 
     .category-items.expanded {
       padding: 0.2rem 0;
+      max-height: none;
+      opacity: 1;
     }
 
     .title-item {
@@ -250,7 +254,10 @@
     .title-item.protected i {
       color: #d97706;
     }
-
+    
+    .title-item {
+      padding: 0.85rem 1.2rem 0.85rem 2.5rem;
+    }
     .video-header {
       padding: 1rem 1.5rem;
       background: #252525;
@@ -304,39 +311,48 @@
       display: block;
     }
 
-    /* Login Modal */
-    #loginModal {
+    #passwordModal {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 3000;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
       justify-content: center;
       align-items: center;
     }
-    #loginModal .modal-content {
+    #passwordModal .modal-content {
       background: #1a1a1a;
-      padding: 2rem;
+      padding: 1.5rem;
       border-radius: 12px;
       width: 90%;
-      max-width: 420px;
+      max-width: 400px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.5);
       border: 1px solid #444;
       color: #f0f0f0;
-      text-align: center;
     }
-    #loginError {
+    #passwordError {
+      display: none;
       color: #f87171;
       font-size: 0.85rem;
       margin-top: 0.5rem;
-      display: none;
     }
-    .divider {
-      margin: 1rem 0;
-      color: #666;
+
+    @media (max-width: 992px) {
+      .main-layout {
+        padding: 1rem;
+      }
+      #sidebarToggle {
+        left: 0.8rem;
+      }
+      .title-sidebar {
+        width: 260px;
+      }
+      .title-list {
+        max-height: calc(100vh - 160px);
+      }
     }
   </style>
 </head>
@@ -380,60 +396,59 @@
     </div>
   </div>
 
-  <!-- Firebase Login Modal -->
-  <div id="loginModal">
+  <div id="passwordModal">
     <div class="modal-content">
-      <h4 class="mb-3"><i class="fas fa-user-lock me-2"></i>Sign In</h4>
-      <p class="mb-3">Please sign in to access video content.</p>
-      
-      <button id="signInGoogle" class="btn btn-danger w-100 mb-3">
-        <i class="fab fa-google me-2"></i> Continue with Google
-      </button>
-
-      <div class="divider">or</div>
-
-      <div class="mb-3">
-        <input type="email" id="emailInput" class="form-control mb-2" placeholder="Email">
-        <input type="password" id="passwordInput" class="form-control" placeholder="Password">
+      <h5 class="mb-3"><i class="fas fa-lock me-2"></i>Enter Password</h5>
+      <input type="password" id="videoPassword" class="form-control" placeholder="Password" autocomplete="off">
+      <p id="passwordError">Incorrect password. Please try again.</p>
+      <div class="d-flex justify-content-between mt-3">
+        <button id="cancelPassword" class="btn btn-secondary btn-sm">Cancel</button>
+        <button id="submitPassword" class="btn btn-primary btn-sm">Unlock Video</button>
       </div>
-      <button id="signInEmail" class="btn btn-primary w-100 mb-2">Sign In</button>
-      <button id="signUpEmail" class="btn btn-outline-light w-100 mb-3">Create Account</button>
-
-      <p id="loginError"></p>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
   <script>
-    // ✅ YOUR FIREBASE CONFIG
-    const firebaseConfig = {
-      apiKey: "AIzaSyBd_xfPttl6i5smhZ_PT71cZj5qv3HHqEI",
-      authDomain: "learning-center-app-46176.firebaseapp.com",
-      projectId: "learning-center-app-46176",
-      storageBucket: "learning-center-app-46176.firebasestorage.app",
-      messagingSenderId: "765499084020",
-      appId: "1:765499084020:web:01826e6c5ecdd188e6e2a1",
-      measurementId: "G-6X2HX14WSH"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    // Video data
     const videos = [
-      { title: "Animation as a Career", type: "drive", id: "1D2eXhun3BpgQkUwgXqupLIzEfU4W6ikT", protected: true, category: "Animation Mentor" },
+      { title: "AN01 01 - P01 Intro to Animation", path: ["Mentor","C1", "Week 01", "01"], type: "drive", id: "1iuZr4xkWiJdkfBLiqxU2S05o5sZ7gQNw", protected: true},
+      { title: "AN01 01 - P02 Animation as a Career", path: ["Mentor","C1", "Week 01", "01"], type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true},
+      { title: "AN01 01 - P03 Feedback and Inspiration", type: "drive", id: "1iZ2QIfk4xknldxvxZ3BLH9Il7WuPdw4D", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 01"  },
+      { title: "AN01 01 - P04 An Animator's Tool", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 01"  },
+      { title: "AN01 01 - P05 Animation Planning", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 01"  },
+      { title: "AN01 01 - P06 Animation is an Art not a Tool", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 01"  },
+      
+      { title: "AN01 02 - P01 Intro to Principles Of Animation",path: ["Mentor","C1", "Week 02",""], type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true },
+      { title: "AN01 02 - P02 12 Principles of Animation 1-6", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 02"  },
+      { title: "AN01 02 - P03 12 Principles of Animation 7-12", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 02"  },
+      { title: "AN01 02 - P04 Bonus Material - Interviews", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)" , subcategory: "Week 02"  },
+      
+      { title: "AN01 03 - P01 7 Planning Methods 1-3", path: ["Mentor","C2", "Week 01", "01"], type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true},
+      { title: "AN01 03 - P02 7 Planning Methods 4-7", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)", subcategory: "Week 03"  },
+      { title: "AN01 03 - P03 Blocking Methods - Layering and Pose to Pose", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)", subcategory: "Week 03"  },
+      { title: "AN01 03 - P04 Blocking Methods - Straight Ahead", type: "drive", id: "1hsz4HCLLmkxOppXrRG_V6UHjoDpLIDZY", protected: true, category: "Animation Mentor (C1)", subcategory: "Week 03"  },
+      
       { title: "Intro to Overlapping Action", type: "drive", id: "1NyFqEII1wTu0TeHBBD9d8SZOcfTMQKmc", protected: true, category: "Animation Mentor" },
-      { title: "01-A Lamp & A Ball | Part - I", type: "drive", id: "1E47FngraJieAL3SjqxZ0k1zPo_J-LcNW", protected: true, category: "Blue Shuttle" },
-      { title: "02-A Lamp & A Ball | Part - II", type: "drive", id: "1m9xjrGfY38T8fB0LFVidLEhgaZ1tkPjX", protected: true, category: "Blue Shuttle" },
+      
+      { title: "01. The Importance of Body Mechanics", path: ["Character In Motion", ""], type: "youtube", url: "https://youtu.be/-75GYRGp1H4", protected: true},
+      { title: "02. Using Reference", path: ["Character In Motion", ""], type: "youtube", url: "https://youtu.be/sRf3HoXLpbs", protected: true},
+      { title: "03. Walk cycle - Part 1", type: "youtube", url: "https://youtu.be/N8woJ96dpXM", protected: true, category: "Character In Motion" },
+      { title: "04. Walk cycle - Part 2", type: "youtube", url: "https://youtu.be/_Bujg-tP17M", protected: true, category: "Character In Motion" },
+      { title: "05. Side Step - Part 1", type: "youtube", url: "https://youtu.be/VQqNmjBaykE", protected: true, category: "Character In Motion" },
+      { title: "06. Side Step - Part 2", type: "youtube", url: "https://youtu.be/ufbD3cQVXoc", protected: true, category: "Character In Motion" },
+      { title: "07. Sitting Down - Part 1", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      { title: "08. Sitting Down - Part 2", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      { title: "09. Heavy Lift or Push - Part 1", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      { title: "10. Heavy Lift or Push - Part 2", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      { title: "11. Heavy Lift or Push - Part 3", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      { title: "12. Course Review", type: "youtube", url: "", protected: true, category: "Character In Motion" },
+      
+      { title: "01-A Lamp & A Ball | Part - 1", type: "drive", id: "1E47FngraJieAL3SjqxZ0k1zPo_J-LcNW", protected: true, category: "Blue Shuttle" },
+      { title: "02-A Lamp & A Ball | Part - 2", type: "drive", id: "1m9xjrGfY38T8fB0LFVidLEhgaZ1tkPjX", protected: true, category: "Blue Shuttle" },
       { title: "03-The Graph Editor", type: "drive", id: "1mUMXroAUQMYNTIf-g12I84bfBrNYLM0u", protected: true, category: "Blue Shuttle" },
       { title: "04-The Bouncing Ball", type: "drive", id: "1-vvLqCv7LgxKM6mou_HV-1lv8S8SxeFZ", protected: true, category: "Blue Shuttle" },
       { title: "05-Animating A Pendulum", type: "drive", id: "1WtbimRpQju4GDSP1xjRdGWWMhbE1EVGj", protected: true, category: "Blue Shuttle" },
-      { title: "06-A Ball & His Tail | Part - I", type: "drive", id: "1mr7DKUVRB25Pq5r2OF--9HHWld3qDwc7", protected: true, category: "Blue Shuttle" },
-      { title: "07-A Ball & His Tail | Part - II", type: "drive", id: "1EZXuEKGfZS_kSe78jhvD9n3zOKJAT-9c", protected: true, category: "Blue Shuttle" },
+      { title: "06-A Ball & His Tail | Part - 1", type: "drive", id: "1mr7DKUVRB25Pq5r2OF--9HHWld3qDwc7", protected: true, category: "Blue Shuttle" },
+      { title: "07-A Ball & His Tail | Part - 2", type: "drive", id: "1EZXuEKGfZS_kSe78jhvD9n3zOKJAT-9c", protected: true, category: "Blue Shuttle" },
       { title: "08-The Lamp Jump", type: "drive", id: "1Nw6s3UrV-5z2STzSDWfAUoBXNSUeJE-a", protected: true, category: "Blue Shuttle" },
       { title: "09-Motion Trail", type: "drive", id: "1zx1fEskT7bLwQ9mjFc0oUXKuBhk5hESs", protected: true, category: "Blue Shuttle" },
       { title: "10-The Walk Cycle | Lyd 1", type: "drive", id: "1gfGiA_e-U-iPAFhE6UsQNM2RLJ0urQsF", protected: true, category: "Blue Shuttle" },
@@ -447,6 +462,7 @@
       { title: "18-Constraints - P1", type: "drive", id: "187NFHGql8eODcQuQjGuGJVlOQB2lfLJC", protected: true, category: "Blue Shuttle" },
       { title: "19-Constraints - P2", type: "drive", id: "1RQerCtoJ46h062t0Nd_wM2V0EuBn9mhB", protected: true, category: "Blue Shuttle" },
       { title: "20-Constraints - P3", type: "drive", id: "17dehY-J_MBLSpgiawvj1-RqpIC_nzTW3", protected: true, category: "Blue Shuttle" },
+      
       { title: "Top 10 Animation Exercises", type: "youtube", url: "https://youtu.be/qFLsNoiZts0", protected: false, category: "Maya Animation" },
       { title: "Walk Cycle | Rusty Animator", type: "youtube", url: "https://www.youtube.com/watch?v=STjKkhROdWE", category: "Maya Animation" },
       { title: "Basic Ball with Tail Animation", type: "youtube", url: "https://youtu.be/RJfc7RIvIjk?si=l__-G2ZgGteu4kq8", category: "Maya Animation" },
@@ -464,7 +480,8 @@
       { title: "Blocking workflow & simplifying animations | Koushik Chatterjee", type: "youtube", url: "https://youtu.be/rWxeZbwEV70", category: "Maya Animation" }
     ];
 
-    // DOM Elements
+    const VIDEO_PASSWORD = "Animator";
+
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mainLayout = document.getElementById('mainLayout');
@@ -475,13 +492,11 @@
     const currentSource = document.getElementById('currentSource');
     const videoFrame = document.getElementById('videoFrame');
     const videoContainer = document.getElementById('videoContainer');
-    const loginModal = document.getElementById('loginModal');
-    const emailInput = document.getElementById('emailInput');
-    const passwordInput = document.getElementById('passwordInput');
-    const signInGoogle = document.getElementById('signInGoogle');
-    const signInEmail = document.getElementById('signInEmail');
-    const signUpEmail = document.getElementById('signUpEmail');
-    const loginError = document.getElementById('loginError');
+    const passwordModal = document.getElementById('passwordModal');
+    const videoPassword = document.getElementById('videoPassword');
+    const submitPassword = document.getElementById('submitPassword');
+    const cancelPassword = document.getElementById('cancelPassword');
+    const passwordError = document.getElementById('passwordError');
     const headerTitle = document.getElementById('headerTitle');
 
     let pendingVideo = null;
@@ -489,59 +504,80 @@
     let allCategoriesState = {};
     let sidebarVisible = true;
 
+    // Initialize all categories as collapsed (false)
     const allCats = [...new Set(videos.map(v => v.category || "Uncategorized"))];
     allCats.forEach(cat => {
       allCategoriesState[cat] = false;
     });
 
-    // Auth state observer
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        loginModal.style.display = 'none';
-        if (pendingVideo) {
-          loadVideo(pendingVideo);
-          pendingVideo = null;
-        }
-      } else {
-        resetPage();
-        loginModal.style.display = 'flex';
-      }
-    });
-
-    // UI Functions
     function toggleSidebar() {
       sidebarVisible = !sidebarVisible;
       sidebar.classList.toggle('hidden', !sidebarVisible);
       mainLayout.classList.toggle('centered', !sidebarVisible);
+
       const icon = sidebarToggle.querySelector('i');
-      icon.className = sidebarVisible ? 'fas fa-bars' : 'fas fa-times';
+      if (sidebarVisible) {
+        icon.className = 'fas fa-bars';
+        sidebarToggle.title = 'Toggle sidebar (Ctrl+E)';
+      } else {
+        icon.className = 'fas fa-times';
+        sidebarToggle.title = 'Toggle sidebar (Ctrl+E)';
+      }
     }
 
     sidebarToggle.addEventListener('click', toggleSidebar);
+
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'e') {
         e.preventDefault();
         toggleSidebar();
+      }
+      if (e.key === 'Escape') {
+        if (passwordModal.style.display === 'flex') {
+          passwordModal.style.display = 'none';
+          pendingVideo = null;
+        }
       }
     });
 
     function resetPage() {
       searchBox.value = '';
       clearSearchBtn.style.display = 'none';
-      allCats.forEach(cat => allCategoriesState[cat] = false);
+      
+      // Reset all categories to collapsed
+      allCats.forEach(cat => {
+        allCategoriesState[cat] = false;
+      });
+      
       renderGroupedList(videos, false);
-      if (activeItem) activeItem.classList.remove('active');
-      activeItem = null;
+      
+      if (activeItem) {
+        activeItem.classList.remove('active');
+        activeItem = null;
+      }
+      
       videoFrame.src = '';
       currentTitle.textContent = 'Lesson Details';
       currentSource.textContent = '';
       videoContainer.classList.remove('video-active');
+      
+      passwordModal.style.display = 'none';
       pendingVideo = null;
+      
+      if (!sidebarVisible) {
+        sidebarVisible = true;
+        sidebar.classList.remove('hidden');
+        mainLayout.classList.remove('centered');
+        const icon = sidebarToggle.querySelector('i');
+        icon.className = 'fas fa-bars';
+        sidebarToggle.title = 'Toggle sidebar (Ctrl+E)';
+      }
+      
+      searchBox.focus();
     }
 
     headerTitle.addEventListener('click', resetPage);
 
-    // Video helpers
     function getYouTubeId(url) {
       const cleanUrl = url.trim();
       const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -555,7 +591,8 @@
         return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : null;
       } else if (video.type === "drive") {
         const fileId = (video.id || "").trim();
-        return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+        if (!fileId) return null;
+        return `https://drive.google.com/file/d/${fileId}/preview`;
       }
       return null;
     }
@@ -573,26 +610,30 @@
         videoContainer.classList.add('video-active');
       } else {
         currentTitle.textContent = "Video Not Available";
-        currentSource.textContent = "Invalid video URL or file ID.";
+        currentSource.textContent = video.type === "drive" 
+          ? "Google Drive file ID is missing or invalid." 
+          : "Invalid YouTube URL.";
         videoFrame.src = "";
         videoContainer.classList.remove('video-active');
       }
     }
 
     function selectVideo(video, element) {
-      const user = auth.currentUser;
-      if (!user) {
-        pendingVideo = video;
-        loginModal.style.display = 'flex';
-        return;
-      }
-
       if (activeItem) activeItem.classList.remove('active');
       if (element) {
         element.classList.add('active');
         activeItem = element;
       }
-      loadVideo(video);
+
+      if (video.protected) {
+        pendingVideo = video;
+        passwordModal.style.display = 'flex';
+        videoPassword.value = '';
+        passwordError.style.display = 'none';
+        videoPassword.focus();
+      } else {
+        loadVideo(video);
+      }
     }
 
     function toggleCategory(header, itemsContainer, chevron, categoryName) {
@@ -609,67 +650,122 @@
     }
 
     function renderGroupedList(videoList, isSearching = false) {
-      if (isSearching) {
-        const grouped = {};
-        videoList.forEach(v => {
-          const cat = v.category || "Uncategorized";
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(v);
-        });
+  if (isSearching) {
+    titleList.innerHTML = '';
+    videoList.forEach(video => {
+      const item = document.createElement('div');
+      item.className = 'title-item';
+      if (video.protected) item.classList.add('protected');
+      const pathStr = video.path ? video.path.join(' → ') : '';
+      const label = pathStr ? `[${pathStr}] ${video.title}` : video.title;
+      item.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${label}`;
+      item.addEventListener('click', () => selectVideo(video, item));
+      titleList.appendChild(item);
+    });
+    return;
+  }
 
-        titleList.innerHTML = '';
-        Object.keys(grouped).sort().forEach(cat => {
-          const header = document.createElement('div');
-          header.className = 'category-header';
-          header.innerHTML = `<i class="fas fa-chevron-right chevron rotated"></i> ${cat} <span class="text-muted ms-2">(${grouped[cat].length})</span>`;
-          titleList.appendChild(header);
-
-          const itemsContainer = document.createElement('div');
-          itemsContainer.className = 'category-items expanded';
-          grouped[cat].forEach(video => {
-            const item = document.createElement('div');
-            item.className = 'title-item ' + (video.protected ? 'protected' : '');
-            item.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${video.title}`;
-            item.addEventListener('click', () => selectVideo(video, item));
-            itemsContainer.appendChild(item);
-          });
-          titleList.appendChild(itemsContainer);
-        });
+  // Build nested tree from path
+  const tree = {};
+  videoList.forEach(video => {
+    const path = video.path || ['Uncategorized'];
+    let current = tree;
+    for (let i = 0; i < path.length; i++) {
+      const key = path[i];
+      if (!current[key]) {
+        current[key] = i === path.length - 1 ? [] : {}; // leaf = array of videos
+      }
+      if (i === path.length - 1) {
+        current[key].push(video);
       } else {
-        const grouped = {};
-        videos.forEach(v => {
-          const cat = v.category || "Uncategorized";
-          if (!grouped[cat]) grouped[cat] = [];
-          grouped[cat].push(v);
-        });
-
-        titleList.innerHTML = '';
-        Object.keys(grouped).sort().forEach(cat => {
-          const isExpanded = allCategoriesState[cat];
-          const header = document.createElement('div');
-          header.className = 'category-header';
-          header.innerHTML = `<i class="fas fa-chevron-right chevron ${isExpanded ? 'rotated' : ''}"></i> ${cat}`;
-          titleList.appendChild(header);
-
-          const itemsContainer = document.createElement('div');
-          itemsContainer.className = 'category-items ' + (isExpanded ? 'expanded' : '');
-          grouped[cat].forEach(video => {
-            const item = document.createElement('div');
-            item.className = 'title-item ' + (video.protected ? 'protected' : '');
-            item.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${video.title}`;
-            item.addEventListener('click', () => selectVideo(video, item));
-            itemsContainer.appendChild(item);
-          });
-          titleList.appendChild(itemsContainer);
-
-          header.addEventListener('click', () => {
-            toggleCategory(header, itemsContainer, header.querySelector('.chevron'), cat);
-          });
-        });
+        current = current[key];
       }
     }
+  });
 
-    // Search
+  // Recursive renderer
+  function renderNode(node, depth = 0) {
+    const container = document.createElement('div');
+
+    const keys = Object.keys(node).sort();
+    keys.forEach(key => {
+      const isLeaf = Array.isArray(node[key]);
+      const item = document.createElement('div');
+      item.className = 'category-header';
+      
+      // Indent based on depth
+      const indent = 1.2 + depth * 1.0; // rem
+      item.style.paddingLeft = `${indent}rem`;
+      
+      // Style based on depth
+      if (depth === 0) {
+        item.style.fontWeight = '600';
+        item.style.color = '#e0e0e0';
+      } else if (depth === 1) {
+        item.style.fontSize = '0.9rem';
+        item.style.color = '#ccc';
+      } else if (depth === 2) {
+        item.style.fontSize = '0.85rem';
+        item.style.color = '#aaa';
+      } else {
+        item.style.fontSize = '0.8rem';
+        item.style.color = '#999';
+      }
+
+      if (isLeaf) {
+        // Leaf node: display video items
+        item.innerHTML = key;
+        item.classList.add('header-leaf');
+        item.style.cursor = 'default';
+        item.style.pointerEvents = 'none';
+        item.style.fontStyle = 'italic';
+        container.appendChild(item);
+
+        node[key].forEach(video => {
+          const vidItem = document.createElement('div');
+          vidItem.className = 'title-item';
+          vidItem.style.paddingLeft = `${indent + 1.3}rem`;
+          if (video.protected) vidItem.classList.add('protected');
+          vidItem.innerHTML = `<i class="fas ${video.protected ? 'fa-lock' : 'fa-play'}"></i> ${video.title}`;
+          vidItem.addEventListener('click', () => selectVideo(video, vidItem));
+          container.appendChild(vidItem);
+        });
+      } else {
+        // Folder node: collapsible
+        item.innerHTML = `<i class="fas fa-chevron-right chevron"></i> ${key}`;
+        container.appendChild(item);
+
+        const subContainer = document.createElement('div');
+        subContainer.className = 'category-items';
+        container.appendChild(subContainer);
+
+        // Render children recursively
+        const children = renderNode(node[key], depth + 1);
+        subContainer.appendChild(children);
+
+        // Toggle expand/collapse
+        item.addEventListener('click', () => {
+          const chevron = item.querySelector('.chevron');
+          const isExpanded = subContainer.classList.contains('expanded');
+          if (isExpanded) {
+            subContainer.classList.remove('expanded');
+            chevron.classList.remove('rotated');
+          } else {
+            subContainer.classList.add('expanded');
+            chevron.classList.add('rotated');
+          }
+        });
+      }
+    });
+
+    return container;
+  }
+
+  titleList.innerHTML = '';
+  const fragment = renderNode(tree);
+  titleList.appendChild(fragment);
+}
+
     function performSearch() {
       const query = searchBox.value.trim().toLowerCase();
       if (!query) {
@@ -677,10 +773,12 @@
         clearSearchBtn.style.display = 'none';
         return;
       }
+
       const filtered = videos.filter(v =>
         v.title.toLowerCase().includes(query) ||
         (v.category && v.category.toLowerCase().includes(query))
       );
+
       renderGroupedList(filtered, true);
       clearSearchBtn.style.display = 'block';
     }
@@ -693,49 +791,29 @@
       searchBox.focus();
     });
 
-    // Auth Handlers
-    signInGoogle.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => {
-        loginError.textContent = err.message || "Sign-in failed.";
-        loginError.style.display = 'block';
-        setTimeout(() => loginError.style.display = 'none', 3000);
-      });
-    });
-
-    signInEmail.addEventListener('click', () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      if (!email || !password) {
-        loginError.textContent = "Please enter email and password.";
-        loginError.style.display = 'block';
-        return;
+    function validatePassword() {
+      if (videoPassword.value === VIDEO_PASSWORD) {
+        passwordModal.style.display = 'none';
+        if (pendingVideo) {
+          loadVideo(pendingVideo);
+          pendingVideo = null;
+        }
+      } else {
+        passwordError.style.display = 'block';
+        setTimeout(() => passwordError.style.display = 'none', 2000);
       }
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(err => {
-          loginError.textContent = err.message;
-          loginError.style.display = 'block';
-          setTimeout(() => loginError.style.display = 'none', 3000);
-        });
+    }
+
+    submitPassword.addEventListener('click', validatePassword);
+    videoPassword.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') validatePassword();
+    });
+    cancelPassword.addEventListener('click', () => {
+      passwordModal.style.display = 'none';
+      pendingVideo = null;
     });
 
-    signUpEmail.addEventListener('click', () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      if (!email || !password) {
-        loginError.textContent = "Please enter email and password.";
-        loginError.style.display = 'block';
-        return;
-      }
-      auth.createUserWithEmailAndPassword(email, password)
-        .catch(err => {
-          loginError.textContent = err.message;
-          loginError.style.display = 'block';
-          setTimeout(() => loginError.style.display = 'none', 3000);
-        });
-    });
-
-    // Init
+    // Initial render — all categories collapsed
     renderGroupedList(videos);
     searchBox.focus();
   </script>
