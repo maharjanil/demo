@@ -6,36 +6,35 @@
   <title>My Cloud Bookmark Manager</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; }
-    .bookmark-card { transition: transform 0.2s; }
-    .bookmark-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    #bookmarksList:empty::before {
-      content: "Loading bookmarks from Google Sheet...";
-      color: #6c757d;
-    }
+    body { background-color: #f9fafc; padding-top: 20px; }
+    .bookmark-card { transition: transform 0.2s; height: 100%; }
+    .bookmark-card:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+    .card-title { font-size: 1.1rem; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>
 </head>
-<body class="py-4">
+<body>
   <div class="container">
-    <h1 class="text-center mb-4">☁️ My Cloud Bookmark Manager</h1>
+    <h1 class="text-center mb-4">🔗 My Cloud Bookmark Manager</h1>
 
-    <!-- Add New Bookmark Form -->
-    <div class="card mb-4">
+    <!-- Add Form -->
+    <div class="card mb-5 shadow-sm">
       <div class="card-body">
-        <h5>Add New Website</h5>
+        <h5 class="mb-3">➕ Add New Bookmark</h5>
         <form id="bookmarkForm">
-          <div class="mb-3">
-            <label for="siteName" class="form-label">Name</label>
-            <input type="text" class="form-control" id="siteName" placeholder="e.g., YouTube" required>
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <label for="siteName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="siteName" placeholder="e.g., YouTube" required>
+            </div>
+            <div class="col-md-5 mb-3">
+              <label for="siteUrl" class="form-label">URL</label>
+              <input type="url" class="form-control" id="siteUrl" placeholder="https://example.com" required>
+            </div>
+            <div class="col-md-2 mb-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100">Save</button>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="siteUrl" class="form-label">URL</label>
-            <input type="url" class="form-control" id="siteUrl" placeholder="https://example.com" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Save to Google Sheet</button>
         </form>
         <div id="message" class="mt-2"></div>
       </div>
@@ -43,40 +42,34 @@
 
     <!-- Bookmarks List -->
     <div id="bookmarksSection">
-      <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h5>Saved Bookmarks</h5>
-        <button id="refreshBtn" class="btn btn-sm btn-outline-secondary">🔄 Refresh</button>
+        <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">🔄 Refresh</button>
       </div>
-      <div id="bookmarksList" class="row"></div>
-      <p class="text-muted mt-2"><small>Bookmarks are stored in your Google Sheet. Open it to manage data.</small></p>
+      <div id="bookmarksList" class="row g-3">
+        <p>Loading from Google Sheet...</p>
+      </div>
     </div>
   </div>
 
   <script>
-    // 🚨 REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+    // 🔴 REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKschEBqOGB4lBuzR25maMrMBhVTgfPLzLm8Y_9TQo40GkWhhA-htNw8Isj8k9gn4Z/exec";
 
     // DOM Elements
     const form = document.getElementById('bookmarkForm');
-    const messageDiv = document.getElementById('message');
-    const bookmarksList = document.getElementById('bookmarksList');
+    const messageEl = document.getElementById('message');
+    const listEl = document.getElementById('bookmarksList');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    // Initialize
+    // Init
     document.addEventListener('DOMContentLoaded', () => {
-      if (window.location.protocol === 'file:') {
-        alert(
-          '⚠️ Error: This page must be opened via a web server (e.g., http://), not as a local file.\n\n' +
-          'Use VS Code Live Server, Python http.server, or host online.'
-        );
-        return;
-      }
-
       loadBookmarks();
       form.addEventListener('submit', saveBookmark);
       refreshBtn.addEventListener('click', loadBookmarks);
     });
 
+    // Save bookmark
     async function saveBookmark(e) {
       e.preventDefault();
       const name = document.getElementById('siteName').value.trim();
@@ -84,80 +77,84 @@
 
       if (!name || !url) return;
 
-      messageDiv.className = "text-muted";
-      messageDiv.textContent = "Saving...";
+      showMessage("Saving...", "text-muted");
 
       try {
-        // Send POST to Google Apps Script
-        const response = await fetch(SCRIPT_URL, {
+        // POST to Google Apps Script (no-cors mode — we assume success)
+        await fetch(SCRIPT_URL, {
           method: 'POST',
-          mode: 'cors', // Now possible because we're on http://
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, url })
         });
 
-        const result = await response.json();
-
-        if (result.success) {
-          messageDiv.className = "text-success";
-          messageDiv.textContent = "✅ Saved successfully!";
-          form.reset();
-          setTimeout(loadBookmarks, 800);
-        } else {
-          throw new Error(result.error || "Unknown error");
-        }
+        // Reset & confirm
+        form.reset();
+        showMessage("✅ Saved! Updating list...", "text-success");
+        setTimeout(loadBookmarks, 1200);
       } catch (err) {
+        showMessage("❌ Failed to save. Check console.", "text-danger");
         console.error("Save error:", err);
-        messageDiv.className = "text-danger";
-        messageDiv.textContent = "❌ Save failed: " + (err.message || "Check console.");
       }
     }
 
+    // Load bookmarks
     async function loadBookmarks() {
-      bookmarksList.innerHTML = ''; // Clear
-      try {
-        const response = await fetch(SCRIPT_URL);
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
+      listEl.innerHTML = '<p class="text-muted">Loading from Google Sheet...</p>';
 
+      try {
+        const res = await fetch(SCRIPT_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const data = await res.json();
         if (data.error) throw new Error(data.error);
 
         renderBookmarks(data.bookmarks || []);
       } catch (err) {
+        listEl.innerHTML = `<p class="text-danger">Failed to load bookmarks.<br>${err.message}</p>`;
         console.error("Load error:", err);
-        bookmarksList.innerHTML = `<div class="col-12"><p class="text-danger">Failed to load bookmarks.<br>💡 Check: script URL, deployment access ("Anyone"), and run via http://</p></div>`;
       }
     }
 
+    // Render bookmarks
     function renderBookmarks(bookmarks) {
       if (bookmarks.length === 0) {
-        bookmarksList.innerHTML = '<div class="col-12"><p class="text-muted">No bookmarks saved yet.</p></div>';
+        listEl.innerHTML = '<p class="text-muted">No bookmarks saved yet.</p>';
         return;
       }
 
+      listEl.innerHTML = '';
       bookmarks.forEach(item => {
-        const safeName = escapeHtml(item.name);
-        const safeUrl = escapeHtml(item.url.startsWith('http') ? item.url : 'https://' + item.url);
-
         const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4 mb-3';
+        col.className = 'col-md-6 col-lg-4';
         col.innerHTML = `
-          <div class="card bookmark-card h-100">
-            <div class="card-body d-flex flex-column">
-              <h6 class="card-title">${safeName}</h6>
-              <p class="card-text text-truncate"><small class="text-muted">${safeUrl}</small></p>
-              <a href="${safeUrl}" target="_blank" class="btn btn-sm btn-primary mt-auto">Open</a>
+          <div class="card bookmark-card">
+            <div class="card-body">
+              <h6 class="card-title">${escapeHtml(item.name)}</h6>
+              <p class="card-text truncate text-muted small">${escapeHtml(item.url)}</p>
+              <a href="${escapeHtml(item.url)}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Open Link</a>
             </div>
           </div>
         `;
-        bookmarksList.appendChild(col);
+        listEl.appendChild(col);
       });
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    // Helper: Prevent XSS
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    // Show message
+    function showMessage(text, className) {
+      messageEl.textContent = text;
+      messageEl.className = className;
     }
   </script>
 </body>
