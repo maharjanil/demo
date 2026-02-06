@@ -1,161 +1,2885 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Cloud Bookmark Manager</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f9fafc; padding-top: 20px; }
-    .bookmark-card { transition: transform 0.2s; height: 100%; }
-    .bookmark-card:hover { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-    .card-title { font-size: 1.1rem; }
-    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMS Bachat Kosh</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Nepali Date Converter -->
+    <script src="https://cdn.jsdelivr.net/npm/nepali-date-converter@3.0.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a3a6c, #2c5282);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            display: flex;            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            letter-spacing: 1px;
+        }
+
+        header h1::before, header h1::after {
+            content: "🇳🇵";
+            font-size: 1.6em;
+        }
+
+        .nepali-date-container {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 10px 18px;
+            display: inline-block;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            border: 1.5px solid rgba(255, 215, 0, 0.4);
+            margin-top: 8px;
+            min-width: 200px;
+        }
+
+        .nepali-date-container iframe {
+            display: block;
+            border: none;
+            background: transparent !important;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 25px;
+            padding: 25px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-section {
+            background: white;
+            padding: 22px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            display: none;
+            animation: fadeIn 0.35s ease;
+        }
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-section {
+            background: white;
+            padding: 22px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-section h2, .data-section h2 {
+            color: #2c3e50;
+            margin-bottom: 18px;
+            font-size: 1.55em;
+            border-bottom: 2.5px solid #3498db;
+            padding-bottom: 7px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h2::before {
+            content: "📝";
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.98em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        label::before {
+            font-size: 1.25em;
+        }
+
+        label[for="month"]::before { content: "📅"; }
+        label[for="member"]::before { content: "👥"; }
+        label[for="deposit"]::before { content: "💰"; }
+        label[for="loanInterest"]::before { content: "📈"; }
+        label[for="installment"]::before { content: "💳"; }
+        label[for="fine"]::before { content: "⚖️"; }
+        label[for="loanAmount"]::before { content: "💵"; }
+        label[for="loanTakenNepaliDate"]::before { content: "🗓️"; }
+        label[for="loanMaturityNepaliDate"]::before { content: "⏳"; }
+        label[for="year"]::before { content: "🗓️"; }
+        label[for="editYear"]::before { content: "📅"; }
+        label[for="editMonth"]::before { content: "📅"; }
+        label[for="editMember"]::before { content: "👥"; }
+        label[for="editDeposit"]::before { content: "💰"; }
+        label[for="editLoanInterest"]::before { content: "📈"; }
+        label[for="editInstallment"]::before { content: "💳"; }
+        label[for="editFine"]::before { content: "⚖️"; }
+
+        select, input {
+            width: 100%;
+            padding: 9.5px 12px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: all 0.25s ease;
+            background-color: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 6px;
+            font-size: 1.02em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: 100%;
+            margin-top: 10px;            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .data-table, .loan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            margin-bottom: 22px;
+            font-size: 0.95em;
+        }
+
+        .data-table th, .data-table td, .loan-table th, .loan-table td {
+            padding: 9px 11px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .data-table th, .loan-table th {
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table tr:hover, .loan-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tr:nth-child(even), .loan-table tr:nth-child(even) {
+            background: #f9fbfd;
+        }
+
+        .matured-loan {
+            background-color: #f8f9fa !important;
+            opacity: 0.85;        }
+
+        .matured-loan td {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .maturity-checkbox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #27ae60;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 auto;
+        }
+
+        .maturity-checkbox.checked {
+            background: #27ae60;
+            border-color: #229954;
+        }
+
+        .maturity-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 35px;
+            color: #3498db;
+            font-size: 1.15em;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 35px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .status-message {
+            padding: 11px;            margin-bottom: 14px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.93em;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .delete-btn, .edit-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.88em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            width: auto;
+            margin: 0 3px;
+        }
+
+        .edit-btn {
+            background: #3498db;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+        .edit-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .month-heading {
+            background: linear-gradient(135deg, #2c3e50, #1a2530);
+            color: white;
+            padding: 13px 18px;
+            margin-top: 22px;
+            border-radius: 6px;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
+        }
+
+        .month-heading h3 {
+            margin: 0;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .year-heading {
+            background: linear-gradient(135deg, #8e44ad, #6c3483);
+            color: white;
+            padding: 14px 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 9px rgba(0, 0, 0, 0.18);
+            font-size: 1.65em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .month-total {
+            background: #27ae60;
+            color: white;
+            font-weight: bold;
+        }
+
+        .month-total:hover {            background: #27ae60 !important;
+            color: white !important;
+            cursor: default;
+        }
+
+        .month-total td {
+            border-bottom: none !important;
+        }
+
+        .grand-total-section {
+            background: linear-gradient(135deg, #2c3e50, #1a2530);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            border: 2px solid #3498db;
+        }
+
+        .grand-total-section h3 {
+            margin-bottom: 16px;
+            font-size: 1.6em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            text-align: center;
+            justify-content: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .grand-total-section h3::before {
+            content: "📊";
+        }
+
+        .grand-total-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-top: 15px;
+        }
+
+        .total-card {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(6px);            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .total-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .total-card .label {
+            font-size: 0.88em;
+            opacity: 0.95;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .total-card .value {
+            font-size: 1.7em;
+            font-weight: 800;
+            margin-top: 4px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .deposit-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .fine-card {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+        }
+
+        .loan-interest-card {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .installment-card {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .active-loan-card {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+        }
+
+        .grand-total-card {            background: linear-gradient(135deg, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.4) !important;
+        }
+
+        .remaining-amount-card {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6) !important;
+            grid-column: span 2;
+            align-self: center;
+            min-height: 110px;
+        }
+
+        .remaining-amount-card .label {
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+
+        .remaining-amount-card .value {
+            font-size: 2.2em !important;
+            margin-top: 8px;
+        }
+
+        .add-member-btn {
+            background: #27ae60;
+            margin-top: 14px;
+            box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
+        }
+
+        .add-member-btn:hover {
+            background: #229954;
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
+        }
+
+        .member-management {
+            margin-top: 22px;
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+            border: 1px solid #eaeaea;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .member-management h3 {
+            color: #2c3e50;
+            margin-bottom: 11px;
+            font-size: 1.25em;
+            display: flex;
+            justify-content: space-between;            align-items: center;
+            font-weight: 600;
+        }
+
+        .toggle-btn {
+            background: #95a5a6;
+            width: auto;
+            margin-top: 0;
+            padding: 7px 14px;
+            font-size: 0.92em;
+            border-radius: 5px;
+        }
+
+        .toggle-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .member-list {
+            margin-top: 11px;
+            max-height: 190px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 7px;
+            background: white;
+        }
+
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 9px;
+            margin-bottom: 5px;
+            background: #f8fafc;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+            font-size: 0.95em;
+        }
+
+        .member-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .remove-member-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 3px 7px;
+            border-radius: 3px;
+            cursor: pointer;            font-size: 0.82em;
+            width: auto;
+        }
+
+        .remove-member-btn:hover {
+            background: #c0392b;
+        }
+
+        .export-btn {
+            background: #f39c12;
+            margin-top: 11px;
+            box-shadow: 0 2px 5px rgba(243, 156, 18, 0.3);
+        }
+
+        .export-btn:hover {
+            background: #e67e22;
+            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4);
+        }
+
+        .filter-section {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            border: 1px solid #eaeaea;
+        }
+
+        .filter-section h4 {
+            margin-bottom: 9px;
+            color: #2c3e50;
+            font-size: 1.05em;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-weight: 600;
+        }
+
+        .filter-section h4::before {
+            content: "🔍";
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+        }
+
+        @media (max-width: 768px) {
+            .filter-controls {
+                grid-template-columns: 1fr;            }
+        }
+
+        .record-count {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 0.82em;
+            font-weight: 500;
+        }
+
+        .password-modal, .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .password-modal.active, .edit-modal.active {
+            display: flex;
+        }
+
+        .password-box, .edit-box {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+            max-width: 500px;
+            width: 92%;
+            position: relative;
+            border-top: 6px solid #3498db;
+        }
+
+        .password-box h3, .edit-box h3 {
+            color: #2c3e50;
+            margin-bottom: 18px;
+            text-align: center;
+            font-size: 1.7em;
+            font-weight: 600;
+        }
+
+        .password-input, .edit-input {
+            width: 100%;            padding: 11px;
+            margin-bottom: 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.05em;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .password-buttons, .edit-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .password-buttons button, .edit-buttons button {
+            width: 50%;
+            margin-top: 0;
+            padding: 10px;
+            font-weight: 600;
+        }
+
+        .cancel-btn {
+            background: #95a5a6;
+        }
+
+        .cancel-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .confirm-btn {
+            background: #27ae60;
+        }
+
+        .confirm-btn:hover {
+            background: #229954;
+        }
+
+        .month-total-summary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 14px;
+            border-radius: 6px;
+            margin-top: 10px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
+        }
+
+        .month-total-summary h4 {
+            margin: 0 0 9px 0;            font-size: 1.18em;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-weight: 600;
+        }
+
+        .month-total-summary h4::before {
+            content: "🧮";
+        }
+
+        .month-total-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
+            gap: 9px;
+        }
+
+        .month-total-item {
+            background: rgba(255, 255, 255, 0.22);
+            padding: 7px;
+            border-radius: 4px;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .month-total-item .label {
+            font-size: 0.78em;
+            opacity: 0.92;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 500;
+        }
+
+        .month-total-item .value {
+            font-size: 1.15em;
+            font-weight: bold;
+        }
+
+        .toggle-section-btn {
+            background: #3498db;
+            width: auto;
+            margin-bottom: 18px;
+            padding: 10px 18px;
+            font-size: 1.02em;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .toggle-section-btn:hover {            background: #2980b9;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+        }
+
+        .section-hidden {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1.5px dashed #cbd5e0;
+            margin-bottom: 18px;
+        }
+
+        .section-hidden p {
+            color: #4a5568;
+            margin-bottom: 9px;
+            font-size: 1.05em;
+            font-weight: 500;
+        }
+
+        .view-btn {
+            background: #3498db;
+        }
+
+        .view-btn:hover {
+            background: #2980b9;
+        }
+
+        .refresh-btn {
+            background: #95a5a6;
+            width: auto;
+            margin-top: 0;
+            padding: 7px 14px;
+            font-size: 0.92em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 5px;
+            align-self: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .refresh-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .loan-entry-section {
+            margin-top: 28px;
+            padding: 18px;
+            background: #f8fafc;            border-radius: 8px;
+            border: 1px solid #eaeaea;
+        }
+
+        .loan-entry-section h3 {
+            color: #8e44ad;
+            margin-bottom: 13px;
+            font-size: 1.35em;
+            border-bottom: 2px solid #8e44ad;
+            padding-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: #edf2f7;
+            width: auto;
+            padding: 9px 16px;
+            font-size: 0.98em;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            border: 1.5px solid #cbd5e0;
+            border-bottom: none;
+            font-weight: 500;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+            font-weight: 600;
+            position: relative;
+            top: 1px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .tab-content {
+            display: none;        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .nepali-year-badge {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 2.5px 9px;
+            border-radius: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 9px;
+            font-size: 0.88em;
+            letter-spacing: 0.5px;
+        }
+
+        .gregorian-date {
+            background: #ebf4ff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #2c5282;
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .nepali-date {
+            background: #ebf7f0;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #276749;
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #2c3e50;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 18px;            background: #2c3e50;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9em;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .nepali-date-input {
+            display: flex;
+            gap: 9px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nepali-date-input select {
+            margin-bottom: 0;
+            min-width: 110px;
+        }
+
+        .date-label {
+            font-size: 0.88em;
+            color: #4a5568;
+            margin-top: 6px;
+            font-style: italic;
+            min-height: 18px;
+        }
+
+        .day-dropdown {
+            flex: 1.1 !important;
+            min-width: 90px !important;
+        }
+
+        .record-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 12px;
+        }
+
+        .record-tab-btn {
+            background: #edf2f7;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .record-tab-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .record-tab-btn.active {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+            position: relative;
+            top: -2px;
+        }
+
+        .record-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .record-section.active {
+            display: block;
+        }
+
+        .maturity-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .maturity-status.matured {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .maturity-status.not-matured {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .calculation-details {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.95em;
+            line-height: 1.6;        }
+
+        .calculation-details h4 {
+            margin-bottom: 10px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .calculation-details p {
+            margin: 6px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .calculation-details .formula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .calculation-details .highlight {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        @media (max-width: 768px) {
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                padding: 8px 14px;
+                font-size: 0.9em;
+                margin-bottom: 5px;
+            }
+            
+            .grand-total-grid, .month-total-grid, .loan-total-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nepali-date-container {
+                width: 100%;
+                max-width: 280px;
+            }
+            
+            .nepali-date-container iframe {
+                width: 100% !important;
+                height: 50px !important;            }
+            
+            .nepali-date-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nepali-date-input select {
+                width: 100% !important;
+                margin-bottom: 7px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            header h1 {
+                font-size: 2.0em;
+            }
+            
+            header {
+                padding: 20px 15px;
+            }
+            
+            .record-tabs {
+                flex-direction: column;
+            }
+            
+            .record-tab-btn {
+                width: 100%;
+            }
+            
+            .grand-total-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .remaining-amount-card {
+                grid-column: span 1;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .delete-btn, .edit-btn {
+                width: 100%;
+                margin: 3px 0;
+            }
+        }    </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="text-center mb-4">🔗 My Cloud Bookmark Manager</h1>
+    <div class="container">
+        <header>
+            <h1>GMS Bachat Kosh</h1>
+            <div class="nepali-date-container">
+                <iframe scrolling="no" border="0" frameborder="0" marginwidth="0" marginheight="0" allowtransparency="true" 
+                        src="https://www.ashesh.com.np/linknepali-time.php?time_only=no&font_color=333333&aj_time=yes&font_size=14&line_brake=1&api=250128q367" 
+                        width="195" height="45" style="border: none;"></iframe>
+            </div>
+        </header>
 
-    <!-- Add Form -->
-    <div class="card mb-5 shadow-sm">
-      <div class="card-body">
-        <h5 class="mb-3">➕ Add New Bookmark</h5>
-        <form id="bookmarkForm">
-          <div class="row">
-            <div class="col-md-5 mb-3">
-              <label for="siteName" class="form-label">Name</label>
-              <input type="text" class="form-control" id="siteName" placeholder="e.g., YouTube" required>
+        <div class="main-content">
+            <!-- Data Entry Form -->
+            <div class="form-section" id="formSection">
+                <!-- Tab Buttons -->
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" onclick="switchTab('monthly')">Monthly Entry</button>
+                    <button type="button" class="tab-btn" onclick="switchTab('loan')">Loan Entry</button>
+                </div>
+
+                <!-- Monthly Entry Tab -->
+                <div class="tab-content active" id="monthlyTab">
+                    <h2>➕ Monthly Entry</h2>
+                    <div id="formStatus"></div>
+                    
+                    <form id="memberForm">
+                        <div class="form-group">
+                            <label for="year">Nepali Year:</label>
+                            <select id="year" required>
+                                <option value="">--Select Year--</option>
+                                <option value="2079">2079</option>
+                                <option value="2080">2080</option>
+                                <option value="2081">2081</option>
+                                <option value="2082">2082</option>
+                                <option value="2083">2083</option>
+                                <option value="2084">2084</option>
+                                <option value="2085">2085</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="month">Month:</label>
+                            <select id="month" required>
+                                <option value="">--Select Month--</option>
+                                <option value="Baishakh">Baishakh (बैशाख)</option>
+                                <option value="Jestha">Jestha (जेठ)</option>
+                                <option value="Ashadh">Ashadh (असार)</option>
+                                <option value="Shrawan">Shrawan (साउन)</option>                                <option value="Bhadra">Bhadra (भदौ)</option>
+                                <option value="Ashwin">Ashwin (असोज)</option>
+                                <option value="Kartik">Kartik (कार्तिक)</option>
+                                <option value="Mangsir">Mangsir (मंसिर)</option>
+                                <option value="Poush">Poush (पुस)</option>
+                                <option value="Magh">Magh (माघ)</option>
+                                <option value="Falgun">Falgun (फागुन)</option>
+                                <option value="Chaitra">Chaitra (चैत)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="member">Member:</label>
+                            <select id="member" required>
+                                <option value="">--Select Member--</option>
+                                <option value="Anil Maharjan">Anil Maharjan</option>
+                                <option value="Bindu Maharjan">Bindu Maharjan</option>
+                                <option value="Manisha Maharjan">Manisha Maharjan</option>
+                                <option value="Rajeep Maharjan">Rajeep Maharjan</option>
+                                <option value="Sajina Barahi">Sajina Barahi</option>
+                                <option value="Supreme Chitrakar">Supreme Chitrakar</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deposit">Deposit:</label>
+                            <input type="number" id="deposit" placeholder="0.00" step="0.01" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanInterest">Loan Interest:</label>
+                            <input type="number" id="loanInterest" placeholder="0.00" step="0.01" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="installment">Installment:</label>
+                            <input type="number" id="installment" placeholder="0.00" step="0.01" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fine">Fine:</label>
+                            <input type="number" id="fine" placeholder="0.00" step="0.01" value="0">
+                        </div>
+
+                        <button type="submit">💾 Submit Entry</button>
+                    </form>
+                </div>
+
+                <!-- Loan Entry Tab -->
+                <div class="tab-content" id="loanTab">                    <h2>💰 Loan Entry</h2>
+                    <div id="loanFormStatus"></div>
+                    
+                    <form id="loanForm">
+                        <div class="form-group">
+                            <label for="loanYear">Nepali Year:</label>
+                            <select id="loanYear" required>
+                                <option value="">--Select Year--</option>
+                                <option value="2079">2079</option>
+                                <option value="2080">2080</option>
+                                <option value="2081">2081</option>
+                                <option value="2082">2082</option>
+                                <option value="2083">2083</option>
+                                <option value="2084">2084</option>
+                                <option value="2085">2085</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanMonth">Month:</label>
+                            <select id="loanMonth" required>
+                                <option value="">--Select Month--</option>
+                                <option value="Baishakh">Baishakh (बैशाख)</option>
+                                <option value="Jestha">Jestha (जेठ)</option>
+                                <option value="Ashadh">Ashadh (असार)</option>
+                                <option value="Shrawan">Shrawan (साउन)</option>
+                                <option value="Bhadra">Bhadra (भदौ)</option>
+                                <option value="Ashwin">Ashwin (असोज)</option>
+                                <option value="Kartik">Kartik (कार्तिक)</option>
+                                <option value="Mangsir">Mangsir (मंसिर)</option>
+                                <option value="Poush">Poush (पुस)</option>
+                                <option value="Magh">Magh (माघ)</option>
+                                <option value="Falgun">Falgun (फागुन)</option>
+                                <option value="Chaitra">Chaitra (चैत)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanMember">Member:</label>
+                            <select id="loanMember" required>
+                                <option value="">--Select Member--</option>
+                                <option value="Anil Maharjan">Anil Maharjan</option>
+                                <option value="Bindu Maharjan">Bindu Maharjan</option>
+                                <option value="Manisha Maharjan">Manisha Maharjan</option>
+                                <option value="Rajeep Maharjan">Rajeep Maharjan</option>
+                                <option value="Sajina Barahi">Sajina Barahi</option>
+                                <option value="Supreme Chitrakar">Supreme Chitrakar</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="loanAmount">Loan Amount:</label>
+                            <input type="number" id="loanAmount" placeholder="0.00" step="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanTakenNepaliDate">Loan Taken Date (Nepali):</label>
+                            <div class="nepali-date-input">
+                                <select id="loanTakenYear" style="flex: 1.8;" required>
+                                    <option value="">Year</option>
+                                    <option value="2079">2079</option>
+                                    <option value="2080">2080</option>
+                                    <option value="2081">2081</option>
+                                    <option value="2082">2082</option>
+                                    <option value="2083">2083</option>
+                                    <option value="2084">2084</option>
+                                    <option value="2085">2085</option>
+                                </select>
+                                <select id="loanTakenMonth" style="flex: 2.2;" required>
+                                    <option value="">Month</option>
+                                    <option value="1">Baishakh</option>
+                                    <option value="2">Jestha</option>
+                                    <option value="3">Ashadh</option>
+                                    <option value="4">Shrawan</option>
+                                    <option value="5">Bhadra</option>
+                                    <option value="6">Ashwin</option>
+                                    <option value="7">Kartik</option>
+                                    <option value="8">Mangsir</option>
+                                    <option value="9">Poush</option>
+                                    <option value="10">Magh</option>
+                                    <option value="11">Falgun</option>
+                                    <option value="12">Chaitra</option>
+                                </select>
+                                <select id="loanTakenDay" class="day-dropdown" required>
+                                    <option value="">Day</option>
+                                    <!-- Days 1-32 will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="date-label" id="loanTakenGregorianDate"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanMaturityNepaliDate">Loan Maturity Date (Nepali):</label>
+                            <div class="nepali-date-input">
+                                <select id="loanMaturityYear" style="flex: 1.8;" required>
+                                    <option value="">Year</option>
+                                    <option value="2079">2079</option>
+                                    <option value="2080">2080</option>
+                                    <option value="2081">2081</option>
+                                    <option value="2082">2082</option>                                    <option value="2083">2083</option>
+                                    <option value="2084">2084</option>
+                                    <option value="2085">2085</option>
+                                </select>
+                                <select id="loanMaturityMonth" style="flex: 2.2;" required>
+                                    <option value="">Month</option>
+                                    <option value="1">Baishakh</option>
+                                    <option value="2">Jestha</option>
+                                    <option value="3">Ashadh</option>
+                                    <option value="4">Shrawan</option>
+                                    <option value="5">Bhadra</option>
+                                    <option value="6">Ashwin</option>
+                                    <option value="7">Kartik</option>
+                                    <option value="8">Mangsir</option>
+                                    <option value="9">Poush</option>
+                                    <option value="10">Magh</option>
+                                    <option value="11">Falgun</option>
+                                    <option value="12">Chaitra</option>
+                                </select>
+                                <select id="loanMaturityDay" class="day-dropdown" required>
+                                    <option value="">Day</option>
+                                    <!-- Days 1-32 will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="date-label" id="loanMaturityGregorianDate"></div>
+                        </div>
+
+                        <button type="submit">💾 Submit Loan Entry</button>
+                    </form>
+                </div>
+
+                <!-- Toggle Member Management Button -->
+                <button type="button" class="toggle-btn" onclick="toggleMemberManagement()">
+                    👥 Toggle Member Management
+                </button>
+
+                <!-- Member Management Section (Initially Hidden) -->
+                <div class="member-management" id="memberManagementSection">
+                    <h3>
+                        <span>Member Management</span>
+                        <button type="button" class="toggle-btn" onclick="toggleMemberManagement()" style="padding: 4px 9px; font-size: 0.82em;">
+                            ✕ Close
+                        </button>
+                    </h3>
+                    <div class="form-group">
+                        <input type="text" id="newMemberName" placeholder="Enter new member name" />
+                    </div>
+                    <button type="button" class="add-member-btn" onclick="addNewMember()">➕ Add Member</button>
+                    
+                    <div class="member-list" id="memberList">                        <!-- Members will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Export Button -->
+                <button type="button" class="export-btn" onclick="exportToCSV()">📥 Export to CSV</button>
+
+                <!-- Hide Form Button -->
+                <button type="button" class="toggle-btn" onclick="hideFormSection()" style="background: #e74c3c; margin-top: 8px;">
+                    ❌ Hide Entry Form
+                </button>
             </div>
-            <div class="col-md-5 mb-3">
-              <label for="siteUrl" class="form-label">URL</label>
-              <input type="url" class="form-control" id="siteUrl" placeholder="https://example.com" required>
+
+            <!-- Hidden Form Section Message -->
+            <div class="section-hidden" id="formHiddenSection">
+                <p><strong>📝 Entry Form Section</strong> is currently hidden</p>
+                <button type="button" class="toggle-section-btn" onclick="showPasswordModalForForm()">
+                    👁️ Show Entry Form
+                </button>
             </div>
-            <div class="col-md-2 mb-3 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary w-100">Save</button>
+
+            <!-- Data Display Section -->
+            <div class="data-section">
+                <h2>📊 Financial Records</h2>
+                
+                <!-- Record Tabs -->
+                <div class="record-tabs">
+                    <button type="button" class="record-tab-btn active" onclick="switchRecordTab('monthly')">
+                        📋 Monthly Records
+                    </button>
+                    <button type="button" class="record-tab-btn" onclick="switchRecordTab('loan')">
+                        💰 Loan Records
+                    </button>
+                </div>
+                
+                <button type="button" class="refresh-btn" onclick="fetchData()">
+                    <span>🔄</span> Refresh Data
+                </button>
+                
+                <div class="filter-section">
+                    <h4>FilterWhere</h4>
+                    <div class="filter-controls">
+                        <select id="filterYear" onchange="fetchData()">
+                            <option value="">All Years</option>
+                            <option value="2079">2079</option>
+                            <option value="2080">2080</option>
+                            <option value="2081">2081</option>
+                            <option value="2082">2082</option>
+                            <option value="2083">2083</option>
+                            <option value="2084">2084</option>                            <option value="2085">2085</option>
+                        </select>
+                        <select id="filterMonth" onchange="fetchData()">
+                            <option value="">All Months</option>
+                            <option value="Baishakh">Baishakh</option>
+                            <option value="Jestha">Jestha</option>
+                            <option value="Ashadh">Ashadh</option>
+                            <option value="Shrawan">Shrawan</option>
+                            <option value="Bhadra">Bhadra</option>
+                            <option value="Ashwin">Ashwin</option>
+                            <option value="Kartik">Kartik</option>
+                            <option value="Mangsir">Mangsir</option>
+                            <option value="Poush">Poush</option>
+                            <option value="Magh">Magh</option>
+                            <option value="Falgun">Falgun</option>
+                            <option value="Chaitra">Chaitra</option>
+                        </select>
+                    </div>
+                    <div class="filter-controls" style="margin-top: 8px;">
+                        <select id="filterMember" onchange="fetchData()">
+                            <option value="">All Members</option>
+                            <option value="Anil Maharjan">Anil Maharjan</option>
+                            <option value="Bindu Maharjan">Bindu Maharjan</option>
+                            <option value="Manisha Maharjan">Manisha Maharjan</option>
+                            <option value="Rajeep Maharjan">Rajeep Maharjan</option>
+                            <option value="Sajina Barahi">Sajina Barahi</option>
+                            <option value="Supreme Chitrakar">Supreme Chitrakar</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="dataStatus"></div>
+                
+                <!-- Monthly Records Section -->
+                <div id="monthlyRecordsSection" class="record-section active">
+                    <div id="dataContainer">
+                        <div class="loading">Loading monthly data...</div>
+                    </div>
+                </div>
+
+                <!-- Loan Records Section -->
+                <div id="loanRecordsSection" class="record-section">
+                    <div id="loanDataContainer">
+                        <div class="loading">Loading loan data...</div>
+                    </div>
+                </div>
+
+                <!-- Grand Total Section (Shared for both monthly and loan data) - Always Visible -->
+                <div id="grandTotalSection">
+                    <div class="loading">Calculating totals...</div>                </div>
             </div>
-          </div>
-        </form>
-        <div id="message" class="mt-2"></div>
-      </div>
+        </div>
+
+        <footer>
+            <p>GMS Bachat Kosh &copy; 2026 | Nepal Financial System</p>
+        </footer>
     </div>
 
-    <!-- Bookmarks List -->
-    <div id="bookmarksSection">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5>Saved Bookmarks</h5>
-        <button id="refreshBtn" class="btn btn-outline-secondary btn-sm">🔄 Refresh</button>
-      </div>
-      <div id="bookmarksList" class="row g-3">
-        <p>Loading from Google Sheet...</p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // 🔴 REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKschEBqOGB4lBuzR25maMrMBhVTgfPLzLm8Y_9TQo40GkWhhA-htNw8Isj8k9gn4Z/exec";
-
-    // DOM Elements
-    const form = document.getElementById('bookmarkForm');
-    const messageEl = document.getElementById('message');
-    const listEl = document.getElementById('bookmarksList');
-    const refreshBtn = document.getElementById('refreshBtn');
-
-    // Init
-    document.addEventListener('DOMContentLoaded', () => {
-      loadBookmarks();
-      form.addEventListener('submit', saveBookmark);
-      refreshBtn.addEventListener('click', loadBookmarks);
-    });
-
-    // Save bookmark
-    async function saveBookmark(e) {
-      e.preventDefault();
-      const name = document.getElementById('siteName').value.trim();
-      const url = document.getElementById('siteUrl').value.trim();
-
-      if (!name || !url) return;
-
-      showMessage("Saving...", "text-muted");
-
-      try {
-        // POST to Google Apps Script (no-cors mode — we assume success)
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, url })
-        });
-
-        // Reset & confirm
-        form.reset();
-        showMessage("✅ Saved! Updating list...", "text-success");
-        setTimeout(loadBookmarks, 1200);
-      } catch (err) {
-        showMessage("❌ Failed to save. Check console.", "text-danger");
-        console.error("Save error:", err);
-      }
-    }
-
-    // Load bookmarks
-    async function loadBookmarks() {
-      listEl.innerHTML = '<p class="text-muted">Loading from Google Sheet...</p>';
-
-      try {
-        const res = await fetch(SCRIPT_URL);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-
-        renderBookmarks(data.bookmarks || []);
-      } catch (err) {
-        listEl.innerHTML = `<p class="text-danger">Failed to load bookmarks.<br>${err.message}</p>`;
-        console.error("Load error:", err);
-      }
-    }
-
-    // Render bookmarks
-    function renderBookmarks(bookmarks) {
-      if (bookmarks.length === 0) {
-        listEl.innerHTML = '<p class="text-muted">No bookmarks saved yet.</p>';
-        return;
-      }
-
-      listEl.innerHTML = '';
-      bookmarks.forEach(item => {
-        const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4';
-        col.innerHTML = `
-          <div class="card bookmark-card">
-            <div class="card-body">
-              <h6 class="card-title">${escapeHtml(item.name)}</h6>
-              <p class="card-text truncate text-muted small">${escapeHtml(item.url)}</p>
-              <a href="${escapeHtml(item.url)}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Open Link</a>
+    <!-- Password Modal -->
+    <div class="password-modal" id="passwordModal">
+        <div class="password-box">
+            <h3>🔒 Enter Password</h3>
+            <p id="passwordMessage" style="text-align: center; color: #4a5568; margin-bottom: 14px; font-size: 0.92em;">
+                Please enter the password to access this section
+            </p>
+            <input type="password" id="passwordInput" class="password-input" placeholder="Enter password" 
+                   onkeypress="if(event.key === 'Enter') verifyPassword()">
+            <div class="password-buttons">
+                <button type="button" class="cancel-btn" onclick="closePasswordModal()">Cancel</button>
+                <button type="button" class="confirm-btn" onclick="verifyPassword()">Confirm</button>
             </div>
-          </div>
-        `;
-        listEl.appendChild(col);
-      });
-    }
+        </div>
+    </div>
 
-    // Helper: Prevent XSS
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-      }[m]));
-    }
+    <!-- Edit Monthly Entry Modal -->
+    <div class="edit-modal" id="editModal">
+        <div class="edit-box">
+            <h3>✏️ Edit Monthly Entry</h3>
+            <form id="editMonthlyForm">
+                <input type="hidden" id="editDocId">
+                <div class="form-group">
+                    <label for="editYear">Nepali Year:</label>
+                    <select id="editYear" required>
+                        <option value="">--Select Year--</option>
+                        <option value="2079">2079</option>
+                        <option value="2080">2080</option>
+                        <option value="2081">2081</option>
+                        <option value="2082">2082</option>
+                        <option value="2083">2083</option>
+                        <option value="2084">2084</option>
+                        <option value="2085">2085</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editMonth">Month:</label>
+                    <select id="editMonth" required>
+                        <option value="">--Select Month--</option>
+                        <option value="Baishakh">Baishakh (बैशाख)</option>
+                        <option value="Jestha">Jestha (जेठ)</option>                        <option value="Ashadh">Ashadh (असार)</option>
+                        <option value="Shrawan">Shrawan (साउन)</option>
+                        <option value="Bhadra">Bhadra (भदौ)</option>
+                        <option value="Ashwin">Ashwin (असोज)</option>
+                        <option value="Kartik">Kartik (कार्तिक)</option>
+                        <option value="Mangsir">Mangsir (मंसिर)</option>
+                        <option value="Poush">Poush (पुस)</option>
+                        <option value="Magh">Magh (माघ)</option>
+                        <option value="Falgun">Falgun (फागुन)</option>
+                        <option value="Chaitra">Chaitra (चैत)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editMember">Member:</label>
+                    <select id="editMember" required>
+                        <option value="">--Select Member--</option>
+                        <option value="Anil Maharjan">Anil Maharjan</option>
+                        <option value="Bindu Maharjan">Bindu Maharjan</option>
+                        <option value="Manisha Maharjan">Manisha Maharjan</option>
+                        <option value="Rajeep Maharjan">Rajeep Maharjan</option>
+                        <option value="Sajina Barahi">Sajina Barahi</option>
+                        <option value="Supreme Chitrakar">Supreme Chitrakar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDeposit">Deposit:</label>
+                    <input type="number" id="editDeposit" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLoanInterest">Loan Interest:</label>
+                    <input type="number" id="editLoanInterest" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editInstallment">Installment:</label>
+                    <input type="number" id="editInstallment" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editFine">Fine:</label>
+                    <input type="number" id="editFine" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="edit-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="confirm-btn">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    // Show message
-    function showMessage(text, className) {
-      messageEl.textContent = text;
-      messageEl.className = className;
-    }
-  </script>
+    <script>
+        // Firebase Configuration        const firebaseConfig = {
+            apiKey: "AIzaSyCHgrUuln0hRyEVYzCo3DHjLq-ApcseTeI",
+            authDomain: "member-tracker-78f9f.firebaseapp.com",
+            projectId: "member-tracker-78f9f",
+            storageBucket: "member-tracker-78f9f.firebasestorage.app",
+            messagingSenderId: "368007807825",
+            appId: "1:368007807825:web:e80570af3567c4ed3a0970"
+        };
+
+        // Passwords
+        const DELETE_PASSWORD = "admin123";
+        const FORM_ACCESS_PASSWORD = "admin123";
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let entryToDelete = null;
+        let actionType = null;
+        let nepaliDateConverter = null;
+        let currentRecordTab = 'monthly'; // Default tab
+        let globalTotalActiveInstallment = 0; // Global variable to store total active installment
+        let currentEditDocId = null; // For tracking the document being edited
+
+        // Initialize everything when page loads
+        window.onload = function() {
+            console.log("Page fully loaded");
+            
+            // Initialize Nepali date converter
+            if (typeof window.nepaliDateConverter !== 'undefined') {
+                nepaliDateConverter = window.nepaliDateConverter;
+                console.log("Nepali Date Converter initialized successfully");
+            } else {
+                console.warn("Nepali Date Converter library not available. Using fallback mode.");
+            }
+            
+            // Initialize day dropdowns with English days 1-32
+            initDayDropdowns();
+            
+            // Set up event listeners for Gregorian date display (if converter available)
+            if (nepaliDateConverter) {
+                setupEventListeners();
+            }
+            
+            // Set up edit form submit handler
+            document.getElementById('editMonthlyForm').addEventListener('submit', handleEditSubmit);
+            
+            // Fetch data with no filters (show all records by default)
+            fetchData();
+                        // Form section is hidden by default
+            document.getElementById('formHiddenSection').style.display = 'block';
+        };
+
+        // Initialize day dropdowns with English days 1-32 for all months
+        function initDayDropdowns() {
+            console.log("Initializing day dropdowns with English days 1-32");
+            populateFixedDays('loanTakenDay');
+            populateFixedDays('loanMaturityDay');
+            console.log("Day dropdowns initialized with English days 1-32");
+        }
+
+        // Populate day dropdown with fixed 1-32 days (English)
+        function populateFixedDays(selectId) {
+            const daySelect = document.getElementById(selectId);
+            if (!daySelect) {
+                console.error(`Day select element not found: ${selectId}`);
+                return;
+            }
+            
+            daySelect.innerHTML = '<option value="">Day</option>';
+            
+            // Populate with English days 1-32
+            for (let i = 1; i <= 32; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                daySelect.appendChild(option);
+            }
+        }
+
+        // Set up event listeners for date inputs
+        function setupEventListeners() {
+            console.log("Setting up event listeners for Gregorian date conversion...");
+            
+            // Loan Taken Date listeners
+            document.getElementById('loanTakenYear').addEventListener('change', updateGregorianDateDisplay);
+            document.getElementById('loanTakenMonth').addEventListener('change', updateGregorianDateDisplay);
+            document.getElementById('loanTakenDay').addEventListener('change', updateGregorianDateDisplay);
+
+            // Loan Maturity Date listeners
+            document.getElementById('loanMaturityYear').addEventListener('change', updateGregorianDateDisplay);
+            document.getElementById('loanMaturityMonth').addEventListener('change', updateGregorianDateDisplay);
+            document.getElementById('loanMaturityDay').addEventListener('change', updateGregorianDateDisplay);
+            
+            console.log("Event listeners set up successfully");
+        }
+
+        // Update Gregorian date display when Nepali date changes
+        function updateGregorianDateDisplay() {            if (!nepaliDateConverter) {
+                console.warn("Nepali date converter not available, skipping Gregorian conversion");
+                return;
+            }
+            
+            try {
+                // Loan Taken Date
+                const takenYear = document.getElementById('loanTakenYear').value;
+                const takenMonth = document.getElementById('loanTakenMonth').value;
+                const takenDay = document.getElementById('loanTakenDay').value;
+                
+                if (takenYear && takenMonth && takenDay) {
+                    const gregorianDate = nepaliDateConverter.nepaliToGregorian(
+                        parseInt(takenYear),
+                        parseInt(takenMonth),
+                        parseInt(takenDay)
+                    );
+                    
+                    const gregorianDateObj = new Date(gregorianDate.year, gregorianDate.month - 1, gregorianDate.day);
+                    document.getElementById('loanTakenGregorianDate').textContent = 
+                        `Gregorian: ${gregorianDateObj.toLocaleDateString('en-GB')}`;
+                } else {
+                    document.getElementById('loanTakenGregorianDate').textContent = '';
+                }
+                
+                // Loan Maturity Date
+                const maturityYear = document.getElementById('loanMaturityYear').value;
+                const maturityMonth = document.getElementById('loanMaturityMonth').value;
+                const maturityDay = document.getElementById('loanMaturityDay').value;
+                
+                if (maturityYear && maturityMonth && maturityDay) {
+                    const gregorianDate = nepaliDateConverter.nepaliToGregorian(
+                        parseInt(maturityYear),
+                        parseInt(maturityMonth),
+                        parseInt(maturityDay)
+                    );
+                    
+                    const gregorianDateObj = new Date(gregorianDate.year, gregorianDate.month - 1, gregorianDate.day);
+                    document.getElementById('loanMaturityGregorianDate').textContent = 
+                        `Gregorian: ${gregorianDateObj.toLocaleDateString('en-GB')}`;
+                } else {
+                    document.getElementById('loanMaturityGregorianDate').textContent = '';
+                }
+            } catch (error) {
+                console.error('Error converting date:', error);
+                document.getElementById('loanTakenGregorianDate').textContent = '';
+                document.getElementById('loanMaturityGregorianDate').textContent = '';
+            }
+        }
+        // Tab switching function for entry forms
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Record tab switching function
+        function switchRecordTab(tabName) {
+            currentRecordTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.record-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide record sections
+            document.getElementById('monthlyRecordsSection').classList.remove('active');
+            document.getElementById('loanRecordsSection').classList.remove('active');
+            
+            if (tabName === 'monthly') {
+                document.getElementById('monthlyRecordsSection').classList.add('active');
+            } else if (tabName === 'loan') {
+                document.getElementById('loanRecordsSection').classList.add('active');
+            }
+            
+            // Recalculate and display grand totals based on active tab
+            fetchData();
+        }
+
+        // Toggle loan maturity status with validation
+        async function toggleLoanMaturity(docId, isMatured) {
+            try {
+                // Get the loan entry to check its amount
+                const loanDoc = await db.collection('memberMonthlyTracker').doc(docId).get();
+                if (!loanDoc.exists) {
+                    alert('Loan entry not found!');
+                    return;
+                }
+                
+                const loanData = loanDoc.data();                const loanAmount = loanData.loanAmount || 0;
+                
+                // Only validate when marking as matured (not when unmarking)
+                if (isMatured) {
+                    // Check if loan amount exceeds total active installment
+                    if (loanAmount > globalTotalActiveInstallment) {
+                        alert(`The amount in the total active installment (Rs. ${globalTotalActiveInstallment.toFixed(2)}) is not equal to or greater than the loan amount (Rs. ${loanAmount.toFixed(2)}). Cannot mark this loan as matured.`);
+                        return;
+                    }
+                }
+                
+                // Show confirmation dialog for marking as matured
+                if (isMatured) {
+                    if (!confirm(`Are you sure this loan is matured? This will exclude this loan (Rs. ${loanAmount.toFixed(2)}) from the Active Loan Amount calculation.`)) {
+                        return;
+                    }
+                }
+                
+                // Update the document in Firestore
+                await db.collection('memberMonthlyTracker').doc(docId).update({
+                    isMatured: isMatured
+                });
+                
+                // Refresh data to recalculate totals
+                fetchData();
+                
+                // Show success message
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = `<div class="status-message success">✅ Loan ${isMatured ? 'marked as matured' : 'marked as not matured'} successfully!</div>`;
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error updating loan maturity: ', error);
+                alert('Error updating loan maturity: ' + error.message);
+            }
+        }
+
+        // Open edit modal with entry data
+        function openEditModal(docId, entry) {
+            currentEditDocId = docId;
+            document.getElementById('editDocId').value = docId;
+            document.getElementById('editYear').value = entry.year;
+            document.getElementById('editMonth').value = entry.month;
+            document.getElementById('editMember').value = entry.member;
+            document.getElementById('editDeposit').value = entry.deposit || 0;
+            document.getElementById('editLoanInterest').value = entry.loanInterest || 0;
+            document.getElementById('editInstallment').value = entry.installment || 0;            document.getElementById('editFine').value = entry.fine || 0;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditDocId = null;
+            document.getElementById('editMonthlyForm').reset();
+        }
+
+        // Handle edit form submission
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+            if (!currentEditDocId) {
+                alert('No document selected for editing');
+                return;
+            }
+            
+            try {
+                const updatedData = {
+                    year: document.getElementById('editYear').value,
+                    month: document.getElementById('editMonth').value,
+                    member: document.getElementById('editMember').value,
+                    deposit: parseFloat(document.getElementById('editDeposit').value) || 0,
+                    loanInterest: parseFloat(document.getElementById('editLoanInterest').value) || 0,
+                    installment: parseFloat(document.getElementById('editInstallment').value) || 0,
+                    fine: parseFloat(document.getElementById('editFine').value) || 0
+                };
+                
+                await db.collection('memberMonthlyTracker').doc(currentEditDocId).update(updatedData);
+                closeEditModal();
+                fetchData(); // Refresh the data
+                
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = '<div class="status-message success">✅ Entry updated successfully!</div>';
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error updating document: ', error);
+                alert('Error updating document: ' + error.message);
+            }
+        }
+
+        // Monthly Entry Form submission handler
+        document.getElementById('memberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+                        const statusDiv = document.getElementById('formStatus');
+            
+            try {
+                // Get form values
+                const year = document.getElementById('year').value;
+                const month = document.getElementById('month').value;
+                const member = document.getElementById('member').value;
+                const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+                const loanInterest = parseFloat(document.getElementById('loanInterest').value) || 0;
+                const installment = parseFloat(document.getElementById('installment').value) || 0;
+                const fine = parseFloat(document.getElementById('fine').value) || 0;
+
+                // Create data object
+                const entryData = {
+                    year: year,
+                    month: month,
+                    member: member,
+                    deposit: deposit,
+                    loanInterest: loanInterest,
+                    installment: installment,
+                    fine: fine,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    type: 'monthly'
+                };
+
+                // Add to Firestore
+                await db.collection('memberMonthlyTracker').add(entryData);
+
+                // Show success message
+                statusDiv.innerHTML = '<div class="status-message success">✅ Monthly entry added successfully!</div>';
+                
+                // Reset form
+                document.getElementById('memberForm').reset();
+                document.getElementById('deposit').value = '0';
+                document.getElementById('loanInterest').value = '0';
+                document.getElementById('installment').value = '0';
+                document.getElementById('fine').value = '0';
+                
+                // Refresh data display
+                fetchData();
+                
+                // Clear success message after 3 seconds
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error adding document: ', error);
+                statusDiv.innerHTML = `<div class="status-message error">❌ Error: ${error.message}</div>`;
+            }        });
+
+        // Loan Entry Form submission handler
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('loanFormStatus');
+            
+            try {
+                // Get form values
+                const year = document.getElementById('loanYear').value;
+                const month = document.getElementById('loanMonth').value;
+                const member = document.getElementById('loanMember').value;
+                const loanAmount = parseFloat(document.getElementById('loanAmount').value) || 0;
+                
+                // Get Nepali dates
+                const loanTakenYear = document.getElementById('loanTakenYear').value;
+                const loanTakenMonth = document.getElementById('loanTakenMonth').value;
+                const loanTakenDay = document.getElementById('loanTakenDay').value;
+                
+                const loanMaturityYear = document.getElementById('loanMaturityYear').value;
+                const loanMaturityMonth = document.getElementById('loanMaturityMonth').value;
+                const loanMaturityDay = document.getElementById('loanMaturityDay').value;
+
+                // Validate dates
+                if (!loanTakenYear || !loanTakenMonth || !loanTakenDay) {
+                    throw new Error('Please select a complete Loan Taken Date');
+                }
+                if (!loanMaturityYear || !loanMaturityMonth || !loanMaturityDay) {
+                    throw new Error('Please select a complete Loan Maturity Date');
+                }
+
+                let loanTakenDate = '';
+                let loanMaturityDate = '';
+                
+                // Convert Nepali dates to Gregorian for storage (if converter available)
+                if (nepaliDateConverter) {
+                    try {
+                        const takenGregorian = nepaliDateConverter.nepaliToGregorian(
+                            parseInt(loanTakenYear),
+                            parseInt(loanTakenMonth),
+                            parseInt(loanTakenDay)
+                        );
+                        
+                        const maturityGregorian = nepaliDateConverter.nepaliToGregorian(
+                            parseInt(loanMaturityYear),
+                            parseInt(loanMaturityMonth),
+                            parseInt(loanMaturityDay)
+                        );
+                        // Format Gregorian dates as YYYY-MM-DD
+                        loanTakenDate = `${takenGregorian.year}-${String(takenGregorian.month).padStart(2, '0')}-${String(takenGregorian.day).padStart(2, '0')}`;
+                        loanMaturityDate = `${maturityGregorian.year}-${String(maturityGregorian.month).padStart(2, '0')}-${String(maturityGregorian.day).padStart(2, '0')}`;
+                    } catch (error) {
+                        console.warn('Error converting Nepali dates to Gregorian:', error);
+                    }
+                }
+
+                // Create data object with isMatured: false by default
+                const loanData = {
+                    year: year,
+                    month: month,
+                    member: member,
+                    loanAmount: loanAmount,
+                    loanTakenDate: loanTakenDate,
+                    loanMaturityDate: loanMaturityDate,
+                    loanTakenNepaliDate: `${loanTakenYear}-${loanTakenMonth}-${loanTakenDay}`,
+                    loanMaturityNepaliDate: `${loanMaturityYear}-${loanMaturityMonth}-${loanMaturityDay}`,
+                    isMatured: false, // New field for loan maturity status
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    type: 'loan'
+                };
+
+                // Add to Firestore
+                await db.collection('memberMonthlyTracker').add(loanData);
+
+                // Show success message
+                statusDiv.innerHTML = '<div class="status-message success">✅ Loan entry added successfully!</div>';
+                
+                // Reset form
+                document.getElementById('loanForm').reset();
+                document.getElementById('loanTakenGregorianDate').textContent = '';
+                document.getElementById('loanMaturityGregorianDate').textContent = '';
+                
+                // Re-initialize day dropdowns
+                populateFixedDays('loanTakenDay');
+                populateFixedDays('loanMaturityDay');
+                
+                // Refresh data display
+                fetchData();
+                
+                // Clear success message after 3 seconds
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error adding loan document: ', error);
+                statusDiv.innerHTML = `<div class="status-message error">❌ Error: ${error.message}</div>`;
+            }        });
+
+        // Fetch and display data grouped by month
+        async function fetchData() {
+            const dataContainer = document.getElementById('dataContainer');
+            const loanDataContainer = document.getElementById('loanDataContainer');
+            const grandTotalSection = document.getElementById('grandTotalSection');
+            const statusDiv = document.getElementById('dataStatus');
+            const filterYear = document.getElementById('filterYear').value;
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterMember = document.getElementById('filterMember').value;
+            
+            try {
+                // Show loading state
+                dataContainer.innerHTML = '<div class="loading">Loading monthly data...</div>';
+                loanDataContainer.innerHTML = '<div class="loading">Loading loan data...</div>';
+                grandTotalSection.innerHTML = '<div class="loading">Calculating totals...</div>';
+                
+                // Build query WITHOUT orderBy to avoid index requirement
+                let query = db.collection('memberMonthlyTracker');
+                
+                // Apply filters only if selected
+                if (filterYear) {
+                    query = query.where('year', '==', filterYear);
+                }
+                
+                if (filterMonth) {
+                    query = query.where('month', '==', filterMonth);
+                }
+                
+                if (filterMember) {
+                    query = query.where('member', '==', filterMember);
+                }
+                
+                // Fetch data from Firestore
+                const snapshot = await query.get();
+                
+                if (snapshot.empty) {
+                    dataContainer.innerHTML = '<div class="empty-state">📭 No monthly entries found.</div>';
+                    loanDataContainer.innerHTML = '<div class="empty-state">📭 No loan entries found.</div>';
+                    grandTotalSection.innerHTML = '<div class="empty-state">No data to calculate totals.</div>';
+                    return;
+                }
+                
+                // Separate monthly and loan entries
+                const monthlyEntries = [];
+                const loanEntries = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();                    const entry = {
+                        id: doc.id,
+                        ...data,
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
+                    };
+                    
+                    if (data.type === 'loan') {
+                        loanEntries.push(entry);
+                    } else {
+                        monthlyEntries.push(entry);
+                    }
+                });
+                
+                // Sort by timestamp descending (newest first)
+                monthlyEntries.sort((a, b) => b.timestamp - a.timestamp);
+                loanEntries.sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Display monthly data
+                displayMonthlyData(monthlyEntries);
+                
+                // Display loan data
+                displayLoanData(loanEntries);
+                
+                // Display grand totals (shared section)
+                displayGrandTotals(monthlyEntries, loanEntries);
+                
+            } catch (error) {
+                console.error('Error fetching data: ', error);
+                statusDiv.innerHTML = `<div class="status-message error">❌ Error loading ${error.message}</div>`;
+                dataContainer.innerHTML = '<div class="empty-state">Failed to load data. Please try again.</div>';
+                loanDataContainer.innerHTML = '<div class="empty-state">Failed to load loan data.</div>';
+                grandTotalSection.innerHTML = '<div class="empty-state">Failed to calculate totals.</div>';
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Display monthly data grouped by year and month
+        function displayMonthlyData(monthlyEntries) {
+            const dataContainer = document.getElementById('dataContainer');
+            
+            // Group data by year
+            const dataByYear = {};
+            const allYears = ['2085', '2084', '2083', '2082', '2081', '2080', '2079'];
+            const allMonths = [
+                'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
+                'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+            ];            
+            // Initialize years
+            allYears.forEach(year => {
+                dataByYear[year] = {};
+                allMonths.forEach(month => {
+                    dataByYear[year][month] = [];
+                });
+            });
+            
+            // Populate data
+            monthlyEntries.forEach(entry => {
+                if (dataByYear[entry.year] && dataByYear[entry.year][entry.month]) {
+                    dataByYear[entry.year][entry.month].push(entry);
+                }
+            });
+            
+            // Build HTML with year and month groupings
+            let htmlContent = '';
+            let grandTotalDeposit = 0;
+            let grandTotalLoanInterest = 0;
+            let grandTotalInstallment = 0;
+            let grandTotalFine = 0;
+            let grandTotalRecords = 0;
+            
+            // Display years in descending order
+            allYears.forEach(year => {
+                let yearHasData = false;
+                let yearTotalDeposit = 0;
+                let yearTotalLoanInterest = 0;
+                let yearTotalInstallment = 0;
+                let yearTotalFine = 0;
+                
+                // First pass: calculate year totals by iterating through months
+                allMonths.forEach(month => {
+                    if (dataByYear[year][month].length > 0) {
+                        yearHasData = true;
+                        // Calculate month totals
+                        let monthTotalDeposit = 0;
+                        let monthTotalLoanInterest = 0;
+                        let monthTotalInstallment = 0;
+                        let monthTotalFine = 0;
+                        
+                        dataByYear[year][month].forEach(entry => {
+                            monthTotalDeposit += (entry.deposit || 0);
+                            monthTotalLoanInterest += (entry.loanInterest || 0);
+                            monthTotalInstallment += (entry.installment || 0);
+                            monthTotalFine += (entry.fine || 0);
+                        });
+                        
+                        // Add to year totals                        yearTotalDeposit += monthTotalDeposit;
+                        yearTotalLoanInterest += monthTotalLoanInterest;
+                        yearTotalInstallment += monthTotalInstallment;
+                        yearTotalFine += monthTotalFine;
+                        
+                        // Add to grand totals
+                        grandTotalDeposit += monthTotalDeposit;
+                        grandTotalLoanInterest += monthTotalLoanInterest;
+                        grandTotalInstallment += monthTotalInstallment;
+                        grandTotalFine += monthTotalFine;
+                        grandTotalRecords += dataByYear[year][month].length;
+                    }
+                });
+                
+                if (yearHasData) {
+                    // Year heading
+                    htmlContent += `
+                        <div class="year-heading">
+                            <span>Year: ${year}</span><span class="nepali-year-badge">वि.सं. ${year}</span>
+                        </div>
+                    `;
+                    
+                    // Display months in chronological order
+                    allMonths.forEach(monthName => {
+                        if (dataByYear[year][monthName].length > 0) {
+                            const monthData = dataByYear[year][monthName];
+                            
+                            // Calculate month totals
+                            let monthTotalDeposit = 0;
+                            let monthTotalLoanInterest = 0;
+                            let monthTotalInstallment = 0;
+                            let monthTotalFine = 0;
+                            
+                            monthData.forEach(entry => {
+                                monthTotalDeposit += (entry.deposit || 0);
+                                monthTotalLoanInterest += (entry.loanInterest || 0);
+                                monthTotalInstallment += (entry.installment || 0);
+                                monthTotalFine += (entry.fine || 0);
+                            });
+                            
+                            // Month heading
+                            htmlContent += `
+                                <div class="month-heading">
+                                    <h3>
+                                        <span>📅 ${monthName}</span>
+                                        <span class="record-count">${monthData.length} record${monthData.length > 1 ? 's' : ''}</span>
+                                    </h3>
+                                </div>
+                            `;
+                                                        // Month total summary card
+                            const monthGrandTotal = monthTotalDeposit + monthTotalLoanInterest + monthTotalInstallment + monthTotalFine;
+                            htmlContent += `
+                                <div class="month-total-summary">
+                                    <h4>Month Totals</h4>
+                                    <div class="month-total-grid">
+                                        <div class="month-total-item">
+                                            <div class="label">Deposit</div>
+                                            <div class="value">Rs. ${monthTotalDeposit.toFixed(2)}</div>
+                                        </div>
+                                        <div class="month-total-item">
+                                            <div class="label">Loan Interest</div>
+                                            <div class="value">Rs. ${monthTotalLoanInterest.toFixed(2)}</div>
+                                        </div>
+                                        <div class="month-total-item">
+                                            <div class="label">Installment</div>
+                                            <div class="value">Rs. ${monthTotalInstallment.toFixed(2)}</div>
+                                        </div>
+                                        <div class="month-total-item">
+                                            <div class="label">Fine</div>
+                                            <div class="value">Rs. ${monthTotalFine.toFixed(2)}</div>
+                                        </div>
+                                        <div class="month-total-item">
+                                            <div class="label">Grand Total</div>
+                                            <div class="value">Rs. ${monthGrandTotal.toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Month table
+                            htmlContent += `
+                                <div style="overflow-x: auto;">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Member</th>
+                                                <th>Deposit</th>
+                                                <th>Loan Interest</th>
+                                                <th>Installment</th>
+                                                <th>Fine</th>
+                                                <th>Total</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+                            
+                            monthData.forEach((entry, index) => {                                const rowTotal = (entry.deposit || 0) + (entry.loanInterest || 0) + (entry.installment || 0) + (entry.fine || 0);
+                                htmlContent += `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td><strong>${entry.member}</strong></td>
+                                        <td>Rs. ${(entry.deposit || 0).toFixed(2)}</td>
+                                        <td>Rs. ${(entry.loanInterest || 0).toFixed(2)}</td>
+                                        <td>Rs. ${(entry.installment || 0).toFixed(2)}</td>
+                                        <td>Rs. ${(entry.fine || 0).toFixed(2)}</td>
+                                        <td><strong>Rs. ${rowTotal.toFixed(2)}</strong></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="edit-btn" onclick='openEditModal("${entry.id}", ${JSON.stringify(entry).replace(/'/g, "\\'")})'>
+                                                    <span>✏️</span> Edit
+                                                </button>
+                                                <button class="delete-btn" onclick="confirmDelete('${entry.id}')">
+                                                    <span>🗑️</span> Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            // Month total row in table
+                            htmlContent += `
+                                <tr class="month-total">
+                                    <td colspan="2"><strong>Month Total</strong></td>
+                                    <td><strong>Rs. ${monthTotalDeposit.toFixed(2)}</strong></td>
+                                    <td><strong>Rs. ${monthTotalLoanInterest.toFixed(2)}</strong></td>
+                                    <td><strong>Rs. ${monthTotalInstallment.toFixed(2)}</strong></td>
+                                    <td><strong>Rs. ${monthTotalFine.toFixed(2)}</strong></td>
+                                    <td><strong>Rs. ${monthGrandTotal.toFixed(2)}</strong></td>
+                                    <td></td>
+                                </tr>
+                            `;
+                            
+                            htmlContent += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    // Year total summary
+                    const yearGrandTotal = yearTotalDeposit + yearTotalLoanInterest + yearTotalInstallment + yearTotalFine;
+                    htmlContent += `
+                        <div class="month-total-summary" style="background: linear-gradient(135deg, #8e44ad, #6c3483);">
+                            <h4>Year ${year} Totals</h4>                            <div class="month-total-grid">
+                                <div class="month-total-item">
+                                    <div class="label">Deposit</div>
+                                    <div class="value">Rs. ${yearTotalDeposit.toFixed(2)}</div>
+                                </div>
+                                <div class="month-total-item">
+                                    <div class="label">Loan Interest</div>
+                                    <div class="value">Rs. ${yearTotalLoanInterest.toFixed(2)}</div>
+                                </div>
+                                <div class="month-total-item">
+                                    <div class="label">Installment</div>
+                                    <div class="value">Rs. ${yearTotalInstallment.toFixed(2)}</div>
+                                </div>
+                                <div class="month-total-item">
+                                    <div class="label">Fine</div>
+                                    <div class="value">Rs. ${yearTotalFine.toFixed(2)}</div>
+                                </div>
+                                <div class="month-total-item">
+                                    <div class="label">Grand Total</div>
+                                    <div class="value">Rs. ${yearGrandTotal.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            dataContainer.innerHTML = htmlContent || '<div class="empty-state">📭 No monthly entries found.</div>';
+        }
+
+        // Display loan data
+        function displayLoanData(loanEntries) {
+            const loanDataContainer = document.getElementById('loanDataContainer');
+            
+            if (loanEntries.length === 0) {
+                loanDataContainer.innerHTML = '<div class="empty-state">📭 No loan entries found.</div>';
+                return;
+            }
+            
+            // Build loan table HTML
+            let loanHTML = `
+                <div style="overflow-x: auto;">
+                    <table class="loan-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Year</th>
+                                <th>Month</th>
+                                <th>Member</th>
+                                <th>Loan Amount</th>                                <th>Loan Taken Date</th>
+                                <th>Loan Maturity Date</th>
+                                <th>Matured</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            loanEntries.forEach((entry, index) => {
+                // Format Gregorian dates if available
+                let takenDate = '';
+                let maturityDate = '';
+                
+                if (entry.loanTakenDate) {
+                    takenDate = new Date(entry.loanTakenDate).toLocaleDateString('en-GB');
+                }
+                
+                if (entry.loanMaturityDate) {
+                    maturityDate = new Date(entry.loanMaturityDate).toLocaleDateString('en-GB');
+                }
+                
+                // Format Nepali dates if available
+                let takenNepali = '';
+                let maturityNepali = '';
+                
+                if (entry.loanTakenNepaliDate) {
+                    const [y, m, d] = entry.loanTakenNepaliDate.split('-');
+                    const nepaliMonths = [
+                        'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
+                        'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+                    ];
+                    takenNepali = `<div class="nepali-date">${nepaliMonths[parseInt(m)-1]} ${d}, ${y}</div>`;
+                }
+                
+                if (entry.loanMaturityNepaliDate) {
+                    const [y, m, d] = entry.loanMaturityNepaliDate.split('-');
+                    const nepaliMonths = [
+                        'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
+                        'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+                    ];
+                    maturityNepali = `<div class="nepali-date">${nepaliMonths[parseInt(m)-1]} ${d}, ${y}</div>`;
+                }
+                
+                // Determine maturity status
+                const isMatured = entry.isMatured || false;
+                const maturityStatusClass = isMatured ? 'matured' : 'not-matured';
+                const maturityStatusText = isMatured ? 'Matured' : 'Not Matured';
+                
+                // Add row class for matured loans                const rowClass = isMatured ? 'matured-loan' : '';
+                
+                loanHTML += `
+                    <tr class="${rowClass}">
+                        <td>${index + 1}</td>
+                        <td><strong>${entry.year}</strong><div class="nepali-year-badge">वि.सं. ${entry.year}</div></td>
+                        <td><strong>${entry.month}</strong></td>
+                        <td>${entry.member}</td>
+                        <td><strong>Rs. ${(entry.loanAmount || 0).toFixed(2)}</strong></td>
+                        <td>
+                            ${takenNepali}
+                            ${takenDate ? `<div class="gregorian-date">${takenDate}</div>` : ''}
+                        </td>
+                        <td>
+                            ${maturityNepali}
+                            ${maturityDate ? `<div class="gregorian-date">${maturityDate}</div>` : ''}
+                        </td>
+                        <td style="text-align: center;">
+                            <div class="maturity-checkbox ${isMatured ? 'checked' : ''}" 
+                                 onclick="toggleLoanMaturity('${entry.id}', ${!isMatured})">
+                                ${isMatured ? '✓' : ''}
+                            </div>
+                            <div class="maturity-status ${maturityStatusClass}">
+                                ${maturityStatusText}
+                            </div>
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="confirmDelete('${entry.id}')">
+                                <span>🗑️</span> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            loanHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            loanDataContainer.innerHTML = loanHTML;
+        }
+
+        // Display grand totals (shared section for both monthly and loan data)
+        function displayGrandTotals(monthlyEntries, loanEntries) {
+            const grandTotalSection = document.getElementById('grandTotalSection');
+            
+            // Calculate monthly totals with safety checks
+            let totalDeposit = 0;            let totalLoanInterest = 0;
+            let totalInstallment = 0;
+            let totalFine = 0;
+            let totalRecords = monthlyEntries.length;
+            
+            monthlyEntries.forEach(entry => {
+                totalDeposit += (entry.deposit || 0);
+                totalLoanInterest += (entry.loanInterest || 0);
+                totalInstallment += (entry.installment || 0);
+                totalFine += (entry.fine || 0);
+            });
+            
+            // Store total active installment globally for loan maturity validation
+            globalTotalActiveInstallment = totalInstallment;
+            
+            // Calculate active loan amount (exclude matured loans)
+            let activeLoanAmount = 0;
+            loanEntries.forEach(entry => {
+                if (!entry.isMatured) {
+                    activeLoanAmount += (entry.loanAmount || 0);
+                }
+            });
+            
+            // Calculate based on active tab
+            let grandTotalSectionHTML = '';
+            
+            if (currentRecordTab === 'monthly') {
+                // Monthly Records Section Calculations
+                const grandTotal = totalDeposit + totalFine;
+                const adjustedLoanAmount = Math.max(0, activeLoanAmount - totalInstallment);
+                const totalRemainingAmount = (grandTotal - adjustedLoanAmount) + totalLoanInterest;
+                
+                // Build grand total HTML for Monthly Records
+                grandTotalSectionHTML = `
+                    <div class="grand-total-section">
+                        <h3>Financial Summary (Monthly Records)</h3>
+                        <div class="grand-total-grid">
+                            <div class="total-card deposit-card">
+                                <div class="label">Total Deposit</div>
+                                <div class="value">Rs. ${totalDeposit.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card fine-card">
+                                <div class="label">Total Fine</div>
+                                <div class="value">Rs. ${totalFine.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card active-loan-card">
+                                <div class="label">Active Loan Amount</div>
+                                <div class="value">Rs. ${activeLoanAmount.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card grand-total-card">                                <div class="label">Grand Total</div>
+                                <div class="value">Rs. ${grandTotal.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card remaining-amount-card">
+                                <div class="label">Total Remaining Amount</div>
+                                <div class="value">Rs. ${totalRemainingAmount.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="calculation-details">
+                            <h4>Calculation Details:</h4>
+                            <p><strong>Grand Total</strong> = Total Deposit + Total Fine</p>
+                            <p class="formula">Rs. ${grandTotal.toFixed(2)} = Rs. ${totalDeposit.toFixed(2)} + Rs. ${totalFine.toFixed(2)}</p>
+                            
+                            <p><strong>Adjusted Loan Amount</strong> = Active Loan Amount - Total Installment</p>
+                            <p class="formula">Rs. ${adjustedLoanAmount.toFixed(2)} = Rs. ${activeLoanAmount.toFixed(2)} - Rs. ${totalInstallment.toFixed(2)}</p>
+                            
+                            <p><strong>Total Remaining Amount</strong> = (Grand Total - Adjusted Loan Amount) + Total Loan Interest</p>
+                            <p class="formula">Rs. ${totalRemainingAmount.toFixed(2)} = (Rs. ${grandTotal.toFixed(2)} - Rs. ${adjustedLoanAmount.toFixed(2)}) + Rs. ${totalLoanInterest.toFixed(2)}</p>
+                            
+                            <p style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                <strong>Note:</strong> The Active Loan Amount is reduced by the Total Installment collected to calculate the Adjusted Loan Amount. 
+                                This represents the net loan exposure after accounting for installment payments.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Loan Records Section Calculations
+                const totalLoanInterestAmount = totalLoanInterest;
+                const totalInstallmentAmount = totalInstallment;
+                const adjustedLoanAmount = Math.max(0, activeLoanAmount - totalInstallment);
+                const totalRemainingAmount = (totalDeposit + totalFine - adjustedLoanAmount) + totalLoanInterest;
+                
+                // Build grand total HTML for Loan Records
+                grandTotalSectionHTML = `
+                    <div class="grand-total-section">
+                        <h3>Financial Summary (Loan Records)</h3>
+                        <div class="grand-total-grid">
+                            <div class="total-card loan-interest-card">
+                                <div class="label">Total Loan Interest</div>
+                                <div class="value">Rs. ${totalLoanInterestAmount.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card installment-card">
+                                <div class="label">Total Installment</div>
+                                <div class="value">Rs. ${totalInstallmentAmount.toFixed(2)}</div>
+                            </div>
+                            <div class="total-card active-loan-card">
+                                <div class="label">Active Loan Amount</div>
+                                <div class="value">Rs. ${activeLoanAmount.toFixed(2)}</div>                            </div>
+                            <div class="total-card remaining-amount-card">
+                                <div class="label">Total Remaining Amount</div>
+                                <div class="value">Rs. ${totalRemainingAmount.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="calculation-details">
+                            <h4>Calculation Details:</h4>
+                            <p><strong>Adjusted Loan Amount</strong> = Active Loan Amount - Total Installment</p>
+                            <p class="formula">Rs. ${adjustedLoanAmount.toFixed(2)} = Rs. ${activeLoanAmount.toFixed(2)} - Rs. ${totalInstallmentAmount.toFixed(2)}</p>
+                            
+                            <p><strong>Total Remaining Amount</strong> = (Total Deposit + Total Fine - Adjusted Loan Amount) + Total Loan Interest</p>
+                            <p class="formula">Rs. ${totalRemainingAmount.toFixed(2)} = (Rs. ${totalDeposit.toFixed(2)} + Rs. ${totalFine.toFixed(2)} - Rs. ${adjustedLoanAmount.toFixed(2)}) + Rs. ${totalLoanInterestAmount.toFixed(2)}</p>
+                            
+                            <p style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                <strong>Note:</strong> The Total Installment collected is subtracted from the Active Loan Amount to determine the net loan exposure. 
+                                The Total Remaining Amount represents the net financial position after accounting for all deposits, fines, loan interest, and adjusted loan amounts.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            grandTotalSection.innerHTML = grandTotalSectionHTML;
+        }
+
+        // Confirm delete - store the document ID and show password modal
+        function confirmDelete(docId) {
+            entryToDelete = docId;
+            actionType = 'delete';
+            showPasswordModal();
+        }
+
+        // Show password modal
+        function showPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            const message = document.getElementById('passwordMessage');
+            
+            if (actionType === 'delete') {
+                message.innerHTML = '⚠️ <strong>Delete Confirmation</strong><br>Enter password to delete this entry';
+            } else if (actionType === 'show_form') {
+                message.innerHTML = '🔒 <strong>Access Required</strong><br>Enter password to access the entry form';
+            }
+            
+            modal.classList.add('active');
+            document.getElementById('passwordInput').focus();
+            document.getElementById('passwordInput').value = '';
+        }
+        // Close password modal
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            entryToDelete = null;
+            actionType = null;
+        }
+
+        // Verify password and perform action
+        async function verifyPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const passwordMessage = document.getElementById('passwordMessage');
+            
+            if (!password) {
+                passwordMessage.innerHTML = '⚠️ <strong>Please enter a password</strong>';
+                passwordMessage.style.color = '#e74c3c';
+                return;
+            }
+            
+            if (actionType === 'delete') {
+                if (password === DELETE_PASSWORD) {
+                    // Close modal FIRST
+                    document.getElementById('passwordModal').classList.remove('active');
+                    
+                    // Store the ID locally before resetting
+                    const docIdToDelete = entryToDelete;
+                    
+                    // Reset variables
+                    entryToDelete = null;
+                    actionType = null;
+                    
+                    // Now delete the entry
+                    await deleteEntry(docIdToDelete);
+                } else {
+                    passwordMessage.innerHTML = '❌ <strong>Incorrect password!</strong><br>Default password is: admin123';
+                    passwordMessage.style.color = '#e74c3c';
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').focus();
+                }
+            } else if (actionType === 'show_form') {
+                if (password === FORM_ACCESS_PASSWORD) {
+                    // Close modal
+                    document.getElementById('passwordModal').classList.remove('active');
+                    
+                    // Reset variables
+                    entryToDelete = null;
+                    actionType = null;
+                    
+                    // Show form
+                    showFormSection();
+                } else {                    passwordMessage.innerHTML = '❌ <strong>Incorrect password!</strong><br>Default password is: admin123';
+                    passwordMessage.style.color = '#e74c3c';
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').focus();
+                }
+            }
+        }
+
+        // Delete entry function
+        async function deleteEntry(docId) {
+            if (!docId) {
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = '<div class="status-message error">❌ Error: No document ID provided</div>';
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+                return;
+            }
+            
+            try {
+                await db.collection('memberMonthlyTracker').doc(docId).delete();
+                
+                // Refresh data
+                await fetchData();
+                
+                // Show success message
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = '<div class="status-message success">✅ Entry deleted successfully!</div>';
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error deleting document: ', error);
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = `<div class="status-message error">❌ Delete failed: ${error.message}</div>`;
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Show Form Section
+        function showFormSection() {
+            document.getElementById('formSection').classList.add('active');
+            document.getElementById('formHiddenSection').style.display = 'none';
+        }
+        // Hide Form Section
+        function hideFormSection() {
+            document.getElementById('formSection').classList.remove('active');
+            document.getElementById('formHiddenSection').style.display = 'block';
+        }
+
+        // Show Password Modal for Form Access
+        function showPasswordModalForForm() {
+            actionType = 'show_form';
+            showPasswordModal();
+        }
+
+        // Toggle Member Management Section
+        function toggleMemberManagement() {
+            const section = document.getElementById('memberManagementSection');
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'block';
+                displayMemberList();
+            }
+        }
+
+        // Add new member function
+        function addNewMember() {
+            const newMemberInput = document.getElementById('newMemberName');
+            const newMemberName = newMemberInput.value.trim();
+            
+            if (!newMemberName) {
+                alert('Please enter a member name');
+                return;
+            }
+            
+            const memberSelect = document.getElementById('member');
+            const loanMemberSelect = document.getElementById('loanMember');
+            const filterMemberSelect = document.getElementById('filterMember');
+            
+            // Check if member already exists
+            for (let i = 0; i < memberSelect.options.length; i++) {
+                if (memberSelect.options[i].value === newMemberName) {
+                    alert('Member already exists!');
+                    return;
+                }
+            }
+            
+            // Add to dropdowns
+            const newOption = document.createElement('option');
+            newOption.value = newMemberName;
+            newOption.textContent = newMemberName;
+            memberSelect.appendChild(newOption);            
+            const newLoanOption = document.createElement('option');
+            newLoanOption.value = newMemberName;
+            newLoanOption.textContent = newMemberName;
+            loanMemberSelect.appendChild(newLoanOption);
+            
+            const newFilterOption = document.createElement('option');
+            newFilterOption.value = newMemberName;
+            newFilterOption.textContent = newMemberName;
+            filterMemberSelect.appendChild(newFilterOption);
+            
+            // Clear input
+            newMemberInput.value = '';
+            
+            // Show success
+            alert(`Member "${newMemberName}" added successfully!`);
+            
+            // Refresh member list display
+            displayMemberList();
+        }
+
+        // Display member list
+        function displayMemberList() {
+            const memberListDiv = document.getElementById('memberList');
+            const memberSelect = document.getElementById('member');
+            
+            let html = '';
+            for (let i = 2; i < memberSelect.options.length; i++) { // Skip first two options
+                const memberName = memberSelect.options[i].value;
+                html += `
+                    <div class="member-item">
+                        <span>${memberName}</span>
+                        <button class="remove-member-btn" onclick="removeMember(${i}, '${memberName}')">Remove</button>
+                    </div>
+                `;
+            }
+            
+            if (html === '') {
+                html = '<div style="text-align: center; padding: 8px; color: #718096;">No members added yet</div>';
+            }
+            
+            memberListDiv.innerHTML = html;
+        }
+
+        // Remove member function
+        function removeMember(index, memberName) {
+            if (!confirm(`Are you sure you want to remove "${memberName}"?`)) {
+                return;
+            }
+                        const memberSelect = document.getElementById('member');
+            const loanMemberSelect = document.getElementById('loanMember');
+            const filterMemberSelect = document.getElementById('filterMember');
+            
+            // Remove from all dropdowns
+            memberSelect.remove(index);
+            
+            for (let i = 0; i < loanMemberSelect.options.length; i++) {
+                if (loanMemberSelect.options[i].value === memberName) {
+                    loanMemberSelect.remove(i);
+                    break;
+                }
+            }
+            
+            for (let i = 0; i < filterMemberSelect.options.length; i++) {
+                if (filterMemberSelect.options[i].value === memberName) {
+                    filterMemberSelect.remove(i);
+                    break;
+                }
+            }
+            
+            // Refresh member list
+            displayMemberList();
+        }
+
+        // Export to CSV function
+        async function exportToCSV() {
+            try {
+                const snapshot = await db.collection('memberMonthlyTracker').get();
+                
+                if (snapshot.empty) {
+                    alert('No data to export!');
+                    return;
+                }
+                
+                // Convert to array and sort
+                const dataArray = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    dataArray.push({
+                        ...data,
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
+                    });
+                });
+                
+                dataArray.sort((a, b) => b.timestamp - a.timestamp);
+                
+                let csvContent = 'text/csv;charset=utf-8,';
+                csvContent += 'Type,Year,Month,Member,Deposit,Loan Interest,Installment,Fine,Loan Amount,Loan Taken Date,Loan Maturity Date,Matured,Total\n';
+                                dataArray.forEach(entry => {
+                    if (entry.type === 'loan') {
+                        const isMatured = entry.isMatured ? 'Yes' : 'No';
+                        csvContent += `"Loan","${entry.year}","${entry.month}","${entry.member}",,,,"${entry.loanAmount || 0}","${entry.loanTakenDate || ''}","${entry.loanMaturityDate || ''}","${isMatured}",${entry.loanAmount || 0}\n`;
+                    } else {
+                        const total = (entry.deposit || 0) + (entry.loanInterest || 0) + (entry.installment || 0) + (entry.fine || 0);
+                        csvContent += `"Monthly","${entry.year}","${entry.month}","${entry.member}",${entry.deposit || 0},${entry.loanInterest || 0},${entry.installment || 0},${entry.fine || 0},,,,"${total}\n`;
+                    }
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `gms_bachat_kosh_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert('Data exported successfully!');
+                
+            } catch (error) {
+                console.error('Error exporting data: ', error);
+                alert('Error exporting  ' + error.message);
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const passwordModal = document.getElementById('passwordModal');
+            const editModal = document.getElementById('editModal');
+            
+            if (event.target == passwordModal) {
+                closePasswordModal();
+            }
+            
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+        };
+    </script>
 </body>
 </html>
