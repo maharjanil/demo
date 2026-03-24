@@ -1,2885 +1,1612 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GMS Bachat Kosh</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <!-- Nepali Date Converter -->
-    <script src="https://cdn.jsdelivr.net/npm/nepali-date-converter@3.0.3/index.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        header {
-            background: linear-gradient(135deg, #1a3a6c, #2c5282);
-            color: white;
-            padding: 25px 30px;
-            text-align: center;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            margin: 0;
-            display: flex;            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            letter-spacing: 1px;
-        }
-
-        header h1::before, header h1::after {
-            content: "🇳🇵";
-            font-size: 1.6em;
-        }
-
-        .nepali-date-container {
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
-            padding: 10px 18px;
-            display: inline-block;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-            border: 1.5px solid rgba(255, 215, 0, 0.4);
-            margin-top: 8px;
-            min-width: 200px;
-        }
-
-        .nepali-date-container iframe {
-            display: block;
-            border: none;
-            background: transparent !important;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 25px;
-            padding: 25px;
-        }
-
-        @media (max-width: 1100px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .form-section {
-            background: white;
-            padding: 22px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
-            display: none;
-            animation: fadeIn 0.35s ease;
-        }
-        .form-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .data-section {
-            background: white;
-            padding: 22px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-section h2, .data-section h2 {
-            color: #2c3e50;
-            margin-bottom: 18px;
-            font-size: 1.55em;
-            border-bottom: 2.5px solid #3498db;
-            padding-bottom: 7px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-section h2::before {
-            content: "📝";
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 7px;
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 0.98em;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        label::before {
-            font-size: 1.25em;
-        }
-
-        label[for="month"]::before { content: "📅"; }
-        label[for="member"]::before { content: "👥"; }
-        label[for="deposit"]::before { content: "💰"; }
-        label[for="loanInterest"]::before { content: "📈"; }
-        label[for="installment"]::before { content: "💳"; }
-        label[for="fine"]::before { content: "⚖️"; }
-        label[for="loanAmount"]::before { content: "💵"; }
-        label[for="loanTakenNepaliDate"]::before { content: "🗓️"; }
-        label[for="loanMaturityNepaliDate"]::before { content: "⏳"; }
-        label[for="year"]::before { content: "🗓️"; }
-        label[for="editYear"]::before { content: "📅"; }
-        label[for="editMonth"]::before { content: "📅"; }
-        label[for="editMember"]::before { content: "👥"; }
-        label[for="editDeposit"]::before { content: "💰"; }
-        label[for="editLoanInterest"]::before { content: "📈"; }
-        label[for="editInstallment"]::before { content: "💳"; }
-        label[for="editFine"]::before { content: "⚖️"; }
-
-        select, input {
-            width: 100%;
-            padding: 9.5px 12px;
-            border: 1.5px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 1em;
-            transition: all 0.25s ease;
-            background-color: white;
-        }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 11px 18px;
-            border-radius: 6px;
-            font-size: 1.02em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            width: 100%;
-            margin-top: 10px;            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-        }
-
-        button:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .data-table, .loan-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 14px;
-            margin-bottom: 22px;
-            font-size: 0.95em;
-        }
-
-        .data-table th, .data-table td, .loan-table th, .loan-table td {
-            padding: 9px 11px;
-            text-align: left;
-            border-bottom: 1px solid #eaeaea;
-        }
-
-        .data-table th, .loan-table th {
-            background: #3498db;
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        .data-table tr:hover, .loan-table tr:hover {
-            background: #f8fafc;
-        }
-
-        .data-table tr:nth-child(even), .loan-table tr:nth-child(even) {
-            background: #f9fbfd;
-        }
-
-        .matured-loan {
-            background-color: #f8f9fa !important;
-            opacity: 0.85;        }
-
-        .matured-loan td {
-            text-decoration: line-through;
-            color: #6c757d;
-        }
-
-        .maturity-checkbox {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border: 2px solid #27ae60;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin: 0 auto;
-        }
-
-        .maturity-checkbox.checked {
-            background: #27ae60;
-            border-color: #229954;
-        }
-
-        .maturity-checkbox.checked::after {
-            content: "✓";
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 35px;
-            color: #3498db;
-            font-size: 1.15em;
-            font-weight: 500;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 35px;
-            color: #718096;
-            font-style: italic;
-        }
-
-        .status-message {
-            padding: 11px;            margin-bottom: 14px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.93em;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .delete-btn, .edit-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-size: 0.88em;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            width: auto;
-            margin: 0 3px;
-        }
-
-        .edit-btn {
-            background: #3498db;
-        }
-
-        .delete-btn:hover {
-            background: #c0392b;
-            transform: scale(1.05);
-        }
-        .edit-btn:hover {
-            background: #2980b9;
-            transform: scale(1.05);
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .month-heading {
-            background: linear-gradient(135deg, #2c3e50, #1a2530);
-            color: white;
-            padding: 13px 18px;
-            margin-top: 22px;
-            border-radius: 6px;
-            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
-        }
-
-        .month-heading h3 {
-            margin: 0;
-            font-size: 1.5em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-        }
-
-        .year-heading {
-            background: linear-gradient(135deg, #8e44ad, #6c3483);
-            color: white;
-            padding: 14px 20px;
-            margin-top: 30px;
-            border-radius: 8px;
-            box-shadow: 0 3px 9px rgba(0, 0, 0, 0.18);
-            font-size: 1.65em;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .month-total {
-            background: #27ae60;
-            color: white;
-            font-weight: bold;
-        }
-
-        .month-total:hover {            background: #27ae60 !important;
-            color: white !important;
-            cursor: default;
-        }
-
-        .month-total td {
-            border-bottom: none !important;
-        }
-
-        .grand-total-section {
-            background: linear-gradient(135deg, #2c3e50, #1a2530);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin-bottom: 15px;
-            border: 2px solid #3498db;
-        }
-
-        .grand-total-section h3 {
-            margin-bottom: 16px;
-            font-size: 1.6em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            text-align: center;
-            justify-content: center;
-            padding-bottom: 12px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .grand-total-section h3::before {
-            content: "📊";
-        }
-
-        .grand-total-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 14px;
-            margin-top: 15px;
-        }
-
-        .total-card {
-            background: rgba(255, 255, 255, 0.12);
-            padding: 16px;
-            border-radius: 10px;
-            text-align: center;
-            backdrop-filter: blur(6px);            border: 1px solid rgba(255, 255, 255, 0.18);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .total-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .total-card .label {
-            font-size: 0.88em;
-            opacity: 0.95;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-weight: 600;
-            display: block;
-        }
-
-        .total-card .value {
-            font-size: 1.7em;
-            font-weight: 800;
-            margin-top: 4px;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .deposit-card {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-
-        .fine-card {
-            background: linear-gradient(135deg, #f39c12, #d35400);
-        }
-
-        .loan-interest-card {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-
-        .installment-card {
-            background: linear-gradient(135deg, #9b59b6, #8e44ad);
-        }
-
-        .active-loan-card {
-            background: linear-gradient(135deg, #1abc9c, #16a085);
-        }
-
-        .grand-total-card {            background: linear-gradient(135deg, #3498db, #2980b9);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.4) !important;
-        }
-
-        .remaining-amount-card {
-            background: linear-gradient(135deg, #f1c40f, #f39c12);
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.6) !important;
-            grid-column: span 2;
-            align-self: center;
-            min-height: 110px;
-        }
-
-        .remaining-amount-card .label {
-            font-size: 1.1em;
-            letter-spacing: 1px;
-        }
-
-        .remaining-amount-card .value {
-            font-size: 2.2em !important;
-            margin-top: 8px;
-        }
-
-        .add-member-btn {
-            background: #27ae60;
-            margin-top: 14px;
-            box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
-        }
-
-        .add-member-btn:hover {
-            background: #229954;
-            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
-        }
-
-        .member-management {
-            margin-top: 22px;
-            padding: 18px;
-            background: #f8fafc;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-            border: 1px solid #eaeaea;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .member-management h3 {
-            color: #2c3e50;
-            margin-bottom: 11px;
-            font-size: 1.25em;
-            display: flex;
-            justify-content: space-between;            align-items: center;
-            font-weight: 600;
-        }
-
-        .toggle-btn {
-            background: #95a5a6;
-            width: auto;
-            margin-top: 0;
-            padding: 7px 14px;
-            font-size: 0.92em;
-            border-radius: 5px;
-        }
-
-        .toggle-btn:hover {
-            background: #7f8c8d;
-        }
-
-        .member-list {
-            margin-top: 11px;
-            max-height: 190px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 5px;
-            padding: 7px;
-            background: white;
-        }
-
-        .member-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 7px 9px;
-            margin-bottom: 5px;
-            background: #f8fafc;
-            border-radius: 4px;
-            border-left: 3px solid #3498db;
-            font-size: 0.95em;
-        }
-
-        .member-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .remove-member-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 3px 7px;
-            border-radius: 3px;
-            cursor: pointer;            font-size: 0.82em;
-            width: auto;
-        }
-
-        .remove-member-btn:hover {
-            background: #c0392b;
-        }
-
-        .export-btn {
-            background: #f39c12;
-            margin-top: 11px;
-            box-shadow: 0 2px 5px rgba(243, 156, 18, 0.3);
-        }
-
-        .export-btn:hover {
-            background: #e67e22;
-            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.4);
-        }
-
-        .filter-section {
-            background: #f8fafc;
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 18px;
-            border: 1px solid #eaeaea;
-        }
-
-        .filter-section h4 {
-            margin-bottom: 9px;
-            color: #2c3e50;
-            font-size: 1.05em;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-weight: 600;
-        }
-
-        .filter-section h4::before {
-            content: "🔍";
-        }
-
-        .filter-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 9px;
-        }
-
-        @media (max-width: 768px) {
-            .filter-controls {
-                grid-template-columns: 1fr;            }
-        }
-
-        .record-count {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.25);
-            padding: 3px 10px;
-            border-radius: 14px;
-            font-size: 0.82em;
-            font-weight: 500;
-        }
-
-        .password-modal, .edit-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .password-modal.active, .edit-modal.active {
-            display: flex;
-        }
-
-        .password-box, .edit-box {
-            background: white;
-            padding: 28px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
-            max-width: 500px;
-            width: 92%;
-            position: relative;
-            border-top: 6px solid #3498db;
-        }
-
-        .password-box h3, .edit-box h3 {
-            color: #2c3e50;
-            margin-bottom: 18px;
-            text-align: center;
-            font-size: 1.7em;
-            font-weight: 600;
-        }
-
-        .password-input, .edit-input {
-            width: 100%;            padding: 11px;
-            margin-bottom: 14px;
-            border: 1.5px solid #ddd;
-            border-radius: 6px;
-            font-size: 1.05em;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .password-buttons, .edit-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 14px;
-        }
-
-        .password-buttons button, .edit-buttons button {
-            width: 50%;
-            margin-top: 0;
-            padding: 10px;
-            font-weight: 600;
-        }
-
-        .cancel-btn {
-            background: #95a5a6;
-        }
-
-        .cancel-btn:hover {
-            background: #7f8c8d;
-        }
-
-        .confirm-btn {
-            background: #27ae60;
-        }
-
-        .confirm-btn:hover {
-            background: #229954;
-        }
-
-        .month-total-summary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 14px;
-            border-radius: 6px;
-            margin-top: 10px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
-        }
-
-        .month-total-summary h4 {
-            margin: 0 0 9px 0;            font-size: 1.18em;
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            font-weight: 600;
-        }
-
-        .month-total-summary h4::before {
-            content: "🧮";
-        }
-
-        .month-total-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
-            gap: 9px;
-        }
-
-        .month-total-item {
-            background: rgba(255, 255, 255, 0.22);
-            padding: 7px;
-            border-radius: 4px;
-            text-align: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .month-total-item .label {
-            font-size: 0.78em;
-            opacity: 0.92;
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            font-weight: 500;
-        }
-
-        .month-total-item .value {
-            font-size: 1.15em;
-            font-weight: bold;
-        }
-
-        .toggle-section-btn {
-            background: #3498db;
-            width: auto;
-            margin-bottom: 18px;
-            padding: 10px 18px;
-            font-size: 1.02em;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-        }
-
-        .toggle-section-btn:hover {            background: #2980b9;
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
-        }
-
-        .section-hidden {
-            background: #f8fafc;
-            padding: 18px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1.5px dashed #cbd5e0;
-            margin-bottom: 18px;
-        }
-
-        .section-hidden p {
-            color: #4a5568;
-            margin-bottom: 9px;
-            font-size: 1.05em;
-            font-weight: 500;
-        }
-
-        .view-btn {
-            background: #3498db;
-        }
-
-        .view-btn:hover {
-            background: #2980b9;
-        }
-
-        .refresh-btn {
-            background: #95a5a6;
-            width: auto;
-            margin-top: 0;
-            padding: 7px 14px;
-            font-size: 0.92em;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            border-radius: 5px;
-            align-self: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .refresh-btn:hover {
-            background: #7f8c8d;
-        }
-
-        .loan-entry-section {
-            margin-top: 28px;
-            padding: 18px;
-            background: #f8fafc;            border-radius: 8px;
-            border: 1px solid #eaeaea;
-        }
-
-        .loan-entry-section h3 {
-            color: #8e44ad;
-            margin-bottom: 13px;
-            font-size: 1.35em;
-            border-bottom: 2px solid #8e44ad;
-            padding-bottom: 7px;
-            font-weight: 600;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 18px;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 10px;
-        }
-
-        .tab-btn {
-            background: #edf2f7;
-            width: auto;
-            padding: 9px 16px;
-            font-size: 0.98em;
-            border-radius: 5px 5px 0 0;
-            cursor: pointer;
-            border: 1.5px solid #cbd5e0;
-            border-bottom: none;
-            font-weight: 500;
-            transition: all 0.25s ease;
-        }
-
-        .tab-btn:hover {
-            background: #e2e8f0;
-        }
-
-        .tab-btn.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-            font-weight: 600;
-            position: relative;
-            top: 1px;
-            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-        }
-
-        .tab-content {
-            display: none;        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .nepali-year-badge {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 2.5px 9px;
-            border-radius: 14px;
-            font-weight: bold;
-            display: inline-block;
-            margin-left: 9px;
-            font-size: 0.88em;
-            letter-spacing: 0.5px;
-        }
-
-        .gregorian-date {
-            background: #ebf4ff;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            color: #2c5282;
-            font-weight: 500;
-            margin-top: 3px;
-        }
-
-        .nepali-date {
-            background: #ebf7f0;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            color: #276749;
-            font-weight: 500;
-            margin-top: 3px;
-        }
-
-        .highlight {
-            background: linear-gradient(135deg, #f1c40f, #f39c12);
-            color: #2c3e50;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        footer {
-            text-align: center;
-            padding: 18px;            background: #2c3e50;
-            color: rgba(255, 255, 255, 0.75);
-            font-size: 0.9em;
-            margin-top: 20px;
-            font-weight: 500;
-        }
-
-        .nepali-date-input {
-            display: flex;
-            gap: 9px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .nepali-date-input select {
-            margin-bottom: 0;
-            min-width: 110px;
-        }
-
-        .date-label {
-            font-size: 0.88em;
-            color: #4a5568;
-            margin-top: 6px;
-            font-style: italic;
-            min-height: 18px;
-        }
-
-        .day-dropdown {
-            flex: 1.1 !important;
-            min-width: 90px !important;
-        }
-
-        .record-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 12px;
-        }
-
-        .record-tab-btn {
-            background: #edf2f7;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px 6px 0 0;
-            font-size: 1.05em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            flex: 1;            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .record-tab-btn:hover {
-            background: #e2e8f0;
-        }
-
-        .record-tab-btn.active {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
-            position: relative;
-            top: -2px;
-        }
-
-        .record-section {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .record-section.active {
-            display: block;
-        }
-
-        .maturity-status {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 500;
-            margin-top: 5px;
-        }
-
-        .maturity-status.matured {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            color: white;
-        }
-
-        .maturity-status.not-matured {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .calculation-details {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.95em;
-            line-height: 1.6;        }
-
-        .calculation-details h4 {
-            margin-bottom: 10px;
-            color: #ffd700;
-            font-weight: 600;
-        }
-
-        .calculation-details p {
-            margin: 6px 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .calculation-details .formula {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px;
-            border-radius: 6px;
-            margin: 8px 0;
-            font-family: monospace;
-            font-weight: bold;
-        }
-
-        .calculation-details .highlight {
-            font-weight: bold;
-            color: #ffd700;
-        }
-
-        @media (max-width: 768px) {
-            .tab-buttons {
-                flex-wrap: wrap;
-            }
-            
-            .tab-btn {
-                padding: 8px 14px;
-                font-size: 0.9em;
-                margin-bottom: 5px;
-            }
-            
-            .grand-total-grid, .month-total-grid, .loan-total-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .nepali-date-container {
-                width: 100%;
-                max-width: 280px;
-            }
-            
-            .nepali-date-container iframe {
-                width: 100% !important;
-                height: 50px !important;            }
-            
-            .nepali-date-input {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .nepali-date-input select {
-                width: 100% !important;
-                margin-bottom: 7px;
-            }
-            
-            .main-content {
-                padding: 15px;
-            }
-            
-            header h1 {
-                font-size: 2.0em;
-            }
-            
-            header {
-                padding: 20px 15px;
-            }
-            
-            .record-tabs {
-                flex-direction: column;
-            }
-            
-            .record-tab-btn {
-                width: 100%;
-            }
-            
-            .grand-total-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .remaining-amount-card {
-                grid-column: span 1;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .delete-btn, .edit-btn {
-                width: 100%;
-                margin: 3px 0;
-            }
-        }    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMS Bachat Kosh</title>
+<!-- Bootstrap 5 & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary: #0f766e;
+--primary-light: #14b8a6;
+--bg: #f3f4f6;
+--card-bg: #ffffff;
+--text-main: #1f2937;
+--text-muted: #6b7280;
+--border: #e5e7eb;
+}
+body { background-color: var(--bg); font-family: 'Inter', sans-serif; color: var(--text-main); }
+/* Login Screen Styles */
+#login-section {
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+.login-card {
+width: 100%;
+max-width: 400px;
+padding: 2rem;
+border-radius: 16px;
+background: white;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+/* App Styles */
+#app-section { display: none; }
+.header-section {
+background: linear-gradient(135deg, var(--primary), var(--primary-light));
+color: white; padding: 1.5rem 0; margin-bottom: 1rem;
+border-radius: 0 0 25px 25px; box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.4);
+}
+.header-title { font-weight: 800; letter-spacing: -0.5px; font-size: 1.8rem; }
+.header-subtitle { opacity: 0.9; font-weight: 300; font-size: 0.9rem; }
+.card { border: none; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); background: var(--card-bg); margin-bottom: 1.5rem; }
+.card-header { background: transparent; border-bottom: 1px solid var(--border); padding: 1.25rem; font-weight: 700; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
+.member-card {
+border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
+background: #fff; position: relative; overflow: hidden;
+}
+.member-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary-light); }
+.member-card.edit-mode { background: #f0fdfa; border-color: var(--primary-light); }
+.member-card.edit-mode::before { background: #f59e0b; }
+.member-name { font-weight: 700; color: var(--text-main); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px; }
+.section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700; margin: 1rem 0 0.5rem 0; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
+.form-control-sm, .form-select-sm { border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; padding: 0.35rem 0.5rem; }
+.form-control-sm:focus, .form-select-sm:focus { border-color: var(--primary-light); box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15); }
+.input-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px; text-transform: uppercase; }
+.totals-bar {
+background: var(--text-main); color: white; border-radius: 12px; padding: 1rem;
+display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;
+}
+.grand-total-val { font-size: 1.5rem; font-weight: 700; color: var(--primary-light); }
+.nav-tabs { border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+.nav-tabs .nav-link {
+border: none; color: var(--text-muted); font-weight: 600; padding: 10px 20px;
+background: transparent; transition: all 0.2s; border-radius: 8px 8px 0 0;
+}
+.nav-tabs .nav-link:hover { color: var(--primary); background: rgba(15, 118, 110, 0.05); }
+.nav-tabs .nav-link.active {
+color: var(--primary); background: white; border-bottom: 3px solid var(--primary);
+font-weight: 700;
+}
+.accordion-item { border: none; margin-bottom: 1rem; border-radius: 12px !important; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+.accordion-button { background-color: white; color: var(--text-main); font-weight: 600; padding: 1rem 1.5rem; box-shadow: none !important; font-size: 1.1rem; }
+.accordion-button:not(.collapsed) { background-color: var(--primary); color: white; }
+.accordion-button::after { filter: invert(1); opacity: 0.7; }
+.accordion-button:not(.collapsed)::after { filter: invert(1); }
+.history-table, .summary-table, .loan-table, .payment-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.history-table th, .summary-table th, .loan-table th, .payment-table th { background: #f9fafb; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 10px; text-align: center; }
+.history-table td, .summary-table td, .loan-table td, .payment-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: center; vertical-align: middle; }
+.history-table tr:last-child td, .summary-table tr:last-child td, .loan-table tr:last-child td, .payment-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover, .summary-table tr:hover, .loan-table tr:hover, .payment-table tr:hover { background-color: #f9fafb; }
+.col-month { text-align: left !important; font-weight: 600; color: var(--primary); }
+.badge-loan { background-color: #e0e7ff; color: #4338ca; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.badge-loan:hover { background-color: #c7d2fe; }
+.btn-primary-custom { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; width: 100%; }
+.btn-primary-custom:hover { background: var(--primary-light); color: white; }
+.btn-action { width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.75rem; margin: 0 1px; }
+.modal-content { border: none; border-radius: 16px; overflow: hidden; }
+.modal-header { background: #f9fafb; border-bottom: 1px solid var(--border); }
+.loan-detail-box { background: #f0fdfa; border: 1px solid var(--primary-light); border-radius: 8px; padding: 12px; margin-top: 8px; }
+.detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #eee; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { color: var(--text-muted); font-size: 0.85rem; }
+.detail-value { font-weight: 600; color: var(--text-main); }
+.positive-value { color: var(--primary); }
+.yearly-total-row {
+background-color: var(--text-main) !important;
+color: white;
+font-weight: 700;
+font-size: 0.95rem;
+}
+.yearly-total-row td {
+border-top: 2px solid var(--primary-light);
+padding-top: 12px !important;
+padding-bottom: 12px !important;
+}
+.yearly-total-label {
+text-align: right !important;
+color: var(--primary-light);
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+.summary-total-row {
+background-color: var(--primary) !important;
+color: white;
+font-size: 1.1rem;
+font-weight: 800;
+}
+.summary-total-row td { border-top: 2px solid var(--primary-light); }
+.summary-loan-row {
+background-color: #f0fdfa !important;
+font-weight: 600;
+}
+.summary-loan-row td {
+border-top: 1px solid var(--primary-light);
+}
+.summary-interest-row {
+background-color: #ecfdf5 !important;
+font-weight: 600;
+}
+.summary-interest-row td {
+border-top: 1px solid var(--primary-light);
+}
+.summary-balance-row {
+background-color: #fef3c7 !important;
+font-weight: 700;
+font-size: 1.1rem;
+}
+.summary-balance-row td {
+border-top: 2px solid #f59e0b;
+}
+.date-group { display: flex; gap: 4px; }
+.date-group select { flex: 1; }
+.date-group select:first-child { flex: 0.8; }
+.tab-content-section { display: none; }
+.tab-content-section.active { display: block; }
+.status-active { background-color: #d1fae5; color: #065f46; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
+.status-closed { background-color: #e5e7eb; color: #374151; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
+.status-overdue { background-color: #fee2e2; color: #991b1b; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
+.admin-only { display: none !important; }
+body.is-admin .admin-only { display: inline-block !important; }
+body.is-admin .admin-only-btn { display: block !important; }
+body.is-admin .admin-only-flex { display: flex !important; }
+body.is-admin .admin-only-table-cell { display: table-cell !important; }
+.member-link {
+color: var(--primary);
+text-decoration: none;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.2s;
+}
+.member-link:hover {
+color: var(--primary-light);
+text-decoration: underline;
+}
+.bank-details-container {
+padding: 2rem;
+text-align: center;
+}
+.bank-card {
+max-width: 600px;
+margin: 0 auto;
+background: white;
+border-left: 6px solid var(--primary);
+border-radius: 12px;
+padding: 2rem;
+box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+text-align: left;
+}
+.bank-title {
+font-size: 1.4rem;
+font-weight: 800;
+color: var(--text-main);
+margin-bottom: 1.5rem;
+border-bottom: 2px solid var(--border);
+padding-bottom: 1rem;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.bank-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1.2rem;
+padding: 0.8rem;
+background: #f8fafc;
+border-radius: 8px;
+}
+.bank-label {
+font-weight: 700;
+color: var(--text-muted);
+font-size: 1rem;
+}
+.bank-value {
+font-weight: 700;
+color: var(--primary);
+font-size: 1.1rem;
+background: white;
+padding: 6px 12px;
+border-radius: 6px;
+border: 1px solid var(--border);
+min-width: 150px;
+text-align: right;
+}
+.bank-value.copyable {
+cursor: pointer;
+transition: all 0.2s;
+color: var(--primary-light);
+border-color: var(--primary-light);
+}
+.bank-value.copyable:hover {
+background: var(--primary-light);
+color: white;
+transform: translateY(-2px);
+box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.copy-icon {
+margin-left: 8px;
+font-size: 0.9rem;
+opacity: 0.7;
+}
+.bank-note {
+margin-top: 1.5rem;
+font-size: 0.85rem;
+color: var(--text-muted);
+text-align: center;
+font-style: italic;
+}
+/* Loan Entry Form Styles */
+.loan-entry-panel {
+background: #f8fafc;
+border-radius: 12px;
+padding: 1.5rem;
+border: 1px solid var(--border);
+}
+.loan-entry-title {
+font-size: 1rem;
+font-weight: 700;
+color: var(--primary);
+margin-bottom: 1rem;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.loan-entry-divider {
+height: 2px;
+background: var(--border);
+margin: 0.5rem 0 1rem 0;
+}
+.loan-stats-row {
+display: flex;
+gap: 1rem;
+margin-bottom: 1rem;
+flex-wrap: wrap;
+}
+.loan-stat-card {
+flex: 1;
+min-width: 150px;
+background: white;
+border-radius: 12px;
+padding: 1rem;
+box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+text-align: center;
+border-left: 4px solid var(--primary);
+}
+.loan-stat-card.active { border-left-color: #059669; }
+.loan-stat-card.closed { border-left-color: #6b7280; }
+.loan-stat-card.overdue { border-left-color: #dc2626; }
+.loan-stat-label {
+font-size: 0.75rem;
+text-transform: uppercase;
+color: var(--text-muted);
+font-weight: 600;
+margin-bottom: 0.5rem;
+}
+.loan-stat-value {
+font-size: 1.3rem;
+font-weight: 700;
+color: var(--text-main);
+}
+.loan-stat-card.active .loan-stat-value { color: #059669; }
+.loan-stat-card.closed .loan-stat-value { color: #6b7280; }
+.loan-stat-card.overdue .loan-stat-value { color: #dc2626; }
+.readonly-field {
+background-color: #f3f4f6 !important;
+cursor: not-allowed;
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>GMS Bachat Kosh</h1>
-            <div class="nepali-date-container">
-                <iframe scrolling="no" border="0" frameborder="0" marginwidth="0" marginheight="0" allowtransparency="true" 
-                        src="https://www.ashesh.com.np/linknepali-time.php?time_only=no&font_color=333333&aj_time=yes&font_size=14&line_brake=1&api=250128q367" 
-                        width="195" height="45" style="border: none;"></iframe>
-            </div>
-        </header>
-
-        <div class="main-content">
-            <!-- Data Entry Form -->
-            <div class="form-section" id="formSection">
-                <!-- Tab Buttons -->
-                <div class="tab-buttons">
-                    <button type="button" class="tab-btn active" onclick="switchTab('monthly')">Monthly Entry</button>
-                    <button type="button" class="tab-btn" onclick="switchTab('loan')">Loan Entry</button>
-                </div>
-
-                <!-- Monthly Entry Tab -->
-                <div class="tab-content active" id="monthlyTab">
-                    <h2>➕ Monthly Entry</h2>
-                    <div id="formStatus"></div>
-                    
-                    <form id="memberForm">
-                        <div class="form-group">
-                            <label for="year">Nepali Year:</label>
-                            <select id="year" required>
-                                <option value="">--Select Year--</option>
-                                <option value="2079">2079</option>
-                                <option value="2080">2080</option>
-                                <option value="2081">2081</option>
-                                <option value="2082">2082</option>
-                                <option value="2083">2083</option>
-                                <option value="2084">2084</option>
-                                <option value="2085">2085</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="month">Month:</label>
-                            <select id="month" required>
-                                <option value="">--Select Month--</option>
-                                <option value="Baishakh">Baishakh (बैशाख)</option>
-                                <option value="Jestha">Jestha (जेठ)</option>
-                                <option value="Ashadh">Ashadh (असार)</option>
-                                <option value="Shrawan">Shrawan (साउन)</option>                                <option value="Bhadra">Bhadra (भदौ)</option>
-                                <option value="Ashwin">Ashwin (असोज)</option>
-                                <option value="Kartik">Kartik (कार्तिक)</option>
-                                <option value="Mangsir">Mangsir (मंसिर)</option>
-                                <option value="Poush">Poush (पुस)</option>
-                                <option value="Magh">Magh (माघ)</option>
-                                <option value="Falgun">Falgun (फागुन)</option>
-                                <option value="Chaitra">Chaitra (चैत)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="member">Member:</label>
-                            <select id="member" required>
-                                <option value="">--Select Member--</option>
-                                <option value="Anil Maharjan">Anil Maharjan</option>
-                                <option value="Bindu Maharjan">Bindu Maharjan</option>
-                                <option value="Manisha Maharjan">Manisha Maharjan</option>
-                                <option value="Rajeep Maharjan">Rajeep Maharjan</option>
-                                <option value="Sajina Barahi">Sajina Barahi</option>
-                                <option value="Supreme Chitrakar">Supreme Chitrakar</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="deposit">Deposit:</label>
-                            <input type="number" id="deposit" placeholder="0.00" step="0.01" value="0">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loanInterest">Loan Interest:</label>
-                            <input type="number" id="loanInterest" placeholder="0.00" step="0.01" value="0">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="installment">Installment:</label>
-                            <input type="number" id="installment" placeholder="0.00" step="0.01" value="0">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="fine">Fine:</label>
-                            <input type="number" id="fine" placeholder="0.00" step="0.01" value="0">
-                        </div>
-
-                        <button type="submit">💾 Submit Entry</button>
-                    </form>
-                </div>
-
-                <!-- Loan Entry Tab -->
-                <div class="tab-content" id="loanTab">                    <h2>💰 Loan Entry</h2>
-                    <div id="loanFormStatus"></div>
-                    
-                    <form id="loanForm">
-                        <div class="form-group">
-                            <label for="loanYear">Nepali Year:</label>
-                            <select id="loanYear" required>
-                                <option value="">--Select Year--</option>
-                                <option value="2079">2079</option>
-                                <option value="2080">2080</option>
-                                <option value="2081">2081</option>
-                                <option value="2082">2082</option>
-                                <option value="2083">2083</option>
-                                <option value="2084">2084</option>
-                                <option value="2085">2085</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loanMonth">Month:</label>
-                            <select id="loanMonth" required>
-                                <option value="">--Select Month--</option>
-                                <option value="Baishakh">Baishakh (बैशाख)</option>
-                                <option value="Jestha">Jestha (जेठ)</option>
-                                <option value="Ashadh">Ashadh (असार)</option>
-                                <option value="Shrawan">Shrawan (साउन)</option>
-                                <option value="Bhadra">Bhadra (भदौ)</option>
-                                <option value="Ashwin">Ashwin (असोज)</option>
-                                <option value="Kartik">Kartik (कार्तिक)</option>
-                                <option value="Mangsir">Mangsir (मंसिर)</option>
-                                <option value="Poush">Poush (पुस)</option>
-                                <option value="Magh">Magh (माघ)</option>
-                                <option value="Falgun">Falgun (फागुन)</option>
-                                <option value="Chaitra">Chaitra (चैत)</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loanMember">Member:</label>
-                            <select id="loanMember" required>
-                                <option value="">--Select Member--</option>
-                                <option value="Anil Maharjan">Anil Maharjan</option>
-                                <option value="Bindu Maharjan">Bindu Maharjan</option>
-                                <option value="Manisha Maharjan">Manisha Maharjan</option>
-                                <option value="Rajeep Maharjan">Rajeep Maharjan</option>
-                                <option value="Sajina Barahi">Sajina Barahi</option>
-                                <option value="Supreme Chitrakar">Supreme Chitrakar</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="loanAmount">Loan Amount:</label>
-                            <input type="number" id="loanAmount" placeholder="0.00" step="0.01" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loanTakenNepaliDate">Loan Taken Date (Nepali):</label>
-                            <div class="nepali-date-input">
-                                <select id="loanTakenYear" style="flex: 1.8;" required>
-                                    <option value="">Year</option>
-                                    <option value="2079">2079</option>
-                                    <option value="2080">2080</option>
-                                    <option value="2081">2081</option>
-                                    <option value="2082">2082</option>
-                                    <option value="2083">2083</option>
-                                    <option value="2084">2084</option>
-                                    <option value="2085">2085</option>
-                                </select>
-                                <select id="loanTakenMonth" style="flex: 2.2;" required>
-                                    <option value="">Month</option>
-                                    <option value="1">Baishakh</option>
-                                    <option value="2">Jestha</option>
-                                    <option value="3">Ashadh</option>
-                                    <option value="4">Shrawan</option>
-                                    <option value="5">Bhadra</option>
-                                    <option value="6">Ashwin</option>
-                                    <option value="7">Kartik</option>
-                                    <option value="8">Mangsir</option>
-                                    <option value="9">Poush</option>
-                                    <option value="10">Magh</option>
-                                    <option value="11">Falgun</option>
-                                    <option value="12">Chaitra</option>
-                                </select>
-                                <select id="loanTakenDay" class="day-dropdown" required>
-                                    <option value="">Day</option>
-                                    <!-- Days 1-32 will be populated by JavaScript -->
-                                </select>
-                            </div>
-                            <div class="date-label" id="loanTakenGregorianDate"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loanMaturityNepaliDate">Loan Maturity Date (Nepali):</label>
-                            <div class="nepali-date-input">
-                                <select id="loanMaturityYear" style="flex: 1.8;" required>
-                                    <option value="">Year</option>
-                                    <option value="2079">2079</option>
-                                    <option value="2080">2080</option>
-                                    <option value="2081">2081</option>
-                                    <option value="2082">2082</option>                                    <option value="2083">2083</option>
-                                    <option value="2084">2084</option>
-                                    <option value="2085">2085</option>
-                                </select>
-                                <select id="loanMaturityMonth" style="flex: 2.2;" required>
-                                    <option value="">Month</option>
-                                    <option value="1">Baishakh</option>
-                                    <option value="2">Jestha</option>
-                                    <option value="3">Ashadh</option>
-                                    <option value="4">Shrawan</option>
-                                    <option value="5">Bhadra</option>
-                                    <option value="6">Ashwin</option>
-                                    <option value="7">Kartik</option>
-                                    <option value="8">Mangsir</option>
-                                    <option value="9">Poush</option>
-                                    <option value="10">Magh</option>
-                                    <option value="11">Falgun</option>
-                                    <option value="12">Chaitra</option>
-                                </select>
-                                <select id="loanMaturityDay" class="day-dropdown" required>
-                                    <option value="">Day</option>
-                                    <!-- Days 1-32 will be populated by JavaScript -->
-                                </select>
-                            </div>
-                            <div class="date-label" id="loanMaturityGregorianDate"></div>
-                        </div>
-
-                        <button type="submit">💾 Submit Loan Entry</button>
-                    </form>
-                </div>
-
-                <!-- Toggle Member Management Button -->
-                <button type="button" class="toggle-btn" onclick="toggleMemberManagement()">
-                    👥 Toggle Member Management
-                </button>
-
-                <!-- Member Management Section (Initially Hidden) -->
-                <div class="member-management" id="memberManagementSection">
-                    <h3>
-                        <span>Member Management</span>
-                        <button type="button" class="toggle-btn" onclick="toggleMemberManagement()" style="padding: 4px 9px; font-size: 0.82em;">
-                            ✕ Close
-                        </button>
-                    </h3>
-                    <div class="form-group">
-                        <input type="text" id="newMemberName" placeholder="Enter new member name" />
-                    </div>
-                    <button type="button" class="add-member-btn" onclick="addNewMember()">➕ Add Member</button>
-                    
-                    <div class="member-list" id="memberList">                        <!-- Members will be displayed here -->
-                    </div>
-                </div>
-
-                <!-- Export Button -->
-                <button type="button" class="export-btn" onclick="exportToCSV()">📥 Export to CSV</button>
-
-                <!-- Hide Form Button -->
-                <button type="button" class="toggle-btn" onclick="hideFormSection()" style="background: #e74c3c; margin-top: 8px;">
-                    ❌ Hide Entry Form
-                </button>
-            </div>
-
-            <!-- Hidden Form Section Message -->
-            <div class="section-hidden" id="formHiddenSection">
-                <p><strong>📝 Entry Form Section</strong> is currently hidden</p>
-                <button type="button" class="toggle-section-btn" onclick="showPasswordModalForForm()">
-                    👁️ Show Entry Form
-                </button>
-            </div>
-
-            <!-- Data Display Section -->
-            <div class="data-section">
-                <h2>📊 Financial Records</h2>
-                
-                <!-- Record Tabs -->
-                <div class="record-tabs">
-                    <button type="button" class="record-tab-btn active" onclick="switchRecordTab('monthly')">
-                        📋 Monthly Records
-                    </button>
-                    <button type="button" class="record-tab-btn" onclick="switchRecordTab('loan')">
-                        💰 Loan Records
-                    </button>
-                </div>
-                
-                <button type="button" class="refresh-btn" onclick="fetchData()">
-                    <span>🔄</span> Refresh Data
-                </button>
-                
-                <div class="filter-section">
-                    <h4>FilterWhere</h4>
-                    <div class="filter-controls">
-                        <select id="filterYear" onchange="fetchData()">
-                            <option value="">All Years</option>
-                            <option value="2079">2079</option>
-                            <option value="2080">2080</option>
-                            <option value="2081">2081</option>
-                            <option value="2082">2082</option>
-                            <option value="2083">2083</option>
-                            <option value="2084">2084</option>                            <option value="2085">2085</option>
-                        </select>
-                        <select id="filterMonth" onchange="fetchData()">
-                            <option value="">All Months</option>
-                            <option value="Baishakh">Baishakh</option>
-                            <option value="Jestha">Jestha</option>
-                            <option value="Ashadh">Ashadh</option>
-                            <option value="Shrawan">Shrawan</option>
-                            <option value="Bhadra">Bhadra</option>
-                            <option value="Ashwin">Ashwin</option>
-                            <option value="Kartik">Kartik</option>
-                            <option value="Mangsir">Mangsir</option>
-                            <option value="Poush">Poush</option>
-                            <option value="Magh">Magh</option>
-                            <option value="Falgun">Falgun</option>
-                            <option value="Chaitra">Chaitra</option>
-                        </select>
-                    </div>
-                    <div class="filter-controls" style="margin-top: 8px;">
-                        <select id="filterMember" onchange="fetchData()">
-                            <option value="">All Members</option>
-                            <option value="Anil Maharjan">Anil Maharjan</option>
-                            <option value="Bindu Maharjan">Bindu Maharjan</option>
-                            <option value="Manisha Maharjan">Manisha Maharjan</option>
-                            <option value="Rajeep Maharjan">Rajeep Maharjan</option>
-                            <option value="Sajina Barahi">Sajina Barahi</option>
-                            <option value="Supreme Chitrakar">Supreme Chitrakar</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="dataStatus"></div>
-                
-                <!-- Monthly Records Section -->
-                <div id="monthlyRecordsSection" class="record-section active">
-                    <div id="dataContainer">
-                        <div class="loading">Loading monthly data...</div>
-                    </div>
-                </div>
-
-                <!-- Loan Records Section -->
-                <div id="loanRecordsSection" class="record-section">
-                    <div id="loanDataContainer">
-                        <div class="loading">Loading loan data...</div>
-                    </div>
-                </div>
-
-                <!-- Grand Total Section (Shared for both monthly and loan data) - Always Visible -->
-                <div id="grandTotalSection">
-                    <div class="loading">Calculating totals...</div>                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>GMS Bachat Kosh &copy; 2026 | Nepal Financial System</p>
-        </footer>
-    </div>
-
-    <!-- Password Modal -->
-    <div class="password-modal" id="passwordModal">
-        <div class="password-box">
-            <h3>🔒 Enter Password</h3>
-            <p id="passwordMessage" style="text-align: center; color: #4a5568; margin-bottom: 14px; font-size: 0.92em;">
-                Please enter the password to access this section
-            </p>
-            <input type="password" id="passwordInput" class="password-input" placeholder="Enter password" 
-                   onkeypress="if(event.key === 'Enter') verifyPassword()">
-            <div class="password-buttons">
-                <button type="button" class="cancel-btn" onclick="closePasswordModal()">Cancel</button>
-                <button type="button" class="confirm-btn" onclick="verifyPassword()">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Monthly Entry Modal -->
-    <div class="edit-modal" id="editModal">
-        <div class="edit-box">
-            <h3>✏️ Edit Monthly Entry</h3>
-            <form id="editMonthlyForm">
-                <input type="hidden" id="editDocId">
-                <div class="form-group">
-                    <label for="editYear">Nepali Year:</label>
-                    <select id="editYear" required>
-                        <option value="">--Select Year--</option>
-                        <option value="2079">2079</option>
-                        <option value="2080">2080</option>
-                        <option value="2081">2081</option>
-                        <option value="2082">2082</option>
-                        <option value="2083">2083</option>
-                        <option value="2084">2084</option>
-                        <option value="2085">2085</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editMonth">Month:</label>
-                    <select id="editMonth" required>
-                        <option value="">--Select Month--</option>
-                        <option value="Baishakh">Baishakh (बैशाख)</option>
-                        <option value="Jestha">Jestha (जेठ)</option>                        <option value="Ashadh">Ashadh (असार)</option>
-                        <option value="Shrawan">Shrawan (साउन)</option>
-                        <option value="Bhadra">Bhadra (भदौ)</option>
-                        <option value="Ashwin">Ashwin (असोज)</option>
-                        <option value="Kartik">Kartik (कार्तिक)</option>
-                        <option value="Mangsir">Mangsir (मंसिर)</option>
-                        <option value="Poush">Poush (पुस)</option>
-                        <option value="Magh">Magh (माघ)</option>
-                        <option value="Falgun">Falgun (फागुन)</option>
-                        <option value="Chaitra">Chaitra (चैत)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editMember">Member:</label>
-                    <select id="editMember" required>
-                        <option value="">--Select Member--</option>
-                        <option value="Anil Maharjan">Anil Maharjan</option>
-                        <option value="Bindu Maharjan">Bindu Maharjan</option>
-                        <option value="Manisha Maharjan">Manisha Maharjan</option>
-                        <option value="Rajeep Maharjan">Rajeep Maharjan</option>
-                        <option value="Sajina Barahi">Sajina Barahi</option>
-                        <option value="Supreme Chitrakar">Supreme Chitrakar</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editDeposit">Deposit:</label>
-                    <input type="number" id="editDeposit" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="editLoanInterest">Loan Interest:</label>
-                    <input type="number" id="editLoanInterest" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="editInstallment">Installment:</label>
-                    <input type="number" id="editInstallment" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="editFine">Fine:</label>
-                    <input type="number" id="editFine" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="edit-buttons">
-                    <button type="button" class="cancel-btn" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="confirm-btn">💾 Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Firebase Configuration        const firebaseConfig = {
-            apiKey: "AIzaSyCHgrUuln0hRyEVYzCo3DHjLq-ApcseTeI",
-            authDomain: "member-tracker-78f9f.firebaseapp.com",
-            projectId: "member-tracker-78f9f",
-            storageBucket: "member-tracker-78f9f.firebasestorage.app",
-            messagingSenderId: "368007807825",
-            appId: "1:368007807825:web:e80570af3567c4ed3a0970"
-        };
-
-        // Passwords
-        const DELETE_PASSWORD = "admin123";
-        const FORM_ACCESS_PASSWORD = "admin123";
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let entryToDelete = null;
-        let actionType = null;
-        let nepaliDateConverter = null;
-        let currentRecordTab = 'monthly'; // Default tab
-        let globalTotalActiveInstallment = 0; // Global variable to store total active installment
-        let currentEditDocId = null; // For tracking the document being edited
-
-        // Initialize everything when page loads
-        window.onload = function() {
-            console.log("Page fully loaded");
-            
-            // Initialize Nepali date converter
-            if (typeof window.nepaliDateConverter !== 'undefined') {
-                nepaliDateConverter = window.nepaliDateConverter;
-                console.log("Nepali Date Converter initialized successfully");
-            } else {
-                console.warn("Nepali Date Converter library not available. Using fallback mode.");
-            }
-            
-            // Initialize day dropdowns with English days 1-32
-            initDayDropdowns();
-            
-            // Set up event listeners for Gregorian date display (if converter available)
-            if (nepaliDateConverter) {
-                setupEventListeners();
-            }
-            
-            // Set up edit form submit handler
-            document.getElementById('editMonthlyForm').addEventListener('submit', handleEditSubmit);
-            
-            // Fetch data with no filters (show all records by default)
-            fetchData();
-                        // Form section is hidden by default
-            document.getElementById('formHiddenSection').style.display = 'block';
-        };
-
-        // Initialize day dropdowns with English days 1-32 for all months
-        function initDayDropdowns() {
-            console.log("Initializing day dropdowns with English days 1-32");
-            populateFixedDays('loanTakenDay');
-            populateFixedDays('loanMaturityDay');
-            console.log("Day dropdowns initialized with English days 1-32");
-        }
-
-        // Populate day dropdown with fixed 1-32 days (English)
-        function populateFixedDays(selectId) {
-            const daySelect = document.getElementById(selectId);
-            if (!daySelect) {
-                console.error(`Day select element not found: ${selectId}`);
-                return;
-            }
-            
-            daySelect.innerHTML = '<option value="">Day</option>';
-            
-            // Populate with English days 1-32
-            for (let i = 1; i <= 32; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i;
-                daySelect.appendChild(option);
-            }
-        }
-
-        // Set up event listeners for date inputs
-        function setupEventListeners() {
-            console.log("Setting up event listeners for Gregorian date conversion...");
-            
-            // Loan Taken Date listeners
-            document.getElementById('loanTakenYear').addEventListener('change', updateGregorianDateDisplay);
-            document.getElementById('loanTakenMonth').addEventListener('change', updateGregorianDateDisplay);
-            document.getElementById('loanTakenDay').addEventListener('change', updateGregorianDateDisplay);
-
-            // Loan Maturity Date listeners
-            document.getElementById('loanMaturityYear').addEventListener('change', updateGregorianDateDisplay);
-            document.getElementById('loanMaturityMonth').addEventListener('change', updateGregorianDateDisplay);
-            document.getElementById('loanMaturityDay').addEventListener('change', updateGregorianDateDisplay);
-            
-            console.log("Event listeners set up successfully");
-        }
-
-        // Update Gregorian date display when Nepali date changes
-        function updateGregorianDateDisplay() {            if (!nepaliDateConverter) {
-                console.warn("Nepali date converter not available, skipping Gregorian conversion");
-                return;
-            }
-            
-            try {
-                // Loan Taken Date
-                const takenYear = document.getElementById('loanTakenYear').value;
-                const takenMonth = document.getElementById('loanTakenMonth').value;
-                const takenDay = document.getElementById('loanTakenDay').value;
-                
-                if (takenYear && takenMonth && takenDay) {
-                    const gregorianDate = nepaliDateConverter.nepaliToGregorian(
-                        parseInt(takenYear),
-                        parseInt(takenMonth),
-                        parseInt(takenDay)
-                    );
-                    
-                    const gregorianDateObj = new Date(gregorianDate.year, gregorianDate.month - 1, gregorianDate.day);
-                    document.getElementById('loanTakenGregorianDate').textContent = 
-                        `Gregorian: ${gregorianDateObj.toLocaleDateString('en-GB')}`;
-                } else {
-                    document.getElementById('loanTakenGregorianDate').textContent = '';
-                }
-                
-                // Loan Maturity Date
-                const maturityYear = document.getElementById('loanMaturityYear').value;
-                const maturityMonth = document.getElementById('loanMaturityMonth').value;
-                const maturityDay = document.getElementById('loanMaturityDay').value;
-                
-                if (maturityYear && maturityMonth && maturityDay) {
-                    const gregorianDate = nepaliDateConverter.nepaliToGregorian(
-                        parseInt(maturityYear),
-                        parseInt(maturityMonth),
-                        parseInt(maturityDay)
-                    );
-                    
-                    const gregorianDateObj = new Date(gregorianDate.year, gregorianDate.month - 1, gregorianDate.day);
-                    document.getElementById('loanMaturityGregorianDate').textContent = 
-                        `Gregorian: ${gregorianDateObj.toLocaleDateString('en-GB')}`;
-                } else {
-                    document.getElementById('loanMaturityGregorianDate').textContent = '';
-                }
-            } catch (error) {
-                console.error('Error converting date:', error);
-                document.getElementById('loanTakenGregorianDate').textContent = '';
-                document.getElementById('loanMaturityGregorianDate').textContent = '';
-            }
-        }
-        // Tab switching function for entry forms
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Tab').classList.add('active');
-        }
-
-        // Record tab switching function
-        function switchRecordTab(tabName) {
-            currentRecordTab = tabName;
-            
-            // Update tab buttons
-            document.querySelectorAll('.record-tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Show/hide record sections
-            document.getElementById('monthlyRecordsSection').classList.remove('active');
-            document.getElementById('loanRecordsSection').classList.remove('active');
-            
-            if (tabName === 'monthly') {
-                document.getElementById('monthlyRecordsSection').classList.add('active');
-            } else if (tabName === 'loan') {
-                document.getElementById('loanRecordsSection').classList.add('active');
-            }
-            
-            // Recalculate and display grand totals based on active tab
-            fetchData();
-        }
-
-        // Toggle loan maturity status with validation
-        async function toggleLoanMaturity(docId, isMatured) {
-            try {
-                // Get the loan entry to check its amount
-                const loanDoc = await db.collection('memberMonthlyTracker').doc(docId).get();
-                if (!loanDoc.exists) {
-                    alert('Loan entry not found!');
-                    return;
-                }
-                
-                const loanData = loanDoc.data();                const loanAmount = loanData.loanAmount || 0;
-                
-                // Only validate when marking as matured (not when unmarking)
-                if (isMatured) {
-                    // Check if loan amount exceeds total active installment
-                    if (loanAmount > globalTotalActiveInstallment) {
-                        alert(`The amount in the total active installment (Rs. ${globalTotalActiveInstallment.toFixed(2)}) is not equal to or greater than the loan amount (Rs. ${loanAmount.toFixed(2)}). Cannot mark this loan as matured.`);
-                        return;
-                    }
-                }
-                
-                // Show confirmation dialog for marking as matured
-                if (isMatured) {
-                    if (!confirm(`Are you sure this loan is matured? This will exclude this loan (Rs. ${loanAmount.toFixed(2)}) from the Active Loan Amount calculation.`)) {
-                        return;
-                    }
-                }
-                
-                // Update the document in Firestore
-                await db.collection('memberMonthlyTracker').doc(docId).update({
-                    isMatured: isMatured
-                });
-                
-                // Refresh data to recalculate totals
-                fetchData();
-                
-                // Show success message
-                const statusDiv = document.getElementById('dataStatus');
-                statusDiv.innerHTML = `<div class="status-message success">✅ Loan ${isMatured ? 'marked as matured' : 'marked as not matured'} successfully!</div>`;
-                
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Error updating loan maturity: ', error);
-                alert('Error updating loan maturity: ' + error.message);
-            }
-        }
-
-        // Open edit modal with entry data
-        function openEditModal(docId, entry) {
-            currentEditDocId = docId;
-            document.getElementById('editDocId').value = docId;
-            document.getElementById('editYear').value = entry.year;
-            document.getElementById('editMonth').value = entry.month;
-            document.getElementById('editMember').value = entry.member;
-            document.getElementById('editDeposit').value = entry.deposit || 0;
-            document.getElementById('editLoanInterest').value = entry.loanInterest || 0;
-            document.getElementById('editInstallment').value = entry.installment || 0;            document.getElementById('editFine').value = entry.fine || 0;
-            document.getElementById('editModal').classList.add('active');
-        }
-
-        // Close edit modal
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-            currentEditDocId = null;
-            document.getElementById('editMonthlyForm').reset();
-        }
-
-        // Handle edit form submission
-        async function handleEditSubmit(e) {
-            e.preventDefault();
-            if (!currentEditDocId) {
-                alert('No document selected for editing');
-                return;
-            }
-            
-            try {
-                const updatedData = {
-                    year: document.getElementById('editYear').value,
-                    month: document.getElementById('editMonth').value,
-                    member: document.getElementById('editMember').value,
-                    deposit: parseFloat(document.getElementById('editDeposit').value) || 0,
-                    loanInterest: parseFloat(document.getElementById('editLoanInterest').value) || 0,
-                    installment: parseFloat(document.getElementById('editInstallment').value) || 0,
-                    fine: parseFloat(document.getElementById('editFine').value) || 0
-                };
-                
-                await db.collection('memberMonthlyTracker').doc(currentEditDocId).update(updatedData);
-                closeEditModal();
-                fetchData(); // Refresh the data
-                
-                const statusDiv = document.getElementById('dataStatus');
-                statusDiv.innerHTML = '<div class="status-message success">✅ Entry updated successfully!</div>';
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Error updating document: ', error);
-                alert('Error updating document: ' + error.message);
-            }
-        }
-
-        // Monthly Entry Form submission handler
-        document.getElementById('memberForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-                        const statusDiv = document.getElementById('formStatus');
-            
-            try {
-                // Get form values
-                const year = document.getElementById('year').value;
-                const month = document.getElementById('month').value;
-                const member = document.getElementById('member').value;
-                const deposit = parseFloat(document.getElementById('deposit').value) || 0;
-                const loanInterest = parseFloat(document.getElementById('loanInterest').value) || 0;
-                const installment = parseFloat(document.getElementById('installment').value) || 0;
-                const fine = parseFloat(document.getElementById('fine').value) || 0;
-
-                // Create data object
-                const entryData = {
-                    year: year,
-                    month: month,
-                    member: member,
-                    deposit: deposit,
-                    loanInterest: loanInterest,
-                    installment: installment,
-                    fine: fine,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    type: 'monthly'
-                };
-
-                // Add to Firestore
-                await db.collection('memberMonthlyTracker').add(entryData);
-
-                // Show success message
-                statusDiv.innerHTML = '<div class="status-message success">✅ Monthly entry added successfully!</div>';
-                
-                // Reset form
-                document.getElementById('memberForm').reset();
-                document.getElementById('deposit').value = '0';
-                document.getElementById('loanInterest').value = '0';
-                document.getElementById('installment').value = '0';
-                document.getElementById('fine').value = '0';
-                
-                // Refresh data display
-                fetchData();
-                
-                // Clear success message after 3 seconds
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 3000);
-
-            } catch (error) {
-                console.error('Error adding document: ', error);
-                statusDiv.innerHTML = `<div class="status-message error">❌ Error: ${error.message}</div>`;
-            }        });
-
-        // Loan Entry Form submission handler
-        document.getElementById('loanForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const statusDiv = document.getElementById('loanFormStatus');
-            
-            try {
-                // Get form values
-                const year = document.getElementById('loanYear').value;
-                const month = document.getElementById('loanMonth').value;
-                const member = document.getElementById('loanMember').value;
-                const loanAmount = parseFloat(document.getElementById('loanAmount').value) || 0;
-                
-                // Get Nepali dates
-                const loanTakenYear = document.getElementById('loanTakenYear').value;
-                const loanTakenMonth = document.getElementById('loanTakenMonth').value;
-                const loanTakenDay = document.getElementById('loanTakenDay').value;
-                
-                const loanMaturityYear = document.getElementById('loanMaturityYear').value;
-                const loanMaturityMonth = document.getElementById('loanMaturityMonth').value;
-                const loanMaturityDay = document.getElementById('loanMaturityDay').value;
-
-                // Validate dates
-                if (!loanTakenYear || !loanTakenMonth || !loanTakenDay) {
-                    throw new Error('Please select a complete Loan Taken Date');
-                }
-                if (!loanMaturityYear || !loanMaturityMonth || !loanMaturityDay) {
-                    throw new Error('Please select a complete Loan Maturity Date');
-                }
-
-                let loanTakenDate = '';
-                let loanMaturityDate = '';
-                
-                // Convert Nepali dates to Gregorian for storage (if converter available)
-                if (nepaliDateConverter) {
-                    try {
-                        const takenGregorian = nepaliDateConverter.nepaliToGregorian(
-                            parseInt(loanTakenYear),
-                            parseInt(loanTakenMonth),
-                            parseInt(loanTakenDay)
-                        );
-                        
-                        const maturityGregorian = nepaliDateConverter.nepaliToGregorian(
-                            parseInt(loanMaturityYear),
-                            parseInt(loanMaturityMonth),
-                            parseInt(loanMaturityDay)
-                        );
-                        // Format Gregorian dates as YYYY-MM-DD
-                        loanTakenDate = `${takenGregorian.year}-${String(takenGregorian.month).padStart(2, '0')}-${String(takenGregorian.day).padStart(2, '0')}`;
-                        loanMaturityDate = `${maturityGregorian.year}-${String(maturityGregorian.month).padStart(2, '0')}-${String(maturityGregorian.day).padStart(2, '0')}`;
-                    } catch (error) {
-                        console.warn('Error converting Nepali dates to Gregorian:', error);
-                    }
-                }
-
-                // Create data object with isMatured: false by default
-                const loanData = {
-                    year: year,
-                    month: month,
-                    member: member,
-                    loanAmount: loanAmount,
-                    loanTakenDate: loanTakenDate,
-                    loanMaturityDate: loanMaturityDate,
-                    loanTakenNepaliDate: `${loanTakenYear}-${loanTakenMonth}-${loanTakenDay}`,
-                    loanMaturityNepaliDate: `${loanMaturityYear}-${loanMaturityMonth}-${loanMaturityDay}`,
-                    isMatured: false, // New field for loan maturity status
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    type: 'loan'
-                };
-
-                // Add to Firestore
-                await db.collection('memberMonthlyTracker').add(loanData);
-
-                // Show success message
-                statusDiv.innerHTML = '<div class="status-message success">✅ Loan entry added successfully!</div>';
-                
-                // Reset form
-                document.getElementById('loanForm').reset();
-                document.getElementById('loanTakenGregorianDate').textContent = '';
-                document.getElementById('loanMaturityGregorianDate').textContent = '';
-                
-                // Re-initialize day dropdowns
-                populateFixedDays('loanTakenDay');
-                populateFixedDays('loanMaturityDay');
-                
-                // Refresh data display
-                fetchData();
-                
-                // Clear success message after 3 seconds
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 3000);
-
-            } catch (error) {
-                console.error('Error adding loan document: ', error);
-                statusDiv.innerHTML = `<div class="status-message error">❌ Error: ${error.message}</div>`;
-            }        });
-
-        // Fetch and display data grouped by month
-        async function fetchData() {
-            const dataContainer = document.getElementById('dataContainer');
-            const loanDataContainer = document.getElementById('loanDataContainer');
-            const grandTotalSection = document.getElementById('grandTotalSection');
-            const statusDiv = document.getElementById('dataStatus');
-            const filterYear = document.getElementById('filterYear').value;
-            const filterMonth = document.getElementById('filterMonth').value;
-            const filterMember = document.getElementById('filterMember').value;
-            
-            try {
-                // Show loading state
-                dataContainer.innerHTML = '<div class="loading">Loading monthly data...</div>';
-                loanDataContainer.innerHTML = '<div class="loading">Loading loan data...</div>';
-                grandTotalSection.innerHTML = '<div class="loading">Calculating totals...</div>';
-                
-                // Build query WITHOUT orderBy to avoid index requirement
-                let query = db.collection('memberMonthlyTracker');
-                
-                // Apply filters only if selected
-                if (filterYear) {
-                    query = query.where('year', '==', filterYear);
-                }
-                
-                if (filterMonth) {
-                    query = query.where('month', '==', filterMonth);
-                }
-                
-                if (filterMember) {
-                    query = query.where('member', '==', filterMember);
-                }
-                
-                // Fetch data from Firestore
-                const snapshot = await query.get();
-                
-                if (snapshot.empty) {
-                    dataContainer.innerHTML = '<div class="empty-state">📭 No monthly entries found.</div>';
-                    loanDataContainer.innerHTML = '<div class="empty-state">📭 No loan entries found.</div>';
-                    grandTotalSection.innerHTML = '<div class="empty-state">No data to calculate totals.</div>';
-                    return;
-                }
-                
-                // Separate monthly and loan entries
-                const monthlyEntries = [];
-                const loanEntries = [];
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();                    const entry = {
-                        id: doc.id,
-                        ...data,
-                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
-                    };
-                    
-                    if (data.type === 'loan') {
-                        loanEntries.push(entry);
-                    } else {
-                        monthlyEntries.push(entry);
-                    }
-                });
-                
-                // Sort by timestamp descending (newest first)
-                monthlyEntries.sort((a, b) => b.timestamp - a.timestamp);
-                loanEntries.sort((a, b) => b.timestamp - a.timestamp);
-                
-                // Display monthly data
-                displayMonthlyData(monthlyEntries);
-                
-                // Display loan data
-                displayLoanData(loanEntries);
-                
-                // Display grand totals (shared section)
-                displayGrandTotals(monthlyEntries, loanEntries);
-                
-            } catch (error) {
-                console.error('Error fetching data: ', error);
-                statusDiv.innerHTML = `<div class="status-message error">❌ Error loading ${error.message}</div>`;
-                dataContainer.innerHTML = '<div class="empty-state">Failed to load data. Please try again.</div>';
-                loanDataContainer.innerHTML = '<div class="empty-state">Failed to load loan data.</div>';
-                grandTotalSection.innerHTML = '<div class="empty-state">Failed to calculate totals.</div>';
-                
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 5000);
-            }
-        }
-
-        // Display monthly data grouped by year and month
-        function displayMonthlyData(monthlyEntries) {
-            const dataContainer = document.getElementById('dataContainer');
-            
-            // Group data by year
-            const dataByYear = {};
-            const allYears = ['2085', '2084', '2083', '2082', '2081', '2080', '2079'];
-            const allMonths = [
-                'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
-                'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
-            ];            
-            // Initialize years
-            allYears.forEach(year => {
-                dataByYear[year] = {};
-                allMonths.forEach(month => {
-                    dataByYear[year][month] = [];
-                });
-            });
-            
-            // Populate data
-            monthlyEntries.forEach(entry => {
-                if (dataByYear[entry.year] && dataByYear[entry.year][entry.month]) {
-                    dataByYear[entry.year][entry.month].push(entry);
-                }
-            });
-            
-            // Build HTML with year and month groupings
-            let htmlContent = '';
-            let grandTotalDeposit = 0;
-            let grandTotalLoanInterest = 0;
-            let grandTotalInstallment = 0;
-            let grandTotalFine = 0;
-            let grandTotalRecords = 0;
-            
-            // Display years in descending order
-            allYears.forEach(year => {
-                let yearHasData = false;
-                let yearTotalDeposit = 0;
-                let yearTotalLoanInterest = 0;
-                let yearTotalInstallment = 0;
-                let yearTotalFine = 0;
-                
-                // First pass: calculate year totals by iterating through months
-                allMonths.forEach(month => {
-                    if (dataByYear[year][month].length > 0) {
-                        yearHasData = true;
-                        // Calculate month totals
-                        let monthTotalDeposit = 0;
-                        let monthTotalLoanInterest = 0;
-                        let monthTotalInstallment = 0;
-                        let monthTotalFine = 0;
-                        
-                        dataByYear[year][month].forEach(entry => {
-                            monthTotalDeposit += (entry.deposit || 0);
-                            monthTotalLoanInterest += (entry.loanInterest || 0);
-                            monthTotalInstallment += (entry.installment || 0);
-                            monthTotalFine += (entry.fine || 0);
-                        });
-                        
-                        // Add to year totals                        yearTotalDeposit += monthTotalDeposit;
-                        yearTotalLoanInterest += monthTotalLoanInterest;
-                        yearTotalInstallment += monthTotalInstallment;
-                        yearTotalFine += monthTotalFine;
-                        
-                        // Add to grand totals
-                        grandTotalDeposit += monthTotalDeposit;
-                        grandTotalLoanInterest += monthTotalLoanInterest;
-                        grandTotalInstallment += monthTotalInstallment;
-                        grandTotalFine += monthTotalFine;
-                        grandTotalRecords += dataByYear[year][month].length;
-                    }
-                });
-                
-                if (yearHasData) {
-                    // Year heading
-                    htmlContent += `
-                        <div class="year-heading">
-                            <span>Year: ${year}</span><span class="nepali-year-badge">वि.सं. ${year}</span>
-                        </div>
-                    `;
-                    
-                    // Display months in chronological order
-                    allMonths.forEach(monthName => {
-                        if (dataByYear[year][monthName].length > 0) {
-                            const monthData = dataByYear[year][monthName];
-                            
-                            // Calculate month totals
-                            let monthTotalDeposit = 0;
-                            let monthTotalLoanInterest = 0;
-                            let monthTotalInstallment = 0;
-                            let monthTotalFine = 0;
-                            
-                            monthData.forEach(entry => {
-                                monthTotalDeposit += (entry.deposit || 0);
-                                monthTotalLoanInterest += (entry.loanInterest || 0);
-                                monthTotalInstallment += (entry.installment || 0);
-                                monthTotalFine += (entry.fine || 0);
-                            });
-                            
-                            // Month heading
-                            htmlContent += `
-                                <div class="month-heading">
-                                    <h3>
-                                        <span>📅 ${monthName}</span>
-                                        <span class="record-count">${monthData.length} record${monthData.length > 1 ? 's' : ''}</span>
-                                    </h3>
-                                </div>
-                            `;
-                                                        // Month total summary card
-                            const monthGrandTotal = monthTotalDeposit + monthTotalLoanInterest + monthTotalInstallment + monthTotalFine;
-                            htmlContent += `
-                                <div class="month-total-summary">
-                                    <h4>Month Totals</h4>
-                                    <div class="month-total-grid">
-                                        <div class="month-total-item">
-                                            <div class="label">Deposit</div>
-                                            <div class="value">Rs. ${monthTotalDeposit.toFixed(2)}</div>
-                                        </div>
-                                        <div class="month-total-item">
-                                            <div class="label">Loan Interest</div>
-                                            <div class="value">Rs. ${monthTotalLoanInterest.toFixed(2)}</div>
-                                        </div>
-                                        <div class="month-total-item">
-                                            <div class="label">Installment</div>
-                                            <div class="value">Rs. ${monthTotalInstallment.toFixed(2)}</div>
-                                        </div>
-                                        <div class="month-total-item">
-                                            <div class="label">Fine</div>
-                                            <div class="value">Rs. ${monthTotalFine.toFixed(2)}</div>
-                                        </div>
-                                        <div class="month-total-item">
-                                            <div class="label">Grand Total</div>
-                                            <div class="value">Rs. ${monthGrandTotal.toFixed(2)}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            // Month table
-                            htmlContent += `
-                                <div style="overflow-x: auto;">
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Member</th>
-                                                <th>Deposit</th>
-                                                <th>Loan Interest</th>
-                                                <th>Installment</th>
-                                                <th>Fine</th>
-                                                <th>Total</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                            `;
-                            
-                            monthData.forEach((entry, index) => {                                const rowTotal = (entry.deposit || 0) + (entry.loanInterest || 0) + (entry.installment || 0) + (entry.fine || 0);
-                                htmlContent += `
-                                    <tr>
-                                        <td>${index + 1}</td>
-                                        <td><strong>${entry.member}</strong></td>
-                                        <td>Rs. ${(entry.deposit || 0).toFixed(2)}</td>
-                                        <td>Rs. ${(entry.loanInterest || 0).toFixed(2)}</td>
-                                        <td>Rs. ${(entry.installment || 0).toFixed(2)}</td>
-                                        <td>Rs. ${(entry.fine || 0).toFixed(2)}</td>
-                                        <td><strong>Rs. ${rowTotal.toFixed(2)}</strong></td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="edit-btn" onclick='openEditModal("${entry.id}", ${JSON.stringify(entry).replace(/'/g, "\\'")})'>
-                                                    <span>✏️</span> Edit
-                                                </button>
-                                                <button class="delete-btn" onclick="confirmDelete('${entry.id}')">
-                                                    <span>🗑️</span> Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `;
-                            });
-                            
-                            // Month total row in table
-                            htmlContent += `
-                                <tr class="month-total">
-                                    <td colspan="2"><strong>Month Total</strong></td>
-                                    <td><strong>Rs. ${monthTotalDeposit.toFixed(2)}</strong></td>
-                                    <td><strong>Rs. ${monthTotalLoanInterest.toFixed(2)}</strong></td>
-                                    <td><strong>Rs. ${monthTotalInstallment.toFixed(2)}</strong></td>
-                                    <td><strong>Rs. ${monthTotalFine.toFixed(2)}</strong></td>
-                                    <td><strong>Rs. ${monthGrandTotal.toFixed(2)}</strong></td>
-                                    <td></td>
-                                </tr>
-                            `;
-                            
-                            htmlContent += `
-                                        </tbody>
-                                    </table>
-                                </div>
-                            `;
-                        }
-                    });
-                    
-                    // Year total summary
-                    const yearGrandTotal = yearTotalDeposit + yearTotalLoanInterest + yearTotalInstallment + yearTotalFine;
-                    htmlContent += `
-                        <div class="month-total-summary" style="background: linear-gradient(135deg, #8e44ad, #6c3483);">
-                            <h4>Year ${year} Totals</h4>                            <div class="month-total-grid">
-                                <div class="month-total-item">
-                                    <div class="label">Deposit</div>
-                                    <div class="value">Rs. ${yearTotalDeposit.toFixed(2)}</div>
-                                </div>
-                                <div class="month-total-item">
-                                    <div class="label">Loan Interest</div>
-                                    <div class="value">Rs. ${yearTotalLoanInterest.toFixed(2)}</div>
-                                </div>
-                                <div class="month-total-item">
-                                    <div class="label">Installment</div>
-                                    <div class="value">Rs. ${yearTotalInstallment.toFixed(2)}</div>
-                                </div>
-                                <div class="month-total-item">
-                                    <div class="label">Fine</div>
-                                    <div class="value">Rs. ${yearTotalFine.toFixed(2)}</div>
-                                </div>
-                                <div class="month-total-item">
-                                    <div class="label">Grand Total</div>
-                                    <div class="value">Rs. ${yearGrandTotal.toFixed(2)}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-            
-            dataContainer.innerHTML = htmlContent || '<div class="empty-state">📭 No monthly entries found.</div>';
-        }
-
-        // Display loan data
-        function displayLoanData(loanEntries) {
-            const loanDataContainer = document.getElementById('loanDataContainer');
-            
-            if (loanEntries.length === 0) {
-                loanDataContainer.innerHTML = '<div class="empty-state">📭 No loan entries found.</div>';
-                return;
-            }
-            
-            // Build loan table HTML
-            let loanHTML = `
-                <div style="overflow-x: auto;">
-                    <table class="loan-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Year</th>
-                                <th>Month</th>
-                                <th>Member</th>
-                                <th>Loan Amount</th>                                <th>Loan Taken Date</th>
-                                <th>Loan Maturity Date</th>
-                                <th>Matured</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            loanEntries.forEach((entry, index) => {
-                // Format Gregorian dates if available
-                let takenDate = '';
-                let maturityDate = '';
-                
-                if (entry.loanTakenDate) {
-                    takenDate = new Date(entry.loanTakenDate).toLocaleDateString('en-GB');
-                }
-                
-                if (entry.loanMaturityDate) {
-                    maturityDate = new Date(entry.loanMaturityDate).toLocaleDateString('en-GB');
-                }
-                
-                // Format Nepali dates if available
-                let takenNepali = '';
-                let maturityNepali = '';
-                
-                if (entry.loanTakenNepaliDate) {
-                    const [y, m, d] = entry.loanTakenNepaliDate.split('-');
-                    const nepaliMonths = [
-                        'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
-                        'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
-                    ];
-                    takenNepali = `<div class="nepali-date">${nepaliMonths[parseInt(m)-1]} ${d}, ${y}</div>`;
-                }
-                
-                if (entry.loanMaturityNepaliDate) {
-                    const [y, m, d] = entry.loanMaturityNepaliDate.split('-');
-                    const nepaliMonths = [
-                        'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin',
-                        'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
-                    ];
-                    maturityNepali = `<div class="nepali-date">${nepaliMonths[parseInt(m)-1]} ${d}, ${y}</div>`;
-                }
-                
-                // Determine maturity status
-                const isMatured = entry.isMatured || false;
-                const maturityStatusClass = isMatured ? 'matured' : 'not-matured';
-                const maturityStatusText = isMatured ? 'Matured' : 'Not Matured';
-                
-                // Add row class for matured loans                const rowClass = isMatured ? 'matured-loan' : '';
-                
-                loanHTML += `
-                    <tr class="${rowClass}">
-                        <td>${index + 1}</td>
-                        <td><strong>${entry.year}</strong><div class="nepali-year-badge">वि.सं. ${entry.year}</div></td>
-                        <td><strong>${entry.month}</strong></td>
-                        <td>${entry.member}</td>
-                        <td><strong>Rs. ${(entry.loanAmount || 0).toFixed(2)}</strong></td>
-                        <td>
-                            ${takenNepali}
-                            ${takenDate ? `<div class="gregorian-date">${takenDate}</div>` : ''}
-                        </td>
-                        <td>
-                            ${maturityNepali}
-                            ${maturityDate ? `<div class="gregorian-date">${maturityDate}</div>` : ''}
-                        </td>
-                        <td style="text-align: center;">
-                            <div class="maturity-checkbox ${isMatured ? 'checked' : ''}" 
-                                 onclick="toggleLoanMaturity('${entry.id}', ${!isMatured})">
-                                ${isMatured ? '✓' : ''}
-                            </div>
-                            <div class="maturity-status ${maturityStatusClass}">
-                                ${maturityStatusText}
-                            </div>
-                        </td>
-                        <td>
-                            <button class="delete-btn" onclick="confirmDelete('${entry.id}')">
-                                <span>🗑️</span> Delete
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            loanHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            loanDataContainer.innerHTML = loanHTML;
-        }
-
-        // Display grand totals (shared section for both monthly and loan data)
-        function displayGrandTotals(monthlyEntries, loanEntries) {
-            const grandTotalSection = document.getElementById('grandTotalSection');
-            
-            // Calculate monthly totals with safety checks
-            let totalDeposit = 0;            let totalLoanInterest = 0;
-            let totalInstallment = 0;
-            let totalFine = 0;
-            let totalRecords = monthlyEntries.length;
-            
-            monthlyEntries.forEach(entry => {
-                totalDeposit += (entry.deposit || 0);
-                totalLoanInterest += (entry.loanInterest || 0);
-                totalInstallment += (entry.installment || 0);
-                totalFine += (entry.fine || 0);
-            });
-            
-            // Store total active installment globally for loan maturity validation
-            globalTotalActiveInstallment = totalInstallment;
-            
-            // Calculate active loan amount (exclude matured loans)
-            let activeLoanAmount = 0;
-            loanEntries.forEach(entry => {
-                if (!entry.isMatured) {
-                    activeLoanAmount += (entry.loanAmount || 0);
-                }
-            });
-            
-            // Calculate based on active tab
-            let grandTotalSectionHTML = '';
-            
-            if (currentRecordTab === 'monthly') {
-                // Monthly Records Section Calculations
-                const grandTotal = totalDeposit + totalFine;
-                const adjustedLoanAmount = Math.max(0, activeLoanAmount - totalInstallment);
-                const totalRemainingAmount = (grandTotal - adjustedLoanAmount) + totalLoanInterest;
-                
-                // Build grand total HTML for Monthly Records
-                grandTotalSectionHTML = `
-                    <div class="grand-total-section">
-                        <h3>Financial Summary (Monthly Records)</h3>
-                        <div class="grand-total-grid">
-                            <div class="total-card deposit-card">
-                                <div class="label">Total Deposit</div>
-                                <div class="value">Rs. ${totalDeposit.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card fine-card">
-                                <div class="label">Total Fine</div>
-                                <div class="value">Rs. ${totalFine.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card active-loan-card">
-                                <div class="label">Active Loan Amount</div>
-                                <div class="value">Rs. ${activeLoanAmount.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card grand-total-card">                                <div class="label">Grand Total</div>
-                                <div class="value">Rs. ${grandTotal.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card remaining-amount-card">
-                                <div class="label">Total Remaining Amount</div>
-                                <div class="value">Rs. ${totalRemainingAmount.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="calculation-details">
-                            <h4>Calculation Details:</h4>
-                            <p><strong>Grand Total</strong> = Total Deposit + Total Fine</p>
-                            <p class="formula">Rs. ${grandTotal.toFixed(2)} = Rs. ${totalDeposit.toFixed(2)} + Rs. ${totalFine.toFixed(2)}</p>
-                            
-                            <p><strong>Adjusted Loan Amount</strong> = Active Loan Amount - Total Installment</p>
-                            <p class="formula">Rs. ${adjustedLoanAmount.toFixed(2)} = Rs. ${activeLoanAmount.toFixed(2)} - Rs. ${totalInstallment.toFixed(2)}</p>
-                            
-                            <p><strong>Total Remaining Amount</strong> = (Grand Total - Adjusted Loan Amount) + Total Loan Interest</p>
-                            <p class="formula">Rs. ${totalRemainingAmount.toFixed(2)} = (Rs. ${grandTotal.toFixed(2)} - Rs. ${adjustedLoanAmount.toFixed(2)}) + Rs. ${totalLoanInterest.toFixed(2)}</p>
-                            
-                            <p style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                                <strong>Note:</strong> The Active Loan Amount is reduced by the Total Installment collected to calculate the Adjusted Loan Amount. 
-                                This represents the net loan exposure after accounting for installment payments.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Loan Records Section Calculations
-                const totalLoanInterestAmount = totalLoanInterest;
-                const totalInstallmentAmount = totalInstallment;
-                const adjustedLoanAmount = Math.max(0, activeLoanAmount - totalInstallment);
-                const totalRemainingAmount = (totalDeposit + totalFine - adjustedLoanAmount) + totalLoanInterest;
-                
-                // Build grand total HTML for Loan Records
-                grandTotalSectionHTML = `
-                    <div class="grand-total-section">
-                        <h3>Financial Summary (Loan Records)</h3>
-                        <div class="grand-total-grid">
-                            <div class="total-card loan-interest-card">
-                                <div class="label">Total Loan Interest</div>
-                                <div class="value">Rs. ${totalLoanInterestAmount.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card installment-card">
-                                <div class="label">Total Installment</div>
-                                <div class="value">Rs. ${totalInstallmentAmount.toFixed(2)}</div>
-                            </div>
-                            <div class="total-card active-loan-card">
-                                <div class="label">Active Loan Amount</div>
-                                <div class="value">Rs. ${activeLoanAmount.toFixed(2)}</div>                            </div>
-                            <div class="total-card remaining-amount-card">
-                                <div class="label">Total Remaining Amount</div>
-                                <div class="value">Rs. ${totalRemainingAmount.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="calculation-details">
-                            <h4>Calculation Details:</h4>
-                            <p><strong>Adjusted Loan Amount</strong> = Active Loan Amount - Total Installment</p>
-                            <p class="formula">Rs. ${adjustedLoanAmount.toFixed(2)} = Rs. ${activeLoanAmount.toFixed(2)} - Rs. ${totalInstallmentAmount.toFixed(2)}</p>
-                            
-                            <p><strong>Total Remaining Amount</strong> = (Total Deposit + Total Fine - Adjusted Loan Amount) + Total Loan Interest</p>
-                            <p class="formula">Rs. ${totalRemainingAmount.toFixed(2)} = (Rs. ${totalDeposit.toFixed(2)} + Rs. ${totalFine.toFixed(2)} - Rs. ${adjustedLoanAmount.toFixed(2)}) + Rs. ${totalLoanInterestAmount.toFixed(2)}</p>
-                            
-                            <p style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
-                                <strong>Note:</strong> The Total Installment collected is subtracted from the Active Loan Amount to determine the net loan exposure. 
-                                The Total Remaining Amount represents the net financial position after accounting for all deposits, fines, loan interest, and adjusted loan amounts.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            grandTotalSection.innerHTML = grandTotalSectionHTML;
-        }
-
-        // Confirm delete - store the document ID and show password modal
-        function confirmDelete(docId) {
-            entryToDelete = docId;
-            actionType = 'delete';
-            showPasswordModal();
-        }
-
-        // Show password modal
-        function showPasswordModal() {
-            const modal = document.getElementById('passwordModal');
-            const message = document.getElementById('passwordMessage');
-            
-            if (actionType === 'delete') {
-                message.innerHTML = '⚠️ <strong>Delete Confirmation</strong><br>Enter password to delete this entry';
-            } else if (actionType === 'show_form') {
-                message.innerHTML = '🔒 <strong>Access Required</strong><br>Enter password to access the entry form';
-            }
-            
-            modal.classList.add('active');
-            document.getElementById('passwordInput').focus();
-            document.getElementById('passwordInput').value = '';
-        }
-        // Close password modal
-        function closePasswordModal() {
-            document.getElementById('passwordModal').classList.remove('active');
-            entryToDelete = null;
-            actionType = null;
-        }
-
-        // Verify password and perform action
-        async function verifyPassword() {
-            const password = document.getElementById('passwordInput').value;
-            const passwordMessage = document.getElementById('passwordMessage');
-            
-            if (!password) {
-                passwordMessage.innerHTML = '⚠️ <strong>Please enter a password</strong>';
-                passwordMessage.style.color = '#e74c3c';
-                return;
-            }
-            
-            if (actionType === 'delete') {
-                if (password === DELETE_PASSWORD) {
-                    // Close modal FIRST
-                    document.getElementById('passwordModal').classList.remove('active');
-                    
-                    // Store the ID locally before resetting
-                    const docIdToDelete = entryToDelete;
-                    
-                    // Reset variables
-                    entryToDelete = null;
-                    actionType = null;
-                    
-                    // Now delete the entry
-                    await deleteEntry(docIdToDelete);
-                } else {
-                    passwordMessage.innerHTML = '❌ <strong>Incorrect password!</strong><br>Default password is: admin123';
-                    passwordMessage.style.color = '#e74c3c';
-                    document.getElementById('passwordInput').value = '';
-                    document.getElementById('passwordInput').focus();
-                }
-            } else if (actionType === 'show_form') {
-                if (password === FORM_ACCESS_PASSWORD) {
-                    // Close modal
-                    document.getElementById('passwordModal').classList.remove('active');
-                    
-                    // Reset variables
-                    entryToDelete = null;
-                    actionType = null;
-                    
-                    // Show form
-                    showFormSection();
-                } else {                    passwordMessage.innerHTML = '❌ <strong>Incorrect password!</strong><br>Default password is: admin123';
-                    passwordMessage.style.color = '#e74c3c';
-                    document.getElementById('passwordInput').value = '';
-                    document.getElementById('passwordInput').focus();
-                }
-            }
-        }
-
-        // Delete entry function
-        async function deleteEntry(docId) {
-            if (!docId) {
-                const statusDiv = document.getElementById('dataStatus');
-                statusDiv.innerHTML = '<div class="status-message error">❌ Error: No document ID provided</div>';
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 5000);
-                return;
-            }
-            
-            try {
-                await db.collection('memberMonthlyTracker').doc(docId).delete();
-                
-                // Refresh data
-                await fetchData();
-                
-                // Show success message
-                const statusDiv = document.getElementById('dataStatus');
-                statusDiv.innerHTML = '<div class="status-message success">✅ Entry deleted successfully!</div>';
-                
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Error deleting document: ', error);
-                const statusDiv = document.getElementById('dataStatus');
-                statusDiv.innerHTML = `<div class="status-message error">❌ Delete failed: ${error.message}</div>`;
-                
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 5000);
-            }
-        }
-
-        // Show Form Section
-        function showFormSection() {
-            document.getElementById('formSection').classList.add('active');
-            document.getElementById('formHiddenSection').style.display = 'none';
-        }
-        // Hide Form Section
-        function hideFormSection() {
-            document.getElementById('formSection').classList.remove('active');
-            document.getElementById('formHiddenSection').style.display = 'block';
-        }
-
-        // Show Password Modal for Form Access
-        function showPasswordModalForForm() {
-            actionType = 'show_form';
-            showPasswordModal();
-        }
-
-        // Toggle Member Management Section
-        function toggleMemberManagement() {
-            const section = document.getElementById('memberManagementSection');
-            if (section.style.display === 'block') {
-                section.style.display = 'none';
-            } else {
-                section.style.display = 'block';
-                displayMemberList();
-            }
-        }
-
-        // Add new member function
-        function addNewMember() {
-            const newMemberInput = document.getElementById('newMemberName');
-            const newMemberName = newMemberInput.value.trim();
-            
-            if (!newMemberName) {
-                alert('Please enter a member name');
-                return;
-            }
-            
-            const memberSelect = document.getElementById('member');
-            const loanMemberSelect = document.getElementById('loanMember');
-            const filterMemberSelect = document.getElementById('filterMember');
-            
-            // Check if member already exists
-            for (let i = 0; i < memberSelect.options.length; i++) {
-                if (memberSelect.options[i].value === newMemberName) {
-                    alert('Member already exists!');
-                    return;
-                }
-            }
-            
-            // Add to dropdowns
-            const newOption = document.createElement('option');
-            newOption.value = newMemberName;
-            newOption.textContent = newMemberName;
-            memberSelect.appendChild(newOption);            
-            const newLoanOption = document.createElement('option');
-            newLoanOption.value = newMemberName;
-            newLoanOption.textContent = newMemberName;
-            loanMemberSelect.appendChild(newLoanOption);
-            
-            const newFilterOption = document.createElement('option');
-            newFilterOption.value = newMemberName;
-            newFilterOption.textContent = newMemberName;
-            filterMemberSelect.appendChild(newFilterOption);
-            
-            // Clear input
-            newMemberInput.value = '';
-            
-            // Show success
-            alert(`Member "${newMemberName}" added successfully!`);
-            
-            // Refresh member list display
-            displayMemberList();
-        }
-
-        // Display member list
-        function displayMemberList() {
-            const memberListDiv = document.getElementById('memberList');
-            const memberSelect = document.getElementById('member');
-            
-            let html = '';
-            for (let i = 2; i < memberSelect.options.length; i++) { // Skip first two options
-                const memberName = memberSelect.options[i].value;
-                html += `
-                    <div class="member-item">
-                        <span>${memberName}</span>
-                        <button class="remove-member-btn" onclick="removeMember(${i}, '${memberName}')">Remove</button>
-                    </div>
-                `;
-            }
-            
-            if (html === '') {
-                html = '<div style="text-align: center; padding: 8px; color: #718096;">No members added yet</div>';
-            }
-            
-            memberListDiv.innerHTML = html;
-        }
-
-        // Remove member function
-        function removeMember(index, memberName) {
-            if (!confirm(`Are you sure you want to remove "${memberName}"?`)) {
-                return;
-            }
-                        const memberSelect = document.getElementById('member');
-            const loanMemberSelect = document.getElementById('loanMember');
-            const filterMemberSelect = document.getElementById('filterMember');
-            
-            // Remove from all dropdowns
-            memberSelect.remove(index);
-            
-            for (let i = 0; i < loanMemberSelect.options.length; i++) {
-                if (loanMemberSelect.options[i].value === memberName) {
-                    loanMemberSelect.remove(i);
-                    break;
-                }
-            }
-            
-            for (let i = 0; i < filterMemberSelect.options.length; i++) {
-                if (filterMemberSelect.options[i].value === memberName) {
-                    filterMemberSelect.remove(i);
-                    break;
-                }
-            }
-            
-            // Refresh member list
-            displayMemberList();
-        }
-
-        // Export to CSV function
-        async function exportToCSV() {
-            try {
-                const snapshot = await db.collection('memberMonthlyTracker').get();
-                
-                if (snapshot.empty) {
-                    alert('No data to export!');
-                    return;
-                }
-                
-                // Convert to array and sort
-                const dataArray = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    dataArray.push({
-                        ...data,
-                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
-                    });
-                });
-                
-                dataArray.sort((a, b) => b.timestamp - a.timestamp);
-                
-                let csvContent = 'text/csv;charset=utf-8,';
-                csvContent += 'Type,Year,Month,Member,Deposit,Loan Interest,Installment,Fine,Loan Amount,Loan Taken Date,Loan Maturity Date,Matured,Total\n';
-                                dataArray.forEach(entry => {
-                    if (entry.type === 'loan') {
-                        const isMatured = entry.isMatured ? 'Yes' : 'No';
-                        csvContent += `"Loan","${entry.year}","${entry.month}","${entry.member}",,,,"${entry.loanAmount || 0}","${entry.loanTakenDate || ''}","${entry.loanMaturityDate || ''}","${isMatured}",${entry.loanAmount || 0}\n`;
-                    } else {
-                        const total = (entry.deposit || 0) + (entry.loanInterest || 0) + (entry.installment || 0) + (entry.fine || 0);
-                        csvContent += `"Monthly","${entry.year}","${entry.month}","${entry.member}",${entry.deposit || 0},${entry.loanInterest || 0},${entry.installment || 0},${entry.fine || 0},,,,"${total}\n`;
-                    }
-                });
-                
-                // Create download link
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement('a');
-                link.setAttribute('href', encodedUri);
-                link.setAttribute('download', `gms_bachat_kosh_${new Date().toISOString().split('T')[0]}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                alert('Data exported successfully!');
-                
-            } catch (error) {
-                console.error('Error exporting data: ', error);
-                alert('Error exporting  ' + error.message);
-            }
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            const passwordModal = document.getElementById('passwordModal');
-            const editModal = document.getElementById('editModal');
-            
-            if (event.target == passwordModal) {
-                closePasswordModal();
-            }
-            
-            if (event.target == editModal) {
-                closeEditModal();
-            }
-        };
-    </script>
+<!-- LOGIN SECTION -->
+<div id="login-section">
+<div class="login-card text-center">
+<h2 class="mb-4 text-primary fw-bold"><i class="fas fa-piggy-bank me-2"></i>GMS Bachat Kosh</h2>
+<p class="text-muted mb-4">Select Login Type</p>
+<div id="loginError" class="alert alert-danger d-none small"></div>
+<form id="loginForm" class="mb-4">
+<div class="mb-3 text-start">
+<label class="form-label small fw-bold">Admin Email</label>
+<input type="email" id="loginEmail" class="form-control" placeholder="admin@example.com" required>
+</div>
+<div class="mb-3 text-start">
+<label class="form-label small fw-bold">Password</label>
+<input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+</div>
+<button type="submit" class="btn btn-primary-custom w-100 mb-2">
+<span id="loginBtnText">Login as Admin</span>
+<span id="loginLoader" class="spinner-border spinner-border-sm d-none ms-2"></span>
+</button>
+</form>
+<div class="position-relative my-3">
+<hr class="text-muted">
+<span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">OR</span>
+</div>
+<button onclick="loginAsGuest()" class="btn btn-outline-secondary w-100 py-2">
+<i class="fas fa-user-eye me-2"></i> Enter as Guest (View Only)
+</button>
+<div class="mt-4 small text-muted">
+Guests can view records but cannot add, edit, or delete data.
+</div>
+</div>
+</div>
+<!-- APP SECTION -->
+<div id="app-section">
+<div class="header-section text-center">
+<div class="container d-flex justify-content-between align-items-center">
+<div class="w-100">
+<h1 class="header-title"><i class="fas fa-piggy-bank me-2"></i>GMS Bachat Kosh</h1>
+<p class="header-subtitle mb-0">Financial Details</p>
+</div>
+<div class="position-absolute top-0 end-0 p-3">
+<button onclick="logout()" class="btn btn-sm btn-outline-light" id="logoutBtn">
+<i class="fas fa-sign-out-alt me-1"></i> <span id="logoutText">Logout</span>
+</button>
+</div>
+</div>
+</div>
+<div class="container-fluid px-3 px-md-4">
+<div class="row">
+<!-- Input Section (Left) - ADMIN ONLY -->
+<div class="col-lg-4 col-xl-3 mb-4 admin-only">
+<div class="card sticky-top" style="top: 20px; z-index: 100;">
+<div class="card-header">
+<span id="formTitle"><i class="fas fa-plus-circle me-2"></i>Add Entry</span>
+<button id="cancelEditBtn" class="btn btn-sm btn-outline-danger d-none" onclick="cancelEdit()">Cancel</button>
+</div>
+<div class="card-body">
+<div id="debugError" class="alert alert-danger small py-2 d-none"></div>
+<div class="row g-2 mb-3">
+<div class="col-6">
+<label class="input-label">Month</label>
+<select id="nepaliMonth" class="form-select form-select-sm">
+<option value="Baishakh">Baishakh</option><option value="Jestha">Jestha</option>
+<option value="Ashadh">Ashadh</option><option value="Shrawan">Shrawan</option>
+<option value="Bhadra">Bhadra</option><option value="Ashwin">Ashwin</option>
+<option value="Kartik">Kartik</option><option value="Mangsir">Mangsir</option>
+<option value="Poush">Poush</option><option value="Magh">Magh</option>
+<option value="Falgun">Falgun</option><option value="Chaitra">Chaitra</option>
+</select>
+</div>
+<div class="col-6">
+<label class="input-label">Year</label>
+<select id="entryYear" class="form-select form-select-sm"></select>
+</div>
+</div>
+<div id="membersInputContainer" style="max-height: 55vh; overflow-y: auto; padding-right: 2px;"></div>
+<div class="totals-bar">
+<span class="small fw-bold">Grand Total (Cash)</span>
+<span class="grand-total-val" id="grandTotalDisplay">0</span>
+</div>
+<small class="text-muted d-block mt-1 text-center" style="font-size: 0.7rem;">*Excludes Loan Principal</small>
+<button id="saveBtn" class="btn btn-primary-custom mt-3 admin-only-btn">
+<span id="btnText">Save Record</span>
+<span id="btnLoader" class="spinner-border spinner-border-sm d-none ms-2"></span>
+</button>
+<div id="messageArea" class="mt-2 text-center small fw-bold"></div>
+</div>
+</div>
+</div>
+<!-- Right Section (Tabs) -->
+<div class="col-lg-8 col-xl-9" id="contentCol">
+<div class="card">
+<div class="card-header p-0">
+<ul class="nav nav-tabs w-100 m-0 p-3" id="mainTab" role="tablist">
+<li class="nav-item" role="presentation">
+<button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-content" type="button" role="tab" onclick="switchTab('history')">
+<i class="fas fa-history me-2"></i>Records History
+</button>
+</li>
+<li class="nav-item" role="presentation">
+<button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-content" type="button" role="tab" onclick="switchTab('summary')">
+<i class="fas fa-users me-2"></i>Member Summary
+</button>
+</li>
+<li class="nav-item" role="presentation">
+<button class="nav-link" id="loan-detail-tab" data-bs-toggle="tab" data-bs-target="#loan-detail-content" type="button" role="tab" onclick="switchTab('loanDetail')">
+<i class="fas fa-file-contract me-2"></i>Loan Detail Summary
+</button>
+</li>
+<li class="nav-item" role="presentation">
+<button class="nav-link" id="loan-payment-tab" data-bs-toggle="tab" data-bs-target="#loan-payment-content" type="button" role="tab" onclick="switchTab('loanPayment')">
+<i class="fas fa-money-bill-wave me-2"></i>Loan Payment Summary
+</button>
+</li>
+<li class="nav-item" role="presentation">
+<button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank-content" type="button" role="tab" onclick="switchTab('bank')">
+<i class="fas fa-university me-2"></i>Bank Details
+</button>
+</li>
+</ul>
+</div>
+<div class="card-body bg-white">
+<div id="history-content" class="tab-content-section active">
+<div class="d-flex justify-content-end mb-2">
+<button class="btn btn-sm btn-outline-secondary" onclick="loadHistory()"><i class="fas fa-sync-alt"></i> Refresh</button>
+</div>
+<div id="historyContainer">
+<div class="text-center text-muted py-5">Loading records...</div>
+</div>
+</div>
+<div id="summary-content" class="tab-content-section">
+<div class="d-flex justify-content-end mb-2">
+<button class="btn btn-sm btn-outline-secondary" onclick="loadSummary()"><i class="fas fa-sync-alt"></i> Refresh</button>
+</div>
+<div id="summaryContainer">
+<div class="text-center text-muted py-5">Loading summary...</div>
+</div>
+</div>
+<!-- Loan Detail Summary Tab -->
+<div id="loan-detail-content" class="tab-content-section">
+<div class="row">
+<div class="col-md-4 mb-3 admin-only">
+<div class="loan-entry-panel sticky-top" style="top: 20px;">
+<div class="loan-entry-title">
+<i class="fas fa-file-contract"></i> LOAN DETAIL ENTRY
+</div>
+<div class="loan-entry-divider"></div>
+<form id="loanDetailForm">
+<div class="mb-3">
+<label class="input-label">Member's Name</label>
+<select id="loanDetailMember" class="form-select form-select-sm" required>
+<option value="">Select Member</option>
+</select>
+</div>
+<div class="mb-3">
+<label class="input-label">Loan Taken Date</label>
+<div class="date-group">
+<select id="loanDetailDay" class="form-select form-select-sm" required>
+<option value="">Day</option>
+</select>
+<select id="loanDetailMonth" class="form-select form-select-sm" required>
+<option value="">Month</option>
+</select>
+<select id="loanDetailYear" class="form-select form-select-sm" required>
+<option value="">Year</option>
+</select>
+</div>
+</div>
+<div class="mb-3">
+<label class="input-label">Loan Amount (NPR)</label>
+<input type="number" id="loanDetailAmount" class="form-control form-control-sm" required>
+</div>
+<div class="mb-3">
+<label class="input-label">Interest Rate (%)</label>
+<input type="number" step="0.1" id="loanDetailRate" class="form-control form-control-sm" required>
+</div>
+<div class="mb-3">
+<label class="input-label">Duration (Months)</label>
+<input type="number" id="loanDetailDuration" class="form-control form-control-sm" required>
+</div>
+<div class="mb-3">
+<label class="input-label">Maturity Date (Auto)</label>
+<input type="text" id="loanDetailMaturity" class="form-control form-control-sm readonly-field" readonly>
+</div>
+<button type="submit" class="btn btn-primary-custom">
+<i class="fas fa-save me-2"></i>Save Loan Detail
+</button>
+</form>
+<div id="loanDetailMessage" class="mt-2 text-center small fw-bold"></div>
+</div>
+</div>
+<div class="col-md-8">
+<div class="d-flex justify-content-end mb-2">
+<button class="btn btn-sm btn-outline-secondary" onclick="loadLoanDetails()"><i class="fas fa-sync-alt"></i> Refresh</button>
+</div>
+<div class="loan-stats-row mb-3">
+<div class="loan-stat-card active">
+<div class="loan-stat-label">Active Loans</div>
+<div class="loan-stat-value" id="activeLoanCountDetail">0</div>
+</div>
+<div class="loan-stat-card closed">
+<div class="loan-stat-label">Closed Loans</div>
+<div class="loan-stat-value" id="closedLoanCountDetail">0</div>
+</div>
+<div class="loan-stat-card overdue">
+<div class="loan-stat-label">Overdue Loans</div>
+<div class="loan-stat-value" id="overdueLoanCountDetail">0</div>
+</div>
+<div class="loan-stat-card">
+<div class="loan-stat-label">Total Outstanding</div>
+<div class="loan-stat-value" id="totalOutstandingDetail">NPR 0</div>
+</div>
+</div>
+<div id="loanDetailContainer">
+<div class="text-center text-muted py-5">Loading loan details...</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Loan Payment Summary Tab -->
+<div id="loan-payment-content" class="tab-content-section">
+<div class="row">
+<div class="col-md-4 mb-3 admin-only">
+<div class="loan-entry-panel sticky-top" style="top: 20px;">
+<div class="loan-entry-title">
+<i class="fas fa-money-bill-wave"></i> ADD LOAN PAYMENT
+</div>
+<div class="loan-entry-divider"></div>
+<form id="loanPaymentForm">
+<div class="mb-3">
+<label class="input-label">Member's Name</label>
+<select id="paymentMember" class="form-select form-select-sm" required onchange="loadMemberLoanInfo()">
+<option value="">Select Member</option>
+</select>
+</div>
+<div class="row g-2 mb-3">
+<div class="col-6">
+<label class="input-label">Month</label>
+<select id="paymentMonth" class="form-select form-select-sm" required>
+<option value="Baishakh">Baishakh</option><option value="Jestha">Jestha</option>
+<option value="Ashadh">Ashadh</option><option value="Shrawan">Shrawan</option>
+<option value="Bhadra">Bhadra</option><option value="Ashwin">Ashwin</option>
+<option value="Kartik">Kartik</option><option value="Mangsir">Mangsir</option>
+<option value="Poush">Poush</option><option value="Magh">Magh</option>
+<option value="Falgun">Falgun</option><option value="Chaitra">Chaitra</option>
+</select>
+</div>
+<div class="col-6">
+<label class="input-label">Year</label>
+<select id="paymentYear" class="form-select form-select-sm" required></select>
+</div>
+</div>
+<div class="mb-3">
+<label class="input-label">Loan Amount (NPR)</label>
+<input type="number" id="paymentLoanAmount" class="form-control form-control-sm" readonly>
+</div>
+<div class="mb-3">
+<label class="input-label">Interest Amount (NPR)</label>
+<input type="number" id="paymentInterest" class="form-control form-control-sm" required>
+</div>
+<div class="mb-3">
+<label class="input-label">Installment Paid (NPR)</label>
+<input type="number" id="paymentInstallment" class="form-control form-control-sm" required oninput="calculateRemaining()">
+</div>
+<div class="mb-3">
+<label class="input-label">Remaining Amount</label>
+<input type="number" id="paymentRemaining" class="form-control form-control-sm readonly-field" readonly>
+</div>
+<button type="submit" class="btn btn-primary-custom">
+<i class="fas fa-paper-plane me-2"></i>Submit Payment
+</button>
+</form>
+<div id="paymentMessage" class="mt-2 text-center small fw-bold"></div>
+</div>
+</div>
+<div class="col-md-8">
+<div class="d-flex justify-content-end mb-2">
+<button class="btn btn-sm btn-outline-secondary" onclick="loadLoanPayments()"><i class="fas fa-sync-alt"></i> Refresh</button>
+</div>
+<div class="loan-stats-row mb-3">
+<div class="loan-stat-card">
+<div class="loan-stat-label">Total Payments</div>
+<div class="loan-stat-value" id="totalPaymentsCount">0</div>
+</div>
+<div class="loan-stat-card">
+<div class="loan-stat-label">Total Paid</div>
+<div class="loan-stat-value" id="totalPaidAmount">NPR 0</div>
+</div>
+<div class="loan-stat-card">
+<div class="loan-stat-label">Total Interest</div>
+<div class="loan-stat-value" id="totalInterestPaid">NPR 0</div>
+</div>
+<div class="loan-stat-card">
+<div class="loan-stat-label">Total Remaining</div>
+<div class="loan-stat-value" id="totalRemainingAmount">NPR 0</div>
+</div>
+</div>
+<div id="loanPaymentContainer">
+<div class="text-center text-muted py-5">Loading payment details...</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bank Details Tab Content -->
+<div id="bank-content" class="tab-content-section">
+<div class="bank-details-container">
+<div class="bank-card">
+<div class="bank-title">
+<i class="fas fa-university"></i> GMS Kosh Bank A/C Details
+</div>
+<div class="bank-row">
+<span class="bank-label">Bank Name:</span>
+<span class="bank-value">Himalayan Bank Limited</span>
+</div>
+<div class="bank-row">
+<span class="bank-label">A/C Number:</span>
+<span class="bank-value copyable" onclick="copyToClipboard('21254325340012')" title="Click to copy">
+21254325340012 <i class="far fa-copy copy-icon"></i>
+</span>
+</div>
+<div class="bank-row">
+<span class="bank-label">Account Name:</span>
+<span class="bank-value">Bindu/Anil Maharjan</span>
+</div>
+<div class="bank-note">
+<i class="fas fa-info-circle me-1"></i> Please use the account number above for all deposits. Click on the account number to copy.
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title fw-bold" id="modalTitle">Record Details</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="modalBody" style="max-height: 70vh; overflow-y: auto;"></div>
+<div class="modal-footer bg-light">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<button type="button" class="btn btn-danger admin-only" id="modalDeleteBtn">Delete Record</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Details Modal -->
+<div class="modal fade" id="memberDetailModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>Member Details</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="memberModalBody"></div>
+<div class="modal-footer bg-light">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+const firebaseConfig = {
+apiKey: "AIzaSyCHgrUuln0hRyEVYzCo3DHjLq-ApcseTeI",
+authDomain: "member-tracker-78f9f.firebaseapp.com",
+projectId: "member-tracker-78f9f",
+storageBucket: "member-tracker-78f9f.firebasestorage.app",
+messagingSenderId: "368007807825",
+appId: "1:368007807825:web:e80570af3567c4ed3a0970",
+measurementId: "G-WEP639W4HY"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const collectionName = "gms_bachat_kosh_v6";
+const loanDetailsCollection = "loan_details";
+const loanPaymentsCollection = "loan_payments";
+const members = [
+"Anil Maharjan", "Bindu Maharjan", "Manisha Maharjan",
+"Rajeep Maharjan", "Sajina Barahi", "Supreme Chitrakar"
+];
+const memberDetailsData = {
+"Anil Maharjan": { address: "Gwarko-07, Lalitpur", contact: "9808276033", email: "anilmaharjan@live.com", dob: "11-30-1990", joined: "2079 Bhadra" },
+"Bindu Maharjan": { address: "Gwarko-07, Lalitpur", contact: "98XXXXXXXX", email: "bindu@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" },
+"Manisha Maharjan": { address: "Lalitpur", contact: "98XXXXXXXX", email: "manisha@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" },
+"Rajeep Maharjan": { address: "Lalitpur", contact: "98XXXXXXXX", email: "rajeep@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" },
+"Sajina Barahi": { address: "Lalitpur", contact: "98XXXXXXXX", email: "sajina@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" },
+"Supreme Chitrakar": { address: "Lalitpur", contact: "98XXXXXXXX", email: "supreme@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" }
+};
+const nepaliMonthsOrder = [
+"Baishakh", "Jestha", "Ashadh", "Shrawan", "Bhadra", "Ashwin",
+"Kartik", "Mangsir", "Poush", "Magh", "Falgun", "Chaitra"
+];
+const nepaliMonths = [
+"Baishakh", "Jestha", "Ashadh", "Shrawan", "Bhadra", "Ashwin",
+"Kartik", "Mangsir", "Poush", "Magh", "Falgun", "Chaitra"
+];
+let currentEditId = null;
+let currentDeleteId = null;
+let allRecordsData = [];
+let allLoanDetails = [];
+let allLoanPayments = [];
+const membersContainer = document.getElementById('membersInputContainer');
+const saveBtn = document.getElementById('saveBtn');
+const grandTotalDisplay = document.getElementById('grandTotalDisplay');
+const messageArea = document.getElementById('messageArea');
+const historyContainer = document.getElementById('historyContainer');
+const summaryContainer = document.getElementById('summaryContainer');
+const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+const memberDetailModal = new bootstrap.Modal(document.getElementById('memberDetailModal'));
+const modalBody = document.getElementById('modalBody');
+const modalTitle = document.getElementById('modalTitle');
+const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+const formTitle = document.getElementById('formTitle');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+const yearSelect = document.getElementById('entryYear');
+const logoutBtn = document.getElementById('logoutBtn');
+const logoutText = document.getElementById('logoutText');
+// --- AUTHENTICATION ---
+onAuthStateChanged(auth, (user) => {
+if (user) {
+document.getElementById('login-section').style.display = 'none';
+document.getElementById('app-section').style.display = 'block';
+if (user.isAnonymous) {
+document.body.classList.remove('is-admin');
+logoutText.textContent = "Exit";
+} else {
+document.body.classList.add('is-admin');
+logoutText.textContent = "Logout";
+}
+initApp();
+} else {
+document.getElementById('login-section').style.display = 'flex';
+document.getElementById('app-section').style.display = 'none';
+document.body.classList.remove('is-admin');
+}
+});
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+e.preventDefault();
+const email = document.getElementById('loginEmail').value;
+const password = document.getElementById('loginPassword').value;
+const btnText = document.getElementById('loginBtnText');
+const loader = document.getElementById('loginLoader');
+const errorDiv = document.getElementById('loginError');
+btnText.textContent = "Logging in...";
+loader.classList.remove('d-none');
+errorDiv.classList.add('d-none');
+signInWithEmailAndPassword(auth, email, password)
+.then(() => { btnText.textContent = "Login as Admin"; loader.classList.add('d-none'); })
+.catch((error) => {
+btnText.textContent = "Login as Admin";
+loader.classList.add('d-none');
+errorDiv.textContent = "Invalid Email or Password.";
+errorDiv.classList.remove('d-none');
+});
+});
+window.loginAsGuest = () => {
+const btn = event.currentTarget;
+const originalText = btn.innerHTML;
+btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Entering...';
+btn.disabled = true;
+signInAnonymously(auth)
+.then(() => { btn.innerHTML = originalText; btn.disabled = false; })
+.catch((error) => {
+btn.innerHTML = originalText;
+btn.disabled = false;
+alert("Guest login failed: " + error.message);
+});
+};
+window.logout = () => {
+signOut(auth).then(() => { location.reload(); });
+};
+function initApp() {
+initDropdowns();
+initLoanDetailForm();
+initPaymentForm();
+renderInputs();
+loadHistory();
+}
+function initDropdowns() {
+yearSelect.innerHTML = '';
+for (let y = 2075; y <= 2085; y++) {
+const option = document.createElement('option');
+option.value = y;
+option.text = y;
+if (y === 2081) option.selected = true;
+yearSelect.appendChild(option);
+}
+// Payment year dropdown
+const paymentYearSelect = document.getElementById('paymentYear');
+paymentYearSelect.innerHTML = '';
+for (let y = 2075; y <= 2085; y++) {
+const option = document.createElement('option');
+option.value = y;
+option.text = y;
+if (y === 2082) option.selected = true;
+paymentYearSelect.appendChild(option);
+}
+}
+function initLoanDetailForm() {
+// Member dropdown
+const memberSelect = document.getElementById('loanDetailMember');
+memberSelect.innerHTML = '<option value="">Select Member</option>';
+members.forEach(m => {
+memberSelect.innerHTML += `<option value="${m}">${m}</option>`;
+});
+// Day dropdown
+const daySelect = document.getElementById('loanDetailDay');
+daySelect.innerHTML = '<option value="">Day</option>';
+for (let d = 1; d <= 32; d++) {
+daySelect.innerHTML += `<option value="${d}">${d}</option>`;
+}
+// Month dropdown
+const monthSelect = document.getElementById('loanDetailMonth');
+monthSelect.innerHTML = '<option value="">Month</option>';
+nepaliMonths.forEach(m => {
+monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
+});
+// Year dropdown
+const yearSelectLD = document.getElementById('loanDetailYear');
+yearSelectLD.innerHTML = '<option value="">Year</option>';
+for (let y = 2075; y <= 2085; y++) {
+yearSelectLD.innerHTML += `<option value="${y}">${y}</option>`;
+}
+// Calculate maturity date on duration change
+document.getElementById('loanDetailDuration').addEventListener('input', calculateMaturityDate);
+document.getElementById('loanDetailForm').addEventListener('submit', saveLoanDetail);
+}
+function initPaymentForm() {
+// Member dropdown
+const memberSelect = document.getElementById('paymentMember');
+memberSelect.innerHTML = '<option value="">Select Member</option>';
+members.forEach(m => {
+memberSelect.innerHTML += `<option value="${m}">${m}</option>`;
+});
+document.getElementById('loanPaymentForm').addEventListener('submit', saveLoanPayment);
+}
+function calculateMaturityDate() {
+const day = parseInt(document.getElementById('loanDetailDay').value) || 0;
+const month = document.getElementById('loanDetailMonth').value;
+const year = parseInt(document.getElementById('loanDetailYear').value) || 0;
+const duration = parseInt(document.getElementById('loanDetailDuration').value) || 0;
+if (!day || !month || !year || !duration) {
+document.getElementById('loanDetailMaturity').value = '';
+return;
+}
+const monthIdx = nepaliMonthsOrder.indexOf(month);
+let totalMonths = monthIdx + duration;
+let newYear = year;
+let newMonthIdx = totalMonths % 12;
+if (totalMonths >= 12) {
+newYear += Math.floor(totalMonths / 12);
+}
+const newMonth = nepaliMonthsOrder[newMonthIdx];
+document.getElementById('loanDetailMaturity').value = `${day} ${newMonth}, ${newYear}`;
+}
+function parseNepaliDateToNum(dateStr) {
+if (!dateStr) return 0;
+const parts = dateStr.split(' ');
+if (parts.length < 3) return 0;
+const day = parseInt(parts[0]);
+const year = parseInt(parts[2].replace(',', ''));
+const monthName = parts[1];
+const monthIdx = nepaliMonthsOrder.indexOf(monthName) + 1;
+return year * 10000 + monthIdx * 100 + day;
+}
+function getCurrentNepaliDateNum() {
+const now = new Date();
+const gYear = now.getFullYear();
+const gMonth = now.getMonth() + 1;
+let npYear = gYear + 57;
+if (gMonth < 4) npYear = gYear + 56;
+let npMonth = 1;
+if (gMonth >= 4 && gMonth <= 5) npMonth = 1;
+else if (gMonth >= 5 && gMonth <= 6) npMonth = 2;
+else if (gMonth >= 6 && gMonth <= 7) npMonth = 3;
+else if (gMonth >= 7 && gMonth <= 8) npMonth = 4;
+else if (gMonth >= 8 && gMonth <= 9) npMonth = 5;
+else if (gMonth >= 9 && gMonth <= 10) npMonth = 6;
+else if (gMonth >= 10 && gMonth <= 11) npMonth = 7;
+else if (gMonth >= 11 && gMonth <= 12) npMonth = 8;
+else if (gMonth >= 12 || gMonth <= 1) npMonth = 9;
+else if (gMonth >= 1 && gMonth <= 2) npMonth = 10;
+else if (gMonth >= 2 && gMonth <= 3) npMonth = 11;
+else if (gMonth >= 3 && gMonth <= 4) npMonth = 12;
+return npYear * 10000 + npMonth * 100 + 15;
+}
+const todayNP = getCurrentNepaliDateNum();
+// Save Loan Detail
+async function saveLoanDetail(e) {
+e.preventDefault();
+if (auth.currentUser.isAnonymous) {
+showMessage("loanDetailMessage", "Guests cannot save data.", "danger");
+return;
+}
+const member = document.getElementById('loanDetailMember').value;
+const day = document.getElementById('loanDetailDay').value;
+const month = document.getElementById('loanDetailMonth').value;
+const year = document.getElementById('loanDetailYear').value;
+const amount = parseFloat(document.getElementById('loanDetailAmount').value) || 0;
+const rate = parseFloat(document.getElementById('loanDetailRate').value) || 0;
+const duration = parseInt(document.getElementById('loanDetailDuration').value) || 0;
+const maturityDate = document.getElementById('loanDetailMaturity').value;
+if (!member || !day || !month || !year || !amount || !rate || !duration || !maturityDate) {
+showMessage("loanDetailMessage", "Please fill all fields.", "danger");
+return;
+}
+const takenDate = `${day} ${month}, ${year}`;
+try {
+await addDoc(collection(db, loanDetailsCollection), {
+member,
+takenDate,
+loanAmount: amount,
+interestRate: rate,
+duration,
+maturityDate,
+takenDateNum: parseNepaliDateToNum(takenDate),
+maturityDateNum: parseNepaliDateToNum(maturityDate),
+createdAt: new Date(),
+createdBy: auth.currentUser.email || "Admin"
+});
+showMessage("loanDetailMessage", "Loan detail saved!", "success");
+document.getElementById('loanDetailForm').reset();
+loadLoanDetails();
+} catch (error) {
+console.error(error);
+showMessage("loanDetailMessage", "Error: " + error.message, "danger");
+}
+}
+// Load Loan Details
+async function loadLoanDetails() {
+const container = document.getElementById('loanDetailContainer');
+container.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
+try {
+const q = query(collection(db, loanDetailsCollection), orderBy("createdAt", "desc"));
+const snapshot = await getDocs(q);
+allLoanDetails = [];
+if (snapshot.empty) {
+container.innerHTML = '<div class="text-center text-muted py-5">No loan details found.</div>';
+updateLoanDetailStats(0, 0, 0, 0);
+return;
+}
+snapshot.forEach(docSnap => {
+allLoanDetails.push({ id: docSnap.id, ...docSnap.data() });
+});
+// Calculate status for each loan
+let activeCount = 0, closedCount = 0, overdueCount = 0, totalOutstanding = 0;
+allLoanDetails.forEach(loan => {
+// Get payments for this loan
+const memberPayments = allLoanPayments.filter(p => p.member === loan.member);
+const totalPaid = memberPayments.reduce((sum, p) => sum + (p.installmentPaid || 0), 0);
+const isClosed = totalPaid >= loan.loanAmount;
+const isOverdue = !isClosed && todayNP > loan.maturityDateNum;
+if (isClosed) {
+loan.status = 'Closed';
+closedCount++;
+} else if (isOverdue) {
+loan.status = 'Overdue';
+overdueCount++;
+totalOutstanding += (loan.loanAmount - totalPaid);
+} else {
+loan.status = 'Active';
+activeCount++;
+totalOutstanding += (loan.loanAmount - totalPaid);
+}
+loan.totalPaid = totalPaid;
+loan.balance = Math.max(0, loan.loanAmount - totalPaid);
+});
+updateLoanDetailStats(activeCount, closedCount, overdueCount, totalOutstanding);
+// Build table
+let html = `<div class="table-responsive"><table class="loan-table"><thead><tr>
+<th class="col-month" style="text-align:left !important;">Member</th>
+<th>Loan Amount</th>
+<th>Rate</th>
+<th>Duration</th>
+<th>Taken Date</th>
+<th>Maturity</th>
+<th>Paid</th>
+<th>Balance</th>
+<th>Status</th>
+</tr></thead><tbody>`;
+allLoanDetails.forEach(loan => {
+let statusBadge = '';
+if (loan.status === 'Closed') statusBadge = '<span class="badge status-closed">Closed</span>';
+else if (loan.status === 'Overdue') statusBadge = '<span class="badge status-overdue">Overdue</span>';
+else statusBadge = '<span class="badge status-active">Active</span>';
+html += `<tr>
+<td class="col-month" style="text-align:left !important; font-weight:600;">${loan.member}</td>
+<td class="fw-bold">NPR ${loan.loanAmount.toLocaleString()}</td>
+<td>${loan.interestRate}%</td>
+<td>${loan.duration} mo</td>
+<td>${loan.takenDate}</td>
+<td>${loan.maturityDate}</td>
+<td class="text-success fw-bold">NPR ${loan.totalPaid.toLocaleString()}</td>
+<td class="${loan.balance > 0 ? 'text-danger fw-bold' : 'text-muted'}">NPR ${loan.balance.toLocaleString()}</td>
+<td>${statusBadge}</td>
+</tr>`;
+});
+html += `</tbody></table></div>`;
+container.innerHTML = html;
+} catch (error) {
+console.error(error);
+container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+}
+}
+function updateLoanDetailStats(active, closed, overdue, outstanding) {
+document.getElementById('activeLoanCountDetail').textContent = active;
+document.getElementById('closedLoanCountDetail').textContent = closed;
+document.getElementById('overdueLoanCountDetail').textContent = overdue;
+document.getElementById('totalOutstandingDetail').textContent = `NPR ${outstanding.toLocaleString()}`;
+}
+// Load Member Loan Info for Payment Form
+window.loadMemberLoanInfo = () => {
+const member = document.getElementById('paymentMember').value;
+if (!member) {
+document.getElementById('paymentLoanAmount').value = '';
+return;
+}
+const loan = allLoanDetails.find(l => l.member === member && l.status !== 'Closed');
+if (loan) {
+document.getElementById('paymentLoanAmount').value = loan.loanAmount;
+} else {
+document.getElementById('paymentLoanAmount').value = '';
+}
+calculateRemaining();
+};
+// Calculate Remaining Amount
+window.calculateRemaining = () => {
+const loanAmount = parseFloat(document.getElementById('paymentLoanAmount').value) || 0;
+const installment = parseFloat(document.getElementById('paymentInstallment').value) || 0;
+document.getElementById('paymentRemaining').value = Math.max(0, loanAmount - installment);
+};
+// Save Loan Payment
+async function saveLoanPayment(e) {
+e.preventDefault();
+if (auth.currentUser.isAnonymous) {
+showMessage("paymentMessage", "Guests cannot save data.", "danger");
+return;
+}
+const member = document.getElementById('paymentMember').value;
+const month = document.getElementById('paymentMonth').value;
+const year = document.getElementById('paymentYear').value;
+const loanAmount = parseFloat(document.getElementById('paymentLoanAmount').value) || 0;
+const interest = parseFloat(document.getElementById('paymentInterest').value) || 0;
+const installment = parseFloat(document.getElementById('paymentInstallment').value) || 0;
+const remaining = parseFloat(document.getElementById('paymentRemaining').value) || 0;
+if (!member || !month || !year || !installment) {
+showMessage("paymentMessage", "Please fill all required fields.", "danger");
+return;
+}
+try {
+await addDoc(collection(db, loanPaymentsCollection), {
+member,
+month,
+year,
+loanAmount,
+interestAmount: interest,
+installmentPaid: installment,
+remainingAmount: remaining,
+paymentDate: new Date(),
+createdBy: auth.currentUser.email || "Admin"
+});
+showMessage("paymentMessage", "Payment submitted!", "success");
+document.getElementById('loanPaymentForm').reset();
+loadLoanPayments();
+loadLoanDetails(); // Refresh loan details to update paid amounts
+} catch (error) {
+console.error(error);
+showMessage("paymentMessage", "Error: " + error.message, "danger");
+}
+}
+// Load Loan Payments
+async function loadLoanPayments() {
+const container = document.getElementById('loanPaymentContainer');
+container.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
+try {
+const q = query(collection(db, loanPaymentsCollection), orderBy("paymentDate", "desc"));
+const snapshot = await getDocs(q);
+allLoanPayments = [];
+if (snapshot.empty) {
+container.innerHTML = '<div class="text-center text-muted py-5">No payment records found.</div>';
+updatePaymentStats(0, 0, 0, 0);
+return;
+}
+snapshot.forEach(docSnap => {
+allLoanPayments.push({ id: docSnap.id, ...docSnap.data() });
+});
+// Calculate stats
+let totalPayments = allLoanPayments.length;
+let totalPaid = allLoanPayments.reduce((sum, p) => sum + (p.installmentPaid || 0), 0);
+let totalInterest = allLoanPayments.reduce((sum, p) => sum + (p.interestAmount || 0), 0);
+let totalRemaining = allLoanPayments.reduce((sum, p) => sum + (p.remainingAmount || 0), 0);
+updatePaymentStats(totalPayments, totalPaid, totalInterest, totalRemaining);
+// Build table
+let html = `<div class="table-responsive"><table class="payment-table"><thead><tr>
+<th class="col-month" style="text-align:left !important;">Member</th>
+<th>Month/Year</th>
+<th>Loan Amount</th>
+<th>Interest</th>
+<th>Installment Paid</th>
+<th>Remaining</th>
+<th>Payment Date</th>
+</tr></thead><tbody>`;
+allLoanPayments.forEach(p => {
+html += `<tr>
+<td class="col-month" style="text-align:left !important; font-weight:600;">${p.member}</td>
+<td>${p.month} ${p.year}</td>
+<td>NPR ${p.loanAmount.toLocaleString()}</td>
+<td class="text-success">NPR ${p.interestAmount.toLocaleString()}</td>
+<td class="text-primary fw-bold">NPR ${p.installmentPaid.toLocaleString()}</td>
+<td class="${p.remainingAmount > 0 ? 'text-danger' : 'text-muted'}">NPR ${p.remainingAmount.toLocaleString()}</td>
+<td>${p.paymentDate ? new Date(p.paymentDate.seconds * 1000).toLocaleDateString() : '-'}</td>
+</tr>`;
+});
+html += `</tbody></table></div>`;
+container.innerHTML = html;
+} catch (error) {
+console.error(error);
+container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+}
+}
+function updatePaymentStats(count, paid, interest, remaining) {
+document.getElementById('totalPaymentsCount').textContent = count;
+document.getElementById('totalPaidAmount').textContent = `NPR ${paid.toLocaleString()}`;
+document.getElementById('totalInterestPaid').textContent = `NPR ${interest.toLocaleString()}`;
+document.getElementById('totalRemainingAmount').textContent = `NPR ${remaining.toLocaleString()}`;
+}
+function showMessage(elementId, msg, type) {
+const el = document.getElementById(elementId);
+el.textContent = msg;
+el.className = `mt-2 text-center small fw-bold text-${type}`;
+setTimeout(() => el.textContent = '', 3000);
+}
+// Tab Switching
+window.switchTab = (tabName) => {
+const sections = ['history', 'summary', 'loanDetail', 'loanPayment', 'bank'];
+sections.forEach(t => {
+document.getElementById(`${t}-content`).classList.remove('active');
+const tabEl = document.getElementById(`${t}-tab`);
+if (tabEl) tabEl.classList.remove('active');
+});
+document.getElementById(`${tabName}-content`).classList.add('active');
+const activeTab = document.getElementById(`${tabName}-tab`);
+if (activeTab) activeTab.classList.add('active');
+if (tabName === 'summary') loadSummary();
+if (tabName === 'loanDetail') loadLoanDetails();
+if (tabName === 'loanPayment') loadLoanPayments();
+};
+// Existing functions (loadHistory, loadSummary, etc.)
+async function loadHistory() {
+historyContainer.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
+try {
+const q = query(collection(db, collectionName), orderBy("timestamp", "desc"));
+const snapshot = await getDocs(q);
+historyContainer.innerHTML = '';
+allRecordsData = [];
+if (snapshot.empty) {
+historyContainer.innerHTML = '<div class="text-center text-muted py-5">No records found.</div>';
+return;
+}
+const grouped = {};
+snapshot.forEach(docSnap => {
+const data = docSnap.data();
+const y = data.year;
+if (!grouped[y]) grouped[y] = [];
+const record = { id: docSnap.id, ...data };
+grouped[y].push(record);
+allRecordsData.push(record);
+});
+Object.keys(grouped).sort((a, b) => b - a).forEach(year => {
+let records = grouped[year];
+records.sort((a, b) => {
+const indexA = nepaliMonthsOrder.indexOf(a.month);
+const indexB = nepaliMonthsOrder.indexOf(b.month);
+return indexB - indexA;
+});
+const uniqueId = `year-${year}`;
+let yearGrandTotal = 0;
+records.forEach(rec => { yearGrandTotal += rec.totals.grand; });
+const accordionItem = document.createElement('div');
+accordionItem.className = 'accordion-item';
+accordionItem.innerHTML = `
+<h2 class="accordion-header" id="heading${uniqueId}">
+<button class="accordion-button ${year === Object.keys(grouped)[0] ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${uniqueId}" aria-expanded="${year === Object.keys(grouped)[0]}">
+<i class="far fa-calendar-alt me-2"></i> Year ${year}
+<span class="badge bg-light text-primary ms-2">${records.length} Months</span>
+</button>
+</h2>
+<div id="collapse${uniqueId}" class="accordion-collapse collapse ${year === Object.keys(grouped)[0] ? 'show' : ''}" data-bs-parent="#historyContainer">
+<div class="accordion-body p-0">
+<div class="table-responsive">
+<table class="history-table">
+<thead>
+<tr>
+<th class="col-month">Month</th>
+<th>Deposit</th>
+<th>Interest</th>
+<th>Install</th>
+<th>Fine</th>
+<th>Total</th>
+<th>Loans</th>
+<th class="admin-only admin-only-table-cell">Action</th>
+<th>View</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr class="yearly-total-row">
+<td colspan="6" class="yearly-total-label">Year ${year} Grand Total</td>
+<td colspan="2" style="text-align: center; font-size: 1.1rem;">NPR ${yearGrandTotal.toLocaleString()}</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+</div>
+`;
+const tbody = accordionItem.querySelector('tbody');
+records.forEach(rec => {
+const t = rec.totals;
+const hasLoan = t.loanCount > 0;
+const loanBadge = hasLoan ? `<span class="badge-loan" onclick="window.showLoanDetails('${rec.id}')"><i class="fas fa-file-invoice-dollar me-1"></i>${t.loanCount}</span>` : '<span class="text-muted small">-</span>';
+let actionButtons = '';
+if (!auth.currentUser.isAnonymous) {
+actionButtons = `
+<button class="btn btn-action btn-outline-primary admin-only" onclick="window.editRecord('${rec.id}')"><i class="fas fa-pen"></i></button>
+<button class="btn btn-action btn-outline-danger admin-only" onclick="window.confirmDelete('${rec.id}')"><i class="fas fa-trash"></i></button>
+`;
+}
+const viewButton = `<button class="btn btn-action btn-outline-secondary" onclick="window.viewDetails('${rec.id}')"><i class="fas fa-eye"></i></button>`;
+const row = `<tr>
+<td class="col-month">${rec.month}</td>
+<td class="text-primary fw-bold">${t.deposit.toLocaleString()}</td>
+<td class="text-success">${t.interest.toLocaleString()}</td>
+<td class="text-info">${t.installment.toLocaleString()}</td>
+<td class="text-danger">${t.fine.toLocaleString()}</td>
+<td class="fw-bold text-dark">${t.grand.toLocaleString()}</td>
+<td>${loanBadge}</td>
+<td class="admin-only admin-only-table-cell">${actionButtons}</td>
+<td>${viewButton}</td>
+</tr>`;
+tbody.innerHTML += row;
+});
+historyContainer.appendChild(accordionItem);
+});
+} catch (error) {
+console.error(error);
+historyContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+}
+}
+function loadSummary() {
+if (allRecordsData.length === 0) {
+summaryContainer.innerHTML = '<div class="text-center text-muted py-5">No data available.</div>';
+return;
+}
+let memberStats = {};
+members.forEach(m => { memberStats[m] = { deposit: 0, fine: 0, interest: 0, total: 0 }; });
+let grandTotalAll = 0;
+let totalInterestAll = 0;
+allRecordsData.forEach(rec => {
+members.forEach(m => {
+const data = rec.members[m];
+if (data) {
+const dep = data.deposit || 0;
+const fn = data.fine || 0;
+const intr = data.interest || 0;
+memberStats[m].deposit += dep;
+memberStats[m].fine += fn;
+memberStats[m].interest += intr;
+memberStats[m].total += (dep + fn);
+grandTotalAll += (dep + fn);
+totalInterestAll += intr;
+}
+});
+});
+let html = `<div class="table-responsive"><table class="summary-table"><thead><tr>
+<th class="col-month" style="text-align:left !important;">Member Name</th>
+<th class="text-primary">Total Deposit</th>
+<th class="text-success">Total Interest</th>
+<th class="text-danger">Total Fine</th>
+<th class="text-dark" style="background:#eef2ff !important;">Subtotal (Dep+Fine)</th>
+</tr></thead><tbody>`;
+members.forEach(m => {
+const stats = memberStats[m];
+html += `<tr>
+<td class="col-month" style="text-align:left !important; font-weight:600;">
+<span class="member-link" onclick="window.showMemberDetails('${m}')">
+<i class="fas fa-user-circle me-1"></i>${m}
+</span>
+</td>
+<td class="text-primary fw-bold">${stats.deposit.toLocaleString()}</td>
+<td class="text-success fw-bold">${stats.interest.toLocaleString()}</td>
+<td class="text-danger fw-bold">${stats.fine.toLocaleString()}</td>
+<td class="fw-bold" style="background:#f9fafb;">${stats.total.toLocaleString()}</td>
+</tr>`;
+});
+html += `</tbody><tfoot>
+<tr class="summary-total-row">
+<td class="text-end" style="text-align:right !important; padding-right:15px;">GRAND TOTAL (All Members)</td>
+<td colspan="4" style="font-size:1.2rem; text-align:center;">NPR ${grandTotalAll.toLocaleString()}</td>
+</tr>
+<tr class="summary-interest-row">
+<td class="text-end" style="text-align:right !important; padding-right:15px;">Total Interest Collected</td>
+<td colspan="4" style="text-align:center; color: #059669;">NPR ${totalInterestAll.toLocaleString()}</td>
+</tr>
+</tfoot></table></div>`;
+summaryContainer.innerHTML = html;
+}
+// Expose globals
+window.editRecord = (id) => {
+if (auth.currentUser.isAnonymous) return;
+getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
+.then(snap => {
+const target = snap.docs.find(d => d.id === id);
+if (target) {
+const data = target.data();
+currentEditId = id;
+document.getElementById('nepaliMonth').value = data.month;
+document.getElementById('entryYear').value = data.year;
+renderInputs(data);
+formTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Entry';
+cancelEditBtn.classList.remove('d-none');
+saveBtn.classList.replace('btn-primary-custom', 'btn-warning');
+saveBtn.style.background = '#f59e0b';
+saveBtn.style.color = 'white';
+document.getElementById('btnText').innerText = "Update";
+window.scrollTo({ top: 0, behavior: 'smooth' });
+showMessage("messageArea", "Editing mode active", "info");
+}
+});
+};
+window.cancelEdit = () => {
+currentEditId = null;
+formTitle.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Entry';
+cancelEditBtn.classList.add('d-none');
+saveBtn.classList.replace('btn-warning', 'btn-primary-custom');
+saveBtn.style.background = '';
+saveBtn.style.color = '';
+document.getElementById('btnText').innerText = "Save Record";
+renderInputs(null);
+messageArea.innerText = "";
+};
+window.showLoanDetails = (id) => {
+getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
+.then(snap => {
+const target = snap.docs.find(d => d.id === id);
+if (!target) return;
+const data = target.data();
+let html = `<h6 class="mb-3 text-center text-primary">Loan Records for ${data.month} ${data.year}</h6>`;
+let found = false;
+for (const [name, vals] of Object.entries(data.members)) {
+if (vals.loanAmount > 0) {
+found = true;
+html += `
+<div class="loan-detail-box mb-2">
+<div class="fw-bold text-dark"><i class="fas fa-user me-2"></i>${name}</div>
+<div class="row mt-2">
+<div class="col-6"><small class="text-muted">Amount:</small><br><strong>NPR ${vals.loanAmount.toLocaleString()}</strong></div>
+<div class="col-6"><small class="text-muted">Rate:</small><br><strong>${vals.interestRate}%</strong></div>
+<div class="col-6"><small class="text-muted">Taken:</small><br>${vals.takenDate || '-'}</div>
+<div class="col-6"><small class="text-muted">Maturity:</small><br>${vals.maturityDate || '-'}</div>
+</div>
+</div>`;
+}
+}
+if (!found) html += '<p class="text-center text-muted">No loans recorded for this month.</p>';
+modalBody.innerHTML = html;
+modalTitle.innerText = "Loan Information";
+modalDeleteBtn.classList.add('d-none');
+detailModal.show();
+});
+};
+window.viewDetails = (id) => {
+getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
+.then(snap => {
+const target = snap.docs.find(d => d.id === id);
+if (!target) return;
+const data = target.data();
+let html = `<h5 class="mb-4 text-center border-bottom pb-2">${data.month} ${data.year}</h5>`;
+for (const [name, vals] of Object.entries(data.members)) {
+if (vals.cashTotal === 0 && vals.loanAmount === 0) continue;
+html += `
+<div class="card mb-3 shadow-sm">
+<div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+<strong>${name}</strong>
+<span class="badge bg-primary">Total: NPR ${vals.cashTotal.toLocaleString()}</span>
+</div>
+<div class="card-body py-2">
+<div class="row">
+<div class="col-6">
+<div class="detail-row"><span class="detail-label">Deposit</span><span class="detail-value positive-value">${vals.deposit > 0 ? vals.deposit.toLocaleString() : '-'}</span></div>
+${vals.interest > 0 ? `<div class="detail-row"><span class="detail-label">Interest</span><span class="detail-value positive-value">${vals.interest.toLocaleString()}</span></div>` : ''}
+${vals.installment > 0 ? `<div class="detail-row"><span class="detail-label">Installment</span><span class="detail-value positive-value">${vals.installment.toLocaleString()}</span></div>` : ''}
+${vals.fine > 0 ? `<div class="detail-row"><span class="detail-label">Fine</span><span class="detail-value text-danger">${vals.fine.toLocaleString()}</span></div>` : ''}
+</div>
+<div class="col-6 border-start">
+${vals.loanAmount > 0 ? `
+<div class="small text-muted mb-1">Loan Details:</div>
+<div class="detail-row"><span class="detail-label">Amount</span><span class="detail-value">${vals.loanAmount.toLocaleString()}</span></div>
+<div class="detail-row"><span class="detail-label">Rate</span><span class="detail-value">${vals.interestRate}%</span></div>
+<div class="detail-row"><span class="detail-label">Taken</span><span class="detail-value">${vals.takenDate || '-'}</span></div>
+<div class="detail-row"><span class="detail-label">Maturity</span><span class="detail-value">${vals.maturityDate || '-'}</span></div>
+` : '<div class="text-muted small fst-italic mt-2">No loan record</div>'}
+</div>
+</div>
+</div>
+</div>`;
+}
+html += `<div class="alert alert-success mt-3 mb-0 text-center fw-bold fs-5">Grand Total: NPR ${data.totals.grand.toLocaleString()}</div>`;
+modalBody.innerHTML = html;
+modalTitle.innerText = "Full Record Details";
+if (!auth.currentUser.isAnonymous) {
+modalDeleteBtn.classList.remove('d-none');
+currentDeleteId = id;
+} else {
+modalDeleteBtn.classList.add('d-none');
+}
+detailModal.show();
+});
+};
+window.showMemberDetails = (memberName) => {
+const details = memberDetailsData[memberName];
+if (!details) {
+alert("Details not found for this member.");
+return;
+}
+const html = `
+<div class="text-center mb-3">
+<div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem; color: var(--primary);">
+<i class="fas fa-user"></i>
+</div>
+</div>
+<table class="table table-borderless">
+<tr><td class="fw-bold">Name:</td><td class="text-end">${memberName}</td></tr>
+<tr><td class="fw-bold">Address:</td><td class="text-end">${details.address}</td></tr>
+<tr><td class="fw-bold">Contact:</td><td class="text-end">${details.contact}</td></tr>
+<tr><td class="fw-bold">Email:</td><td class="text-end">${details.email}</td></tr>
+<tr><td class="fw-bold">DOB:</td><td class="text-end">${details.dob}</td></tr>
+<tr><td class="fw-bold">Kosh Joined Date:</td><td class="text-end">${details.joined}</td></tr>
+</table>`;
+document.getElementById('memberModalBody').innerHTML = html;
+memberDetailModal.show();
+};
+window.confirmDelete = (id) => {
+if (auth.currentUser.isAnonymous) return;
+if (confirm("Delete this record?")) {
+deleteDoc(doc(db, collectionName, id)).then(() => {
+if (currentEditId === id) cancelEdit();
+loadHistory();
+if (document.getElementById('summary-content').classList.contains('active')) loadSummary();
+detailModal.hide();
+showMessage("messageArea", "Deleted", "warning");
+}).catch(e => showMessage("messageArea", e.message, "danger"));
+}
+};
+modalDeleteBtn.addEventListener('click', () => { if (currentDeleteId) window.confirmDelete(currentDeleteId); });
+function setLoading(isLoading) {
+saveBtn.disabled = isLoading;
+document.getElementById('btnLoader').classList.toggle('d-none', !isLoading);
+}
+function createDateSelectors(prefix, member, data = {}) {
+const days = Array.from({ length: 32 }, (_, i) => i + 1);
+const getSelected = (type, val) => (data[`${prefix}${type}`] == val ? 'selected' : '');
+const getDaySelected = (d) => (data[`${prefix}Day`] == d ? 'selected' : '');
+return `
+<div class="date-group">
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="day">
+<option value="" disabled>Day</option>
+${days.map(d => `<option value="${d}" ${getDaySelected(d)}>${d}</option>`).join('')}
+</select>
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="month">
+<option value="" disabled>Month</option>
+${nepaliMonths.map(m => `<option value="${m}" ${getSelected('Month', m)}>${m}</option>`).join('')}
+</select>
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="year">
+<option value="" disabled>Year</option>
+${Array.from({ length: 11 }, (_, i) => 2075 + i).map(y => `<option value="${y}" ${getSelected('Year', y)}>${y}</option>`).join('')}
+</select>
+</div>`;
+}
+function renderInputs(dataToFill = null) {
+membersContainer.innerHTML = '';
+members.forEach((member) => {
+const d = dataToFill && dataToFill.members[member] ? dataToFill.members[member] : {};
+const div = document.createElement('div');
+div.className = `member-card ${dataToFill ? 'edit-mode' : ''}`;
+div.innerHTML = `
+<div class="member-name"><i class="fas fa-user-circle text-primary"></i> ${member}</div>
+<div class="section-title">Financials (Cash Flow)</div>
+<div class="row g-2">
+<div class="col-6"><label class="input-label">Deposit</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="deposit" value="${d.deposit || 0}"></div>
+<div class="col-6"><label class="input-label">Interest</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interest" value="${d.interest || 0}"></div>
+<div class="col-6"><label class="input-label">Installment</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="installment" value="${d.installment || 0}"></div>
+<div class="col-6"><label class="input-label">Fine</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="fine" value="${d.fine || 0}"></div>
+</div>
+<div class="section-title">Loan Record (Info Only)</div>
+<div class="row g-2">
+<div class="col-6"><label class="input-label">Loan Amount</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="loanAmount" value="${d.loanAmount || 0}"></div>
+<div class="col-6"><label class="input-label">Rate (%)</label><input type="number" step="0.1" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interestRate" value="${d.interestRate || 0}"></div>
+<div class="col-12"><label class="input-label">Taken Date</label>${createDateSelectors('taken', member, d)}</div>
+<div class="col-12"><label class="input-label">Maturity Date</label>${createDateSelectors('maturity', member, d)}</div>
+</div>`;
+membersContainer.appendChild(div);
+});
+document.querySelectorAll('.calc-input').forEach(input => input.addEventListener('input', calculateTotals));
+calculateTotals();
+}
+function calculateTotals() {
+let grandTotal = 0;
+members.forEach(member => {
+const types = ['deposit', 'interest', 'installment', 'fine'];
+let memberTotal = 0;
+types.forEach(type => {
+const val = parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`)?.value) || 0;
+memberTotal += val;
+});
+grandTotal += memberTotal;
+});
+grandTotalDisplay.textContent = `NPR ${grandTotal.toLocaleString()}`;
+return grandTotal;
+}
+function getDateFromSelects(prefix, member) {
+const day = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="day"]`)?.value;
+const month = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="month"]`)?.value;
+const year = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="year"]`)?.value;
+if (day && month && year) return `${day} ${month}, ${year}`;
+return '';
+}
+saveBtn.addEventListener('click', async () => {
+if (auth.currentUser.isAnonymous) { showMessage("messageArea", "Guests cannot save data.", "danger"); return; }
+const month = document.getElementById('nepaliMonth').value;
+const year = document.getElementById('entryYear').value;
+if (!year) { showMessage("messageArea", "Enter Year", "danger"); return; }
+let memberData = {};
+let sums = { deposit: 0, interest: 0, installment: 0, fine: 0, loanCount: 0 };
+members.forEach(member => {
+const getVal = (type) => parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`).value) || 0;
+const deposit = getVal('deposit');
+const interest = getVal('interest');
+const installment = getVal('installment');
+const fine = getVal('fine');
+const loanAmount = getVal('loanAmount');
+const interestRate = getVal('interestRate');
+const takenDate = getDateFromSelects('taken', member);
+const maturityDate = getDateFromSelects('maturity', member);
+const cashTotal = deposit + interest + installment + fine;
+memberData[member] = { deposit, interest, installment, fine, loanAmount, interestRate, takenDate, maturityDate, cashTotal };
+sums.deposit += deposit; sums.interest += interest; sums.installment += installment; sums.fine += fine;
+if (loanAmount > 0) sums.loanCount++;
+});
+const grandTotal = Object.values(memberData).reduce((acc, curr) => acc + curr.cashTotal, 0);
+setLoading(true);
+try {
+const payload = { month, year, timestamp: new Date(), members: memberData, totals: { ...sums, grand: grandTotal }, updatedAt: new Date() };
+if (currentEditId) {
+await updateDoc(doc(db, collectionName, currentEditId), payload);
+showMessage("messageArea", "Updated!", "success");
+cancelEdit();
+} else {
+payload.createdAt = new Date();
+payload.createdBy = auth.currentUser.email || "Admin";
+await addDoc(collection(db, collectionName), payload);
+showMessage("messageArea", "Saved!", "success");
+renderInputs(null);
+}
+loadHistory();
+if (document.getElementById('summary-content').classList.contains('active')) loadSummary();
+} catch (error) {
+console.error(error);
+showMessage("messageArea", "Error: " + error.message, "danger");
+} finally {
+setLoading(false);
+}
+});
+window.copyToClipboard = (text) => {
+navigator.clipboard.writeText(text).then(() => {
+alert("Account Number Copied: " + text);
+}).catch(err => {
+console.error('Failed to copy: ', err);
+});
+};
+// Expose all window functions
+window.editRecord = editRecord;
+window.cancelEdit = cancelEdit;
+window.showLoanDetails = showLoanDetails;
+window.viewDetails = viewDetails;
+window.showMemberDetails = showMemberDetails;
+window.confirmDelete = confirmDelete;
+window.switchTab = switchTab;
+window.logout = logout;
+window.loginAsGuest = loginAsGuest;
+window.copyToClipboard = copyToClipboard;
+window.loadMemberLoanInfo = loadMemberLoanInfo;
+window.calculateRemaining = calculateRemaining;
+</script>
 </body>
 </html>
