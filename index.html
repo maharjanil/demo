@@ -79,11 +79,11 @@ font-weight: 700;
 .accordion-button:not(.collapsed) { background-color: var(--primary); color: white; }
 .accordion-button::after { filter: invert(1); opacity: 0.7; }
 .accordion-button:not(.collapsed)::after { filter: invert(1); }
-.history-table, .summary-table, .loan-table, .payment-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-.history-table th, .summary-table th, .loan-table th, .payment-table th { background: #f9fafb; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 10px; text-align: center; }
-.history-table td, .summary-table td, .loan-table td, .payment-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: center; vertical-align: middle; }
-.history-table tr:last-child td, .summary-table tr:last-child td, .loan-table tr:last-child td, .payment-table tr:last-child td { border-bottom: none; }
-.history-table tr:hover, .summary-table tr:hover, .loan-table tr:hover, .payment-table tr:hover { background-color: #f9fafb; }
+.history-table, .summary-table, .loan-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.history-table th, .summary-table th, .loan-table th { background: #f9fafb; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 10px; text-align: center; }
+.history-table td, .summary-table td, .loan-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: center; vertical-align: middle; }
+.history-table tr:last-child td, .summary-table tr:last-child td, .loan-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover, .summary-table tr:hover, .loan-table tr:hover { background-color: #f9fafb; }
 .col-month { text-align: left !important; font-weight: 600; color: var(--primary); }
 .badge-loan { background-color: #e0e7ff; color: #4338ca; font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
 .badge-loan:hover { background-color: #c7d2fe; }
@@ -122,6 +122,7 @@ font-size: 1.1rem;
 font-weight: 800;
 }
 .summary-total-row td { border-top: 2px solid var(--primary-light); }
+/* Summary Loan Row Styles */
 .summary-loan-row {
 background-color: #f0fdfa !important;
 font-weight: 600;
@@ -129,6 +130,7 @@ font-weight: 600;
 .summary-loan-row td {
 border-top: 1px solid var(--primary-light);
 }
+/* Summary Interest Row Styles */
 .summary-interest-row {
 background-color: #ecfdf5 !important;
 font-weight: 600;
@@ -136,6 +138,7 @@ font-weight: 600;
 .summary-interest-row td {
 border-top: 1px solid var(--primary-light);
 }
+/* Summary Balance Row Styles */
 .summary-balance-row {
 background-color: #fef3c7 !important;
 font-weight: 700;
@@ -149,14 +152,17 @@ border-top: 2px solid #f59e0b;
 .date-group select:first-child { flex: 0.8; }
 .tab-content-section { display: none; }
 .tab-content-section.active { display: block; }
+/* Updated Status Badges */
 .status-active { background-color: #d1fae5; color: #065f46; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
 .status-closed { background-color: #e5e7eb; color: #374151; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
 .status-overdue { background-color: #fee2e2; color: #991b1b; font-weight: 700; padding: 6px 10px; border-radius: 6px; }
+/* Utility to hide elements for non-admins/guests */
 .admin-only { display: none !important; }
 body.is-admin .admin-only { display: inline-block !important; }
 body.is-admin .admin-only-btn { display: block !important; }
 body.is-admin .admin-only-flex { display: flex !important; }
 body.is-admin .admin-only-table-cell { display: table-cell !important; }
+/* Member Link Style */
 .member-link {
 color: var(--primary);
 text-decoration: none;
@@ -168,6 +174,7 @@ transition: all 0.2s;
 color: var(--primary-light);
 text-decoration: underline;
 }
+/* Bank Details Tab Styling */
 .bank-details-container {
 padding: 2rem;
 text-align: center;
@@ -242,65 +249,6 @@ color: var(--text-muted);
 text-align: center;
 font-style: italic;
 }
-/* Loan Entry Form Styles */
-.loan-entry-panel {
-background: #f8fafc;
-border-radius: 12px;
-padding: 1.5rem;
-border: 1px solid var(--border);
-}
-.loan-entry-title {
-font-size: 1rem;
-font-weight: 700;
-color: var(--primary);
-margin-bottom: 1rem;
-display: flex;
-align-items: center;
-gap: 8px;
-}
-.loan-entry-divider {
-height: 2px;
-background: var(--border);
-margin: 0.5rem 0 1rem 0;
-}
-.loan-stats-row {
-display: flex;
-gap: 1rem;
-margin-bottom: 1rem;
-flex-wrap: wrap;
-}
-.loan-stat-card {
-flex: 1;
-min-width: 150px;
-background: white;
-border-radius: 12px;
-padding: 1rem;
-box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-text-align: center;
-border-left: 4px solid var(--primary);
-}
-.loan-stat-card.active { border-left-color: #059669; }
-.loan-stat-card.closed { border-left-color: #6b7280; }
-.loan-stat-card.overdue { border-left-color: #dc2626; }
-.loan-stat-label {
-font-size: 0.75rem;
-text-transform: uppercase;
-color: var(--text-muted);
-font-weight: 600;
-margin-bottom: 0.5rem;
-}
-.loan-stat-value {
-font-size: 1.3rem;
-font-weight: 700;
-color: var(--text-main);
-}
-.loan-stat-card.active .loan-stat-value { color: #059669; }
-.loan-stat-card.closed .loan-stat-value { color: #6b7280; }
-.loan-stat-card.overdue .loan-stat-value { color: #dc2626; }
-.readonly-field {
-background-color: #f3f4f6 !important;
-cursor: not-allowed;
-}
 </style>
 </head>
 <body>
@@ -310,6 +258,7 @@ cursor: not-allowed;
 <h2 class="mb-4 text-primary fw-bold"><i class="fas fa-piggy-bank me-2"></i>GMS Bachat Kosh</h2>
 <p class="text-muted mb-4">Select Login Type</p>
 <div id="loginError" class="alert alert-danger d-none small"></div>
+<!-- Admin Login Form -->
 <form id="loginForm" class="mb-4">
 <div class="mb-3 text-start">
 <label class="form-label small fw-bold">Admin Email</label>
@@ -328,6 +277,7 @@ cursor: not-allowed;
 <hr class="text-muted">
 <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">OR</span>
 </div>
+<!-- Guest Login Button -->
 <button onclick="loginAsGuest()" class="btn btn-outline-secondary w-100 py-2">
 <i class="fas fa-user-eye me-2"></i> Enter as Guest (View Only)
 </button>
@@ -338,12 +288,14 @@ Guests can view records but cannot add, edit, or delete data.
 </div>
 <!-- APP SECTION -->
 <div id="app-section">
+<!-- Header -->
 <div class="header-section text-center">
 <div class="container d-flex justify-content-between align-items-center">
 <div class="w-100">
 <h1 class="header-title"><i class="fas fa-piggy-bank me-2"></i>GMS Bachat Kosh</h1>
 <p class="header-subtitle mb-0">Financial Details</p>
 </div>
+<!-- Logout Button -->
 <div class="position-absolute top-0 end-0 p-3">
 <button onclick="logout()" class="btn btn-sm btn-outline-light" id="logoutBtn">
 <i class="fas fa-sign-out-alt me-1"></i> <span id="logoutText">Logout</span>
@@ -379,7 +331,9 @@ Guests can view records but cannot add, edit, or delete data.
 <select id="entryYear" class="form-select form-select-sm"></select>
 </div>
 </div>
-<div id="membersInputContainer" style="max-height: 55vh; overflow-y: auto; padding-right: 2px;"></div>
+<div id="membersInputContainer" style="max-height: 55vh; overflow-y: auto; padding-right: 2px;">
+<!-- Dynamic Inputs -->
+</div>
 <div class="totals-bar">
 <span class="small fw-bold">Grand Total (Cash)</span>
 <span class="grand-total-val" id="grandTotalDisplay">0</span>
@@ -409,13 +363,8 @@ Guests can view records but cannot add, edit, or delete data.
 </button>
 </li>
 <li class="nav-item" role="presentation">
-<button class="nav-link" id="loan-detail-tab" data-bs-toggle="tab" data-bs-target="#loan-detail-content" type="button" role="tab" onclick="switchTab('loanDetail')">
-<i class="fas fa-file-contract me-2"></i>Loan Detail Summary
-</button>
-</li>
-<li class="nav-item" role="presentation">
-<button class="nav-link" id="loan-payment-tab" data-bs-toggle="tab" data-bs-target="#loan-payment-content" type="button" role="tab" onclick="switchTab('loanPayment')">
-<i class="fas fa-money-bill-wave me-2"></i>Loan Payment Summary
+<button class="nav-link" id="loan-tab" data-bs-toggle="tab" data-bs-target="#loan-content" type="button" role="tab" onclick="switchTab('loan')">
+<i class="fas fa-hand-holding-usd me-2"></i>Loan Summary
 </button>
 </li>
 <li class="nav-item" role="presentation">
@@ -442,169 +391,12 @@ Guests can view records but cannot add, edit, or delete data.
 <div class="text-center text-muted py-5">Loading summary...</div>
 </div>
 </div>
-<!-- Loan Detail Summary Tab -->
-<div id="loan-detail-content" class="tab-content-section">
-<div class="row">
-<div class="col-md-4 mb-3 admin-only">
-<div class="loan-entry-panel sticky-top" style="top: 20px;">
-<div class="loan-entry-title">
-<i class="fas fa-file-contract"></i> LOAN DETAIL ENTRY
-</div>
-<div class="loan-entry-divider"></div>
-<form id="loanDetailForm">
-<div class="mb-3">
-<label class="input-label">Member's Name</label>
-<select id="loanDetailMember" class="form-select form-select-sm" required>
-<option value="">Select Member</option>
-</select>
-</div>
-<div class="mb-3">
-<label class="input-label">Loan Taken Date</label>
-<div class="date-group">
-<select id="loanDetailDay" class="form-select form-select-sm" required>
-<option value="">Day</option>
-</select>
-<select id="loanDetailMonth" class="form-select form-select-sm" required>
-<option value="">Month</option>
-</select>
-<select id="loanDetailYear" class="form-select form-select-sm" required>
-<option value="">Year</option>
-</select>
-</div>
-</div>
-<div class="mb-3">
-<label class="input-label">Loan Amount (NPR)</label>
-<input type="number" id="loanDetailAmount" class="form-control form-control-sm" required>
-</div>
-<div class="mb-3">
-<label class="input-label">Interest Rate (%)</label>
-<input type="number" step="0.1" id="loanDetailRate" class="form-control form-control-sm" required>
-</div>
-<div class="mb-3">
-<label class="input-label">Duration (Months)</label>
-<input type="number" id="loanDetailDuration" class="form-control form-control-sm" required>
-</div>
-<div class="mb-3">
-<label class="input-label">Maturity Date (Auto)</label>
-<input type="text" id="loanDetailMaturity" class="form-control form-control-sm readonly-field" readonly>
-</div>
-<button type="submit" class="btn btn-primary-custom">
-<i class="fas fa-save me-2"></i>Save Loan Detail
-</button>
-</form>
-<div id="loanDetailMessage" class="mt-2 text-center small fw-bold"></div>
-</div>
-</div>
-<div class="col-md-8">
+<div id="loan-content" class="tab-content-section">
 <div class="d-flex justify-content-end mb-2">
-<button class="btn btn-sm btn-outline-secondary" onclick="loadLoanDetails()"><i class="fas fa-sync-alt"></i> Refresh</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="loadLoanSummary()"><i class="fas fa-sync-alt"></i> Refresh</button>
 </div>
-<div class="loan-stats-row mb-3">
-<div class="loan-stat-card active">
-<div class="loan-stat-label">Active Loans</div>
-<div class="loan-stat-value" id="activeLoanCountDetail">0</div>
-</div>
-<div class="loan-stat-card closed">
-<div class="loan-stat-label">Closed Loans</div>
-<div class="loan-stat-value" id="closedLoanCountDetail">0</div>
-</div>
-<div class="loan-stat-card overdue">
-<div class="loan-stat-label">Overdue Loans</div>
-<div class="loan-stat-value" id="overdueLoanCountDetail">0</div>
-</div>
-<div class="loan-stat-card">
-<div class="loan-stat-label">Total Outstanding</div>
-<div class="loan-stat-value" id="totalOutstandingDetail">NPR 0</div>
-</div>
-</div>
-<div id="loanDetailContainer">
-<div class="text-center text-muted py-5">Loading loan details...</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Loan Payment Summary Tab -->
-<div id="loan-payment-content" class="tab-content-section">
-<div class="row">
-<div class="col-md-4 mb-3 admin-only">
-<div class="loan-entry-panel sticky-top" style="top: 20px;">
-<div class="loan-entry-title">
-<i class="fas fa-money-bill-wave"></i> ADD LOAN PAYMENT
-</div>
-<div class="loan-entry-divider"></div>
-<form id="loanPaymentForm">
-<div class="mb-3">
-<label class="input-label">Member's Name</label>
-<select id="paymentMember" class="form-select form-select-sm" required onchange="loadMemberLoanInfo()">
-<option value="">Select Member</option>
-</select>
-</div>
-<div class="row g-2 mb-3">
-<div class="col-6">
-<label class="input-label">Month</label>
-<select id="paymentMonth" class="form-select form-select-sm" required>
-<option value="Baishakh">Baishakh</option><option value="Jestha">Jestha</option>
-<option value="Ashadh">Ashadh</option><option value="Shrawan">Shrawan</option>
-<option value="Bhadra">Bhadra</option><option value="Ashwin">Ashwin</option>
-<option value="Kartik">Kartik</option><option value="Mangsir">Mangsir</option>
-<option value="Poush">Poush</option><option value="Magh">Magh</option>
-<option value="Falgun">Falgun</option><option value="Chaitra">Chaitra</option>
-</select>
-</div>
-<div class="col-6">
-<label class="input-label">Year</label>
-<select id="paymentYear" class="form-select form-select-sm" required></select>
-</div>
-</div>
-<div class="mb-3">
-<label class="input-label">Loan Amount (NPR)</label>
-<input type="number" id="paymentLoanAmount" class="form-control form-control-sm" readonly>
-</div>
-<div class="mb-3">
-<label class="input-label">Interest Amount (NPR)</label>
-<input type="number" id="paymentInterest" class="form-control form-control-sm" required>
-</div>
-<div class="mb-3">
-<label class="input-label">Installment Paid (NPR)</label>
-<input type="number" id="paymentInstallment" class="form-control form-control-sm" required oninput="calculateRemaining()">
-</div>
-<div class="mb-3">
-<label class="input-label">Remaining Amount</label>
-<input type="number" id="paymentRemaining" class="form-control form-control-sm readonly-field" readonly>
-</div>
-<button type="submit" class="btn btn-primary-custom">
-<i class="fas fa-paper-plane me-2"></i>Submit Payment
-</button>
-</form>
-<div id="paymentMessage" class="mt-2 text-center small fw-bold"></div>
-</div>
-</div>
-<div class="col-md-8">
-<div class="d-flex justify-content-end mb-2">
-<button class="btn btn-sm btn-outline-secondary" onclick="loadLoanPayments()"><i class="fas fa-sync-alt"></i> Refresh</button>
-</div>
-<div class="loan-stats-row mb-3">
-<div class="loan-stat-card">
-<div class="loan-stat-label">Total Payments</div>
-<div class="loan-stat-value" id="totalPaymentsCount">0</div>
-</div>
-<div class="loan-stat-card">
-<div class="loan-stat-label">Total Paid</div>
-<div class="loan-stat-value" id="totalPaidAmount">NPR 0</div>
-</div>
-<div class="loan-stat-card">
-<div class="loan-stat-label">Total Interest</div>
-<div class="loan-stat-value" id="totalInterestPaid">NPR 0</div>
-</div>
-<div class="loan-stat-card">
-<div class="loan-stat-label">Total Remaining</div>
-<div class="loan-stat-value" id="totalRemainingAmount">NPR 0</div>
-</div>
-</div>
-<div id="loanPaymentContainer">
-<div class="text-center text-muted py-5">Loading payment details...</div>
-</div>
-</div>
+<div id="loanContainer">
+<div class="text-center text-muted py-5">Loading loan data...</div>
 </div>
 </div>
 <!-- Bank Details Tab Content -->
@@ -639,7 +431,8 @@ Guests can view records but cannot add, edit, or delete data.
 </div>
 </div>
 </div>
-<!-- Detail Modal -->
+</div>
+<!-- Detail Modal (Record Details) -->
 <div class="modal fade" id="detailModal" tabindex="-1">
 <div class="modal-dialog modal-dialog-centered modal-lg">
 <div class="modal-content">
@@ -663,7 +456,9 @@ Guests can view records but cannot add, edit, or delete data.
 <h5 class="modal-title fw-bold"><i class="fas fa-id-card me-2"></i>Member Details</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
-<div class="modal-body" id="memberModalBody"></div>
+<div class="modal-body" id="memberModalBody">
+<!-- Content injected via JS -->
+</div>
 <div class="modal-footer bg-light">
 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 </div>
@@ -688,12 +483,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const collectionName = "gms_bachat_kosh_v6";
-const loanDetailsCollection = "loan_details";
-const loanPaymentsCollection = "loan_payments";
 const members = [
 "Anil Maharjan", "Bindu Maharjan", "Manisha Maharjan",
 "Rajeep Maharjan", "Sajina Barahi", "Supreme Chitrakar"
 ];
+// Member Static Data (For Popup)
 const memberDetailsData = {
 "Anil Maharjan": { address: "Gwarko-07, Lalitpur", contact: "9808276033", email: "anilmaharjan@live.com", dob: "11-30-1990", joined: "2079 Bhadra" },
 "Bindu Maharjan": { address: "Gwarko-07, Lalitpur", contact: "98XXXXXXXX", email: "bindu@example.com", dob: "XX-XX-XXXX", joined: "2079 Bhadra" },
@@ -711,16 +505,13 @@ const nepaliMonths = [
 "Kartik", "Mangsir", "Poush", "Magh", "Falgun", "Chaitra"
 ];
 let currentEditId = null;
-let currentDeleteId = null;
-let allRecordsData = [];
-let allLoanDetails = [];
-let allLoanPayments = [];
 const membersContainer = document.getElementById('membersInputContainer');
 const saveBtn = document.getElementById('saveBtn');
 const grandTotalDisplay = document.getElementById('grandTotalDisplay');
 const messageArea = document.getElementById('messageArea');
 const historyContainer = document.getElementById('historyContainer');
 const summaryContainer = document.getElementById('summaryContainer');
+const loanContainer = document.getElementById('loanContainer');
 const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
 const memberDetailModal = new bootstrap.Modal(document.getElementById('memberDetailModal'));
 const modalBody = document.getElementById('modalBody');
@@ -731,7 +522,9 @@ const cancelEditBtn = document.getElementById('cancelEditBtn');
 const yearSelect = document.getElementById('entryYear');
 const logoutBtn = document.getElementById('logoutBtn');
 const logoutText = document.getElementById('logoutText');
-// --- AUTHENTICATION ---
+let currentDeleteId = null;
+let allRecordsData = [];
+// --- AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, (user) => {
 if (user) {
 document.getElementById('login-section').style.display = 'none';
@@ -739,9 +532,11 @@ document.getElementById('app-section').style.display = 'block';
 if (user.isAnonymous) {
 document.body.classList.remove('is-admin');
 logoutText.textContent = "Exit";
+logoutBtn.title = "Exit Guest Mode";
 } else {
 document.body.classList.add('is-admin');
 logoutText.textContent = "Logout";
+logoutBtn.title = "Logout Admin Account";
 }
 initApp();
 } else {
@@ -787,8 +582,6 @@ signOut(auth).then(() => { location.reload(); });
 };
 function initApp() {
 initDropdowns();
-initLoanDetailForm();
-initPaymentForm();
 renderInputs();
 loadHistory();
 }
@@ -801,73 +594,76 @@ option.text = y;
 if (y === 2081) option.selected = true;
 yearSelect.appendChild(option);
 }
-// Payment year dropdown
-const paymentYearSelect = document.getElementById('paymentYear');
-paymentYearSelect.innerHTML = '';
-for (let y = 2075; y <= 2085; y++) {
-const option = document.createElement('option');
-option.value = y;
-option.text = y;
-if (y === 2082) option.selected = true;
-paymentYearSelect.appendChild(option);
 }
+function createDateSelectors(prefix, member, data = {}) {
+const days = Array.from({length: 32}, (_, i) => i + 1);
+const getSelected = (type, val) => (data[`${prefix}${type}`] == val ? 'selected' : '');
+const getDaySelected = (d) => (data[`${prefix}Day`] == d ? 'selected' : '');
+return `
+<div class="date-group">
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="day">
+<option value="" disabled>Day</option>
+${days.map(d => `<option value="${d}" ${getDaySelected(d)}>${d}</option>`).join('')}
+</select>
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="month">
+<option value="" disabled>Month</option>
+${nepaliMonths.map(m => `<option value="${m}" ${getSelected('Month', m)}>${m}</option>`).join('')}
+</select>
+<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="year">
+<option value="" disabled>Year</option>
+${Array.from({length: 11}, (_, i) => 2075 + i).map(y => `<option value="${y}" ${getSelected('Year', y)}>${y}</option>`).join('')}
+</select>
+</div>
+`;
 }
-function initLoanDetailForm() {
-// Member dropdown
-const memberSelect = document.getElementById('loanDetailMember');
-memberSelect.innerHTML = '<option value="">Select Member</option>';
-members.forEach(m => {
-memberSelect.innerHTML += `<option value="${m}">${m}</option>`;
+function renderInputs(dataToFill = null) {
+membersContainer.innerHTML = '';
+members.forEach((member) => {
+const d = dataToFill && dataToFill.members[member] ? dataToFill.members[member] : {};
+const div = document.createElement('div');
+div.className = `member-card ${dataToFill ? 'edit-mode' : ''}`;
+div.innerHTML = `
+<div class="member-name"><i class="fas fa-user-circle text-primary"></i> ${member}</div>
+<div class="section-title">Financials (Cash Flow)</div>
+<div class="row g-2">
+<div class="col-6"><label class="input-label">Deposit</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="deposit" value="${d.deposit || 0}"></div>
+<div class="col-6"><label class="input-label">Interest</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interest" value="${d.interest || 0}"></div>
+<div class="col-6"><label class="input-label">Installment</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="installment" value="${d.installment || 0}"></div>
+<div class="col-6"><label class="input-label">Fine</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="fine" value="${d.fine || 0}"></div>
+</div>
+<div class="section-title">Loan Record (Info Only)</div>
+<div class="row g-2">
+<div class="col-6"><label class="input-label">Loan Amount</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="loanAmount" value="${d.loanAmount || 0}"></div>
+<div class="col-6"><label class="input-label">Rate (%)</label><input type="number" step="0.1" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interestRate" value="${d.interestRate || 0}"></div>
+<div class="col-12"><label class="input-label">Taken Date</label>${createDateSelectors('taken', member, d)}</div>
+<div class="col-12"><label class="input-label">Maturity Date</label>${createDateSelectors('maturity', member, d)}</div>
+</div>
+`;
+membersContainer.appendChild(div);
 });
-// Day dropdown
-const daySelect = document.getElementById('loanDetailDay');
-daySelect.innerHTML = '<option value="">Day</option>';
-for (let d = 1; d <= 32; d++) {
-daySelect.innerHTML += `<option value="${d}">${d}</option>`;
+document.querySelectorAll('.calc-input').forEach(input => input.addEventListener('input', calculateTotals));
+calculateTotals();
 }
-// Month dropdown
-const monthSelect = document.getElementById('loanDetailMonth');
-monthSelect.innerHTML = '<option value="">Month</option>';
-nepaliMonths.forEach(m => {
-monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
+function calculateTotals() {
+let grandTotal = 0;
+members.forEach(member => {
+const types = ['deposit', 'interest', 'installment', 'fine'];
+let memberTotal = 0;
+types.forEach(type => {
+const val = parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`)?.value) || 0;
+memberTotal += val;
 });
-// Year dropdown
-const yearSelectLD = document.getElementById('loanDetailYear');
-yearSelectLD.innerHTML = '<option value="">Year</option>';
-for (let y = 2075; y <= 2085; y++) {
-yearSelectLD.innerHTML += `<option value="${y}">${y}</option>`;
-}
-// Calculate maturity date on duration change
-document.getElementById('loanDetailDuration').addEventListener('input', calculateMaturityDate);
-document.getElementById('loanDetailForm').addEventListener('submit', saveLoanDetail);
-}
-function initPaymentForm() {
-// Member dropdown
-const memberSelect = document.getElementById('paymentMember');
-memberSelect.innerHTML = '<option value="">Select Member</option>';
-members.forEach(m => {
-memberSelect.innerHTML += `<option value="${m}">${m}</option>`;
+grandTotal += memberTotal;
 });
-document.getElementById('loanPaymentForm').addEventListener('submit', saveLoanPayment);
+grandTotalDisplay.textContent = `NPR ${grandTotal.toLocaleString()}`;
+return grandTotal;
 }
-function calculateMaturityDate() {
-const day = parseInt(document.getElementById('loanDetailDay').value) || 0;
-const month = document.getElementById('loanDetailMonth').value;
-const year = parseInt(document.getElementById('loanDetailYear').value) || 0;
-const duration = parseInt(document.getElementById('loanDetailDuration').value) || 0;
-if (!day || !month || !year || !duration) {
-document.getElementById('loanDetailMaturity').value = '';
-return;
-}
-const monthIdx = nepaliMonthsOrder.indexOf(month);
-let totalMonths = monthIdx + duration;
-let newYear = year;
-let newMonthIdx = totalMonths % 12;
-if (totalMonths >= 12) {
-newYear += Math.floor(totalMonths / 12);
-}
-const newMonth = nepaliMonthsOrder[newMonthIdx];
-document.getElementById('loanDetailMaturity').value = `${day} ${newMonth}, ${newYear}`;
+function getDateFromSelects(prefix, member) {
+const day = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="day"]`)?.value;
+const month = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="month"]`)?.value;
+const year = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="year"]`)?.value;
+if (day && month && year) return `${day} ${month}, ${year}`;
+return '';
 }
 function parseNepaliDateToNum(dateStr) {
 if (!dateStr) return 0;
@@ -879,12 +675,16 @@ const monthName = parts[1];
 const monthIdx = nepaliMonthsOrder.indexOf(monthName) + 1;
 return year * 10000 + monthIdx * 100 + day;
 }
+// FIXED: More accurate Current Date Calculation
 function getCurrentNepaliDateNum() {
 const now = new Date();
 const gYear = now.getFullYear();
 const gMonth = now.getMonth() + 1;
+const gDay = now.getDate();
 let npYear = gYear + 57;
-if (gMonth < 4) npYear = gYear + 56;
+if (gMonth < 4) {
+npYear = gYear + 56;
+}
 let npMonth = 1;
 if (gMonth >= 4 && gMonth <= 5) npMonth = 1;
 else if (gMonth >= 5 && gMonth <= 6) npMonth = 2;
@@ -901,267 +701,53 @@ else if (gMonth >= 3 && gMonth <= 4) npMonth = 12;
 return npYear * 10000 + npMonth * 100 + 15;
 }
 const todayNP = getCurrentNepaliDateNum();
-// Save Loan Detail
-async function saveLoanDetail(e) {
-e.preventDefault();
-if (auth.currentUser.isAnonymous) {
-showMessage("loanDetailMessage", "Guests cannot save data.", "danger");
-return;
-}
-const member = document.getElementById('loanDetailMember').value;
-const day = document.getElementById('loanDetailDay').value;
-const month = document.getElementById('loanDetailMonth').value;
-const year = document.getElementById('loanDetailYear').value;
-const amount = parseFloat(document.getElementById('loanDetailAmount').value) || 0;
-const rate = parseFloat(document.getElementById('loanDetailRate').value) || 0;
-const duration = parseInt(document.getElementById('loanDetailDuration').value) || 0;
-const maturityDate = document.getElementById('loanDetailMaturity').value;
-if (!member || !day || !month || !year || !amount || !rate || !duration || !maturityDate) {
-showMessage("loanDetailMessage", "Please fill all fields.", "danger");
-return;
-}
-const takenDate = `${day} ${month}, ${year}`;
-try {
-await addDoc(collection(db, loanDetailsCollection), {
-member,
-takenDate,
-loanAmount: amount,
-interestRate: rate,
-duration,
-maturityDate,
-takenDateNum: parseNepaliDateToNum(takenDate),
-maturityDateNum: parseNepaliDateToNum(maturityDate),
-createdAt: new Date(),
-createdBy: auth.currentUser.email || "Admin"
+saveBtn.addEventListener('click', async () => {
+if (auth.currentUser.isAnonymous) { showMessage("Guests cannot save data.", "danger"); return; }
+const month = document.getElementById('nepaliMonth').value;
+const year = document.getElementById('entryYear').value;
+if(!year) { showMessage("Enter Year", "danger"); return; }
+let memberData = {};
+let sums = { deposit:0, interest:0, installment:0, fine:0, loanCount:0 };
+members.forEach(member => {
+const getVal = (type) => parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`).value) || 0;
+const deposit = getVal('deposit');
+const interest = getVal('interest');
+const installment = getVal('installment');
+const fine = getVal('fine');
+const loanAmount = getVal('loanAmount');
+const interestRate = getVal('interestRate');
+const takenDate = getDateFromSelects('taken', member);
+const maturityDate = getDateFromSelects('maturity', member);
+const cashTotal = deposit + interest + installment + fine;
+memberData[member] = { deposit, interest, installment, fine, loanAmount, interestRate, takenDate, maturityDate, cashTotal };
+sums.deposit += deposit; sums.interest += interest; sums.installment += installment; sums.fine += fine;
+if(loanAmount > 0) sums.loanCount++;
 });
-showMessage("loanDetailMessage", "Loan detail saved!", "success");
-document.getElementById('loanDetailForm').reset();
-loadLoanDetails();
-} catch (error) {
-console.error(error);
-showMessage("loanDetailMessage", "Error: " + error.message, "danger");
-}
-}
-// Load Loan Details
-async function loadLoanDetails() {
-const container = document.getElementById('loanDetailContainer');
-container.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
+const grandTotal = Object.values(memberData).reduce((acc, curr) => acc + curr.cashTotal, 0);
+setLoading(true);
 try {
-const q = query(collection(db, loanDetailsCollection), orderBy("createdAt", "desc"));
-const snapshot = await getDocs(q);
-allLoanDetails = [];
-if (snapshot.empty) {
-container.innerHTML = '<div class="text-center text-muted py-5">No loan details found.</div>';
-updateLoanDetailStats(0, 0, 0, 0);
-return;
-}
-snapshot.forEach(docSnap => {
-allLoanDetails.push({ id: docSnap.id, ...docSnap.data() });
-});
-// Calculate status for each loan
-let activeCount = 0, closedCount = 0, overdueCount = 0, totalOutstanding = 0;
-allLoanDetails.forEach(loan => {
-// Get payments for this loan
-const memberPayments = allLoanPayments.filter(p => p.member === loan.member);
-const totalPaid = memberPayments.reduce((sum, p) => sum + (p.installmentPaid || 0), 0);
-const isClosed = totalPaid >= loan.loanAmount;
-const isOverdue = !isClosed && todayNP > loan.maturityDateNum;
-if (isClosed) {
-loan.status = 'Closed';
-closedCount++;
-} else if (isOverdue) {
-loan.status = 'Overdue';
-overdueCount++;
-totalOutstanding += (loan.loanAmount - totalPaid);
+const payload = { month, year, timestamp: new Date(), members: memberData, totals: { ...sums, grand: grandTotal }, updatedAt: new Date() };
+if (currentEditId) {
+await updateDoc(doc(db, collectionName, currentEditId), payload);
+showMessage("Updated!", "success");
+cancelEdit();
 } else {
-loan.status = 'Active';
-activeCount++;
-totalOutstanding += (loan.loanAmount - totalPaid);
+payload.createdAt = new Date();
+payload.createdBy = auth.currentUser.email || "Admin";
+await addDoc(collection(db, collectionName), payload);
+showMessage("Saved!", "success");
+renderInputs(null);
 }
-loan.totalPaid = totalPaid;
-loan.balance = Math.max(0, loan.loanAmount - totalPaid);
-});
-updateLoanDetailStats(activeCount, closedCount, overdueCount, totalOutstanding);
-// Build table
-let html = `<div class="table-responsive"><table class="loan-table"><thead><tr>
-<th class="col-month" style="text-align:left !important;">Member</th>
-<th>Loan Amount</th>
-<th>Rate</th>
-<th>Duration</th>
-<th>Taken Date</th>
-<th>Maturity</th>
-<th>Paid</th>
-<th>Balance</th>
-<th>Status</th>
-</tr></thead><tbody>`;
-allLoanDetails.forEach(loan => {
-let statusBadge = '';
-if (loan.status === 'Closed') statusBadge = '<span class="badge status-closed">Closed</span>';
-else if (loan.status === 'Overdue') statusBadge = '<span class="badge status-overdue">Overdue</span>';
-else statusBadge = '<span class="badge status-active">Active</span>';
-html += `<tr>
-<td class="col-month" style="text-align:left !important; font-weight:600;">${loan.member}</td>
-<td class="fw-bold">NPR ${loan.loanAmount.toLocaleString()}</td>
-<td>${loan.interestRate}%</td>
-<td>${loan.duration} mo</td>
-<td>${loan.takenDate}</td>
-<td>${loan.maturityDate}</td>
-<td class="text-success fw-bold">NPR ${loan.totalPaid.toLocaleString()}</td>
-<td class="${loan.balance > 0 ? 'text-danger fw-bold' : 'text-muted'}">NPR ${loan.balance.toLocaleString()}</td>
-<td>${statusBadge}</td>
-</tr>`;
-});
-html += `</tbody></table></div>`;
-container.innerHTML = html;
+loadHistory();
+if(document.getElementById('summary-content').classList.contains('active')) loadSummary();
+if(document.getElementById('loan-content').classList.contains('active')) loadLoanSummary();
 } catch (error) {
 console.error(error);
-container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+showMessage("Error: " + error.message, "danger");
+} finally {
+setLoading(false);
 }
-}
-function updateLoanDetailStats(active, closed, overdue, outstanding) {
-document.getElementById('activeLoanCountDetail').textContent = active;
-document.getElementById('closedLoanCountDetail').textContent = closed;
-document.getElementById('overdueLoanCountDetail').textContent = overdue;
-document.getElementById('totalOutstandingDetail').textContent = `NPR ${outstanding.toLocaleString()}`;
-}
-// Load Member Loan Info for Payment Form
-window.loadMemberLoanInfo = () => {
-const member = document.getElementById('paymentMember').value;
-if (!member) {
-document.getElementById('paymentLoanAmount').value = '';
-return;
-}
-const loan = allLoanDetails.find(l => l.member === member && l.status !== 'Closed');
-if (loan) {
-document.getElementById('paymentLoanAmount').value = loan.loanAmount;
-} else {
-document.getElementById('paymentLoanAmount').value = '';
-}
-calculateRemaining();
-};
-// Calculate Remaining Amount
-window.calculateRemaining = () => {
-const loanAmount = parseFloat(document.getElementById('paymentLoanAmount').value) || 0;
-const installment = parseFloat(document.getElementById('paymentInstallment').value) || 0;
-document.getElementById('paymentRemaining').value = Math.max(0, loanAmount - installment);
-};
-// Save Loan Payment
-async function saveLoanPayment(e) {
-e.preventDefault();
-if (auth.currentUser.isAnonymous) {
-showMessage("paymentMessage", "Guests cannot save data.", "danger");
-return;
-}
-const member = document.getElementById('paymentMember').value;
-const month = document.getElementById('paymentMonth').value;
-const year = document.getElementById('paymentYear').value;
-const loanAmount = parseFloat(document.getElementById('paymentLoanAmount').value) || 0;
-const interest = parseFloat(document.getElementById('paymentInterest').value) || 0;
-const installment = parseFloat(document.getElementById('paymentInstallment').value) || 0;
-const remaining = parseFloat(document.getElementById('paymentRemaining').value) || 0;
-if (!member || !month || !year || !installment) {
-showMessage("paymentMessage", "Please fill all required fields.", "danger");
-return;
-}
-try {
-await addDoc(collection(db, loanPaymentsCollection), {
-member,
-month,
-year,
-loanAmount,
-interestAmount: interest,
-installmentPaid: installment,
-remainingAmount: remaining,
-paymentDate: new Date(),
-createdBy: auth.currentUser.email || "Admin"
 });
-showMessage("paymentMessage", "Payment submitted!", "success");
-document.getElementById('loanPaymentForm').reset();
-loadLoanPayments();
-loadLoanDetails(); // Refresh loan details to update paid amounts
-} catch (error) {
-console.error(error);
-showMessage("paymentMessage", "Error: " + error.message, "danger");
-}
-}
-// Load Loan Payments
-async function loadLoanPayments() {
-const container = document.getElementById('loanPaymentContainer');
-container.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
-try {
-const q = query(collection(db, loanPaymentsCollection), orderBy("paymentDate", "desc"));
-const snapshot = await getDocs(q);
-allLoanPayments = [];
-if (snapshot.empty) {
-container.innerHTML = '<div class="text-center text-muted py-5">No payment records found.</div>';
-updatePaymentStats(0, 0, 0, 0);
-return;
-}
-snapshot.forEach(docSnap => {
-allLoanPayments.push({ id: docSnap.id, ...docSnap.data() });
-});
-// Calculate stats
-let totalPayments = allLoanPayments.length;
-let totalPaid = allLoanPayments.reduce((sum, p) => sum + (p.installmentPaid || 0), 0);
-let totalInterest = allLoanPayments.reduce((sum, p) => sum + (p.interestAmount || 0), 0);
-let totalRemaining = allLoanPayments.reduce((sum, p) => sum + (p.remainingAmount || 0), 0);
-updatePaymentStats(totalPayments, totalPaid, totalInterest, totalRemaining);
-// Build table
-let html = `<div class="table-responsive"><table class="payment-table"><thead><tr>
-<th class="col-month" style="text-align:left !important;">Member</th>
-<th>Month/Year</th>
-<th>Loan Amount</th>
-<th>Interest</th>
-<th>Installment Paid</th>
-<th>Remaining</th>
-<th>Payment Date</th>
-</tr></thead><tbody>`;
-allLoanPayments.forEach(p => {
-html += `<tr>
-<td class="col-month" style="text-align:left !important; font-weight:600;">${p.member}</td>
-<td>${p.month} ${p.year}</td>
-<td>NPR ${p.loanAmount.toLocaleString()}</td>
-<td class="text-success">NPR ${p.interestAmount.toLocaleString()}</td>
-<td class="text-primary fw-bold">NPR ${p.installmentPaid.toLocaleString()}</td>
-<td class="${p.remainingAmount > 0 ? 'text-danger' : 'text-muted'}">NPR ${p.remainingAmount.toLocaleString()}</td>
-<td>${p.paymentDate ? new Date(p.paymentDate.seconds * 1000).toLocaleDateString() : '-'}</td>
-</tr>`;
-});
-html += `</tbody></table></div>`;
-container.innerHTML = html;
-} catch (error) {
-console.error(error);
-container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
-}
-}
-function updatePaymentStats(count, paid, interest, remaining) {
-document.getElementById('totalPaymentsCount').textContent = count;
-document.getElementById('totalPaidAmount').textContent = `NPR ${paid.toLocaleString()}`;
-document.getElementById('totalInterestPaid').textContent = `NPR ${interest.toLocaleString()}`;
-document.getElementById('totalRemainingAmount').textContent = `NPR ${remaining.toLocaleString()}`;
-}
-function showMessage(elementId, msg, type) {
-const el = document.getElementById(elementId);
-el.textContent = msg;
-el.className = `mt-2 text-center small fw-bold text-${type}`;
-setTimeout(() => el.textContent = '', 3000);
-}
-// Tab Switching
-window.switchTab = (tabName) => {
-const sections = ['history', 'summary', 'loanDetail', 'loanPayment', 'bank'];
-sections.forEach(t => {
-document.getElementById(`${t}-content`).classList.remove('active');
-const tabEl = document.getElementById(`${t}-tab`);
-if (tabEl) tabEl.classList.remove('active');
-});
-document.getElementById(`${tabName}-content`).classList.add('active');
-const activeTab = document.getElementById(`${tabName}-tab`);
-if (activeTab) activeTab.classList.add('active');
-if (tabName === 'summary') loadSummary();
-if (tabName === 'loanDetail') loadLoanDetails();
-if (tabName === 'loanPayment') loadLoanPayments();
-};
-// Existing functions (loadHistory, loadSummary, etc.)
 async function loadHistory() {
 historyContainer.innerHTML = '<div class="text-center text-muted py-5"><div class="spinner-border text-primary"></div></div>';
 try {
@@ -1169,7 +755,7 @@ const q = query(collection(db, collectionName), orderBy("timestamp", "desc"));
 const snapshot = await getDocs(q);
 historyContainer.innerHTML = '';
 allRecordsData = [];
-if (snapshot.empty) {
+if(snapshot.empty) {
 historyContainer.innerHTML = '<div class="text-center text-muted py-5">No records found.</div>';
 return;
 }
@@ -1177,12 +763,12 @@ const grouped = {};
 snapshot.forEach(docSnap => {
 const data = docSnap.data();
 const y = data.year;
-if (!grouped[y]) grouped[y] = [];
+if(!grouped[y]) grouped[y] = [];
 const record = { id: docSnap.id, ...data };
 grouped[y].push(record);
 allRecordsData.push(record);
 });
-Object.keys(grouped).sort((a, b) => b - a).forEach(year => {
+Object.keys(grouped).sort((a,b) => b-a).forEach(year => {
 let records = grouped[year];
 records.sort((a, b) => {
 const indexA = nepaliMonthsOrder.indexOf(a.month);
@@ -1234,7 +820,7 @@ const tbody = accordionItem.querySelector('tbody');
 records.forEach(rec => {
 const t = rec.totals;
 const hasLoan = t.loanCount > 0;
-const loanBadge = hasLoan ? `<span class="badge-loan" onclick="window.showLoanDetails('${rec.id}')"><i class="fas fa-file-invoice-dollar me-1"></i>${t.loanCount}</span>` : '<span class="text-muted small">-</span>';
+const loanBadge = hasLoan ? `<span class="badge-loan" onclick="window.showLoanDetails('${rec.id}')"><i class="fas fa-file-invoice-dollar me-1"></i>${t.loanCount} Active</span>` : '<span class="text-muted small">-</span>';
 let actionButtons = '';
 if (!auth.currentUser.isAnonymous) {
 actionButtons = `
@@ -1243,7 +829,8 @@ actionButtons = `
 `;
 }
 const viewButton = `<button class="btn btn-action btn-outline-secondary" onclick="window.viewDetails('${rec.id}')"><i class="fas fa-eye"></i></button>`;
-const row = `<tr>
+const row = `
+<tr>
 <td class="col-month">${rec.month}</td>
 <td class="text-primary fw-bold">${t.deposit.toLocaleString()}</td>
 <td class="text-success">${t.interest.toLocaleString()}</td>
@@ -1253,7 +840,8 @@ const row = `<tr>
 <td>${loanBadge}</td>
 <td class="admin-only admin-only-table-cell">${actionButtons}</td>
 <td>${viewButton}</td>
-</tr>`;
+</tr>
+`;
 tbody.innerHTML += row;
 });
 historyContainer.appendChild(accordionItem);
@@ -1263,6 +851,45 @@ console.error(error);
 historyContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
 }
 }
+
+// ============================================================================
+// FIXED: Calculate installments PER LOAN (not across all loans)
+// ============================================================================
+function calculateInstallmentsForLoan(member, loan, allRecords) {
+let totalPaid = 0;
+let loanClosed = false;
+
+// Sort records chronologically
+const sorted = [...allRecords].sort((a, b) => {
+if (a.year !== b.year) return a.year - b.year;
+return nepaliMonthsOrder.indexOf(a.month) - nepaliMonthsOrder.indexOf(b.month);
+});
+
+for (const rec of sorted) {
+const rMonthIdx = nepaliMonthsOrder.indexOf(rec.month) + 1;
+const recNum = rec.year * 10000 + rMonthIdx * 100 + 15;
+const data = rec.members[member];
+
+// Only count installments AFTER loan taken date
+if (data && data.installment > 0 && recNum >= loan.takenDateNum) {
+// Stop counting if loan is already closed
+if (loanClosed) break;
+
+totalPaid += data.installment;
+
+// Check if loan is now closed
+if (totalPaid >= loan.loanAmount) {
+loanClosed = true;
+// Cap at loan amount (don't count excess)
+totalPaid = loan.loanAmount;
+break;
+}
+}
+}
+
+return totalPaid;
+}
+
 function loadSummary() {
 if (allRecordsData.length === 0) {
 summaryContainer.innerHTML = '<div class="text-center text-muted py-5">No data available.</div>';
@@ -1288,6 +915,60 @@ totalInterestAll += intr;
 }
 });
 });
+
+// === Calculate Active Loans & Paid Installments (PER LOAN) ===
+let chronologicalData = [...allRecordsData].sort((a, b) => {
+if (a.year !== b.year) return a.year - b.year;
+return nepaliMonthsOrder.indexOf(a.month) - nepaliMonthsOrder.indexOf(b.month);
+});
+
+// Collect all loans with unique identifiers
+let allLoans = [];
+chronologicalData.forEach(rec => {
+members.forEach(m => {
+const data = rec.members[m];
+if (data && data.loanAmount > 0 && data.takenDate) {
+allLoans.push({
+member: m,
+loanAmount: data.loanAmount,
+takenDate: data.takenDate,
+maturityDate: data.maturityDate,
+takenDateNum: parseNepaliDateToNum(data.takenDate),
+maturityDateNum: parseNepaliDateToNum(data.maturityDate)
+});
+}
+});
+});
+
+// Calculate paid installment for EACH loan separately
+allLoans.forEach(loan => {
+loan.totalPaid = calculateInstallmentsForLoan(loan.member, loan, chronologicalData);
+});
+
+// Filter only active loans
+let activeLoans = [];
+allLoans.forEach(loan => {
+const isClosed = loan.totalPaid >= loan.loanAmount;
+const isOverdue = !isClosed && todayNP > loan.maturityDateNum;
+const isActive = !isClosed && !isOverdue;
+if (isActive) {
+activeLoans.push(loan);
+}
+});
+
+// Calculate: Total Loan = Active Loan Amount - Paid Installments (for active loans only)
+let totalActiveLoanAmount = 0;
+let totalPaidForActive = 0;
+activeLoans.forEach(loan => {
+totalActiveLoanAmount += loan.loanAmount;
+totalPaidForActive += loan.totalPaid;
+});
+const totalLoan = Math.max(0, totalActiveLoanAmount - totalPaidForActive);
+
+// Calculate: Remaining Balance = (GRAND TOTAL + Total Interest) - Total Loan
+const remainingBalance = Math.max(0, (grandTotalAll + totalInterestAll) - totalLoan);
+
+// === Build HTML Table ===
 let html = `<div class="table-responsive"><table class="summary-table"><thead><tr>
 <th class="col-month" style="text-align:left !important;">Member Name</th>
 <th class="text-primary">Total Deposit</th>
@@ -1309,6 +990,7 @@ html += `<tr>
 <td class="fw-bold" style="background:#f9fafb;">${stats.total.toLocaleString()}</td>
 </tr>`;
 });
+// Footer with GRAND TOTAL, Total Interest, Total Loan, and Remaining Balance
 html += `</tbody><tfoot>
 <tr class="summary-total-row">
 <td class="text-end" style="text-align:right !important; padding-right:15px;">GRAND TOTAL (All Members)</td>
@@ -1316,18 +998,122 @@ html += `</tbody><tfoot>
 </tr>
 <tr class="summary-interest-row">
 <td class="text-end" style="text-align:right !important; padding-right:15px;">Total Interest Collected</td>
-<td colspan="4" style="text-align:center; color: #059669;">NPR ${totalInterestAll.toLocaleString()}</td>
+<td colspan="4" style="text-align:center; color: #059669;">
+NPR ${totalInterestAll.toLocaleString()}
+<small class="text-muted d-block" style="font-size:0.75rem; font-weight:400;">
+(Collected from all members up to now)
+</small>
+</td>
+</tr>
+<tr class="summary-loan-row">
+<td class="text-end" style="text-align:right !important; padding-right:15px;">Total Loan (Active)</td>
+<td colspan="4" style="text-align:center; color: var(--primary);">
+NPR ${totalLoan.toLocaleString()}
+<small class="text-muted d-block" style="font-size:0.75rem; font-weight:400;">
+(Active Loans: NPR ${totalActiveLoanAmount.toLocaleString()} - Paid: NPR ${totalPaidForActive.toLocaleString()})
+</small>
+</td>
+</tr>
+<tr class="summary-balance-row">
+<td class="text-end" style="text-align:right !important; padding-right:15px;">Remaining Balance</td>
+<td colspan="4" style="text-align:center;">NPR ${remainingBalance.toLocaleString()}</td>
 </tr>
 </tfoot></table></div>`;
 summaryContainer.innerHTML = html;
 }
-// Expose globals
+
+function loadLoanSummary() {
+if (allRecordsData.length === 0) {
+loanContainer.innerHTML = '<div class="text-center text-muted py-5">No data available.</div>';
+return;
+}
+let chronologicalData = [...allRecordsData].sort((a, b) => {
+if (a.year !== b.year) return a.year - b.year;
+return nepaliMonthsOrder.indexOf(a.month) - nepaliMonthsOrder.indexOf(b.month);
+});
+
+// Collect all loans
+let loans = [];
+chronologicalData.forEach(rec => {
+members.forEach(m => {
+const data = rec.members[m];
+if (data && data.loanAmount > 0 && data.takenDate) {
+loans.push({
+member: m,
+loanAmount: data.loanAmount,
+rate: data.interestRate,
+takenDate: data.takenDate,
+maturityDate: data.maturityDate,
+takenDateNum: parseNepaliDateToNum(data.takenDate),
+maturityDateNum: parseNepaliDateToNum(data.maturityDate),
+totalPaid: 0,
+status: 'Active'
+});
+}
+});
+});
+
+// FIXED: Calculate paid installment for EACH loan separately
+loans.forEach(loan => {
+loan.totalPaid = calculateInstallmentsForLoan(loan.member, loan, chronologicalData);
+});
+
+let html = `<div class="table-responsive"><table class="loan-table"><thead><tr>
+<th class="col-month" style="text-align:left !important;">Member</th>
+<th>Loan Amount</th>
+<th>Paid Installment</th>
+<th>Balance</th>
+<th>Taken Date</th>
+<th>Maturity</th>
+<th>Status</th>
+</tr></thead><tbody>`;
+if (loans.length === 0) {
+loanContainer.innerHTML = '<div class="text-center text-muted py-5">No loan records found.</div>';
+return;
+}
+loans.forEach(loan => {
+const balance = loan.loanAmount - loan.totalPaid;
+let statusBadge = '';
+if (loan.totalPaid >= loan.loanAmount) {
+statusBadge = '<span class="badge status-closed">Closed</span>';
+} else if (todayNP > loan.maturityDateNum) {
+statusBadge = '<span class="badge status-overdue">Overdue</span>';
+} else {
+statusBadge = '<span class="badge status-active">Active</span>';
+}
+html += `
+<tr>
+<td class="col-month" style="text-align:left !important; font-weight:600;">${loan.member}</td>
+<td class="fw-bold">NPR ${loan.loanAmount.toLocaleString()}</td>
+<td class="text-success fw-bold">NPR ${loan.totalPaid.toLocaleString()}</td>
+<td class="${balance > 0 ? 'text-danger fw-bold' : 'text-muted'}">NPR ${Math.max(0, balance).toLocaleString()}</td>
+<td>${loan.takenDate}</td>
+<td>${loan.maturityDate}</td>
+<td>${statusBadge}</td>
+</tr>
+`;
+});
+html += `</tbody></table></div>`;
+loanContainer.innerHTML = html;
+}
+
+window.switchTab = (tabName) => {
+const sections = ['history', 'summary', 'loan', 'bank'];
+sections.forEach(t => {
+document.getElementById(`${t}-content`).classList.remove('active');
+document.getElementById(`${t}-tab`).classList.remove('active');
+});
+document.getElementById(`${tabName}-content`).classList.add('active');
+document.getElementById(`${tabName}-tab`).classList.add('active');
+if (tabName === 'summary') loadSummary();
+if (tabName === 'loan') loadLoanSummary();
+};
 window.editRecord = (id) => {
 if (auth.currentUser.isAnonymous) return;
 getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
 .then(snap => {
 const target = snap.docs.find(d => d.id === id);
-if (target) {
+if(target) {
 const data = target.data();
 currentEditId = id;
 document.getElementById('nepaliMonth').value = data.month;
@@ -1340,7 +1126,7 @@ saveBtn.style.background = '#f59e0b';
 saveBtn.style.color = 'white';
 document.getElementById('btnText').innerText = "Update";
 window.scrollTo({ top: 0, behavior: 'smooth' });
-showMessage("messageArea", "Editing mode active", "info");
+showMessage("Editing mode active", "info");
 }
 });
 };
@@ -1359,26 +1145,27 @@ window.showLoanDetails = (id) => {
 getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
 .then(snap => {
 const target = snap.docs.find(d => d.id === id);
-if (!target) return;
+if(!target) return;
 const data = target.data();
 let html = `<h6 class="mb-3 text-center text-primary">Loan Records for ${data.month} ${data.year}</h6>`;
 let found = false;
 for (const [name, vals] of Object.entries(data.members)) {
-if (vals.loanAmount > 0) {
+if(vals.loanAmount > 0) {
 found = true;
 html += `
 <div class="loan-detail-box mb-2">
 <div class="fw-bold text-dark"><i class="fas fa-user me-2"></i>${name}</div>
 <div class="row mt-2">
-<div class="col-6"><small class="text-muted">Amount:</small><br><strong>NPR ${vals.loanAmount.toLocaleString()}</strong></div>
-<div class="col-6"><small class="text-muted">Rate:</small><br><strong>${vals.interestRate}%</strong></div>
-<div class="col-6"><small class="text-muted">Taken:</small><br>${vals.takenDate || '-'}</div>
-<div class="col-6"><small class="text-muted">Maturity:</small><br>${vals.maturityDate || '-'}</div>
+<div class="col-6"><small class="text-muted">Amount:</small> <br><strong>NPR ${vals.loanAmount.toLocaleString()}</strong></div>
+<div class="col-6"><small class="text-muted">Rate:</small> <br><strong>${vals.interestRate}%</strong></div>
+<div class="col-6"><small class="text-muted">Taken:</small> <br>${vals.takenDate || '-'}</div>
+<div class="col-6"><small class="text-muted">Maturity:</small> <br>${vals.maturityDate || '-'}</div>
 </div>
-</div>`;
+</div>
+`;
 }
 }
-if (!found) html += '<p class="text-center text-muted">No loans recorded for this month.</p>';
+if(!found) html += '<p class="text-center text-muted">No loans recorded for this month.</p>';
 modalBody.innerHTML = html;
 modalTitle.innerText = "Loan Information";
 modalDeleteBtn.classList.add('d-none');
@@ -1389,11 +1176,11 @@ window.viewDetails = (id) => {
 getDocs(query(collection(db, collectionName), orderBy("timestamp", "desc")))
 .then(snap => {
 const target = snap.docs.find(d => d.id === id);
-if (!target) return;
+if(!target) return;
 const data = target.data();
 let html = `<h5 class="mb-4 text-center border-bottom pb-2">${data.month} ${data.year}</h5>`;
 for (const [name, vals] of Object.entries(data.members)) {
-if (vals.cashTotal === 0 && vals.loanAmount === 0) continue;
+if(vals.cashTotal === 0 && vals.loanAmount === 0) continue;
 html += `
 <div class="card mb-3 shadow-sm">
 <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
@@ -1403,23 +1190,24 @@ html += `
 <div class="card-body py-2">
 <div class="row">
 <div class="col-6">
-<div class="detail-row"><span class="detail-label">Deposit</span><span class="detail-value positive-value">${vals.deposit > 0 ? vals.deposit.toLocaleString() : '-'}</span></div>
-${vals.interest > 0 ? `<div class="detail-row"><span class="detail-label">Interest</span><span class="detail-value positive-value">${vals.interest.toLocaleString()}</span></div>` : ''}
-${vals.installment > 0 ? `<div class="detail-row"><span class="detail-label">Installment</span><span class="detail-value positive-value">${vals.installment.toLocaleString()}</span></div>` : ''}
-${vals.fine > 0 ? `<div class="detail-row"><span class="detail-label">Fine</span><span class="detail-value text-danger">${vals.fine.toLocaleString()}</span></div>` : ''}
+<div class="detail-row"><span class="detail-label">Deposit</span> <span class="detail-value positive-value">${vals.deposit > 0 ? vals.deposit.toLocaleString() : '-'}</span></div>
+${vals.interest > 0 ? `<div class="detail-row"><span class="detail-label">Interest</span> <span class="detail-value positive-value">${vals.interest.toLocaleString()}</span></div>` : ''}
+${vals.installment > 0 ? `<div class="detail-row"><span class="detail-label">Installment</span> <span class="detail-value positive-value">${vals.installment.toLocaleString()}</span></div>` : ''}
+${vals.fine > 0 ? `<div class="detail-row"><span class="detail-label">Fine</span> <span class="detail-value text-danger">${vals.fine.toLocaleString()}</span></div>` : ''}
 </div>
 <div class="col-6 border-start">
 ${vals.loanAmount > 0 ? `
 <div class="small text-muted mb-1">Loan Details:</div>
-<div class="detail-row"><span class="detail-label">Amount</span><span class="detail-value">${vals.loanAmount.toLocaleString()}</span></div>
-<div class="detail-row"><span class="detail-label">Rate</span><span class="detail-value">${vals.interestRate}%</span></div>
-<div class="detail-row"><span class="detail-label">Taken</span><span class="detail-value">${vals.takenDate || '-'}</span></div>
-<div class="detail-row"><span class="detail-label">Maturity</span><span class="detail-value">${vals.maturityDate || '-'}</span></div>
+<div class="detail-row"><span class="detail-label">Amount</span> <span class="detail-value">${vals.loanAmount.toLocaleString()}</span></div>
+<div class="detail-row"><span class="detail-label">Rate</span> <span class="detail-value">${vals.interestRate}%</span></div>
+<div class="detail-row"><span class="detail-label">Taken</span> <span class="detail-value">${vals.takenDate || '-'}</span></div>
+<div class="detail-row"><span class="detail-label">Maturity</span> <span class="detail-value">${vals.maturityDate || '-'}</span></div>
 ` : '<div class="text-muted small fst-italic mt-2">No loan record</div>'}
 </div>
 </div>
 </div>
-</div>`;
+</div>
+`;
 }
 html += `<div class="alert alert-success mt-3 mb-0 text-center fw-bold fs-5">Grand Total: NPR ${data.totals.grand.toLocaleString()}</div>`;
 modalBody.innerHTML = html;
@@ -1452,141 +1240,34 @@ const html = `
 <tr><td class="fw-bold">Email:</td><td class="text-end">${details.email}</td></tr>
 <tr><td class="fw-bold">DOB:</td><td class="text-end">${details.dob}</td></tr>
 <tr><td class="fw-bold">Kosh Joined Date:</td><td class="text-end">${details.joined}</td></tr>
-</table>`;
+</table>
+`;
 document.getElementById('memberModalBody').innerHTML = html;
 memberDetailModal.show();
 };
 window.confirmDelete = (id) => {
 if (auth.currentUser.isAnonymous) return;
-if (confirm("Delete this record?")) {
+if(confirm("Delete this record?")) {
 deleteDoc(doc(db, collectionName, id)).then(() => {
-if (currentEditId === id) cancelEdit();
+if(currentEditId === id) cancelEdit();
 loadHistory();
-if (document.getElementById('summary-content').classList.contains('active')) loadSummary();
+if(document.getElementById('summary-content').classList.contains('active')) loadSummary();
+if(document.getElementById('loan-content').classList.contains('active')) loadLoanSummary();
 detailModal.hide();
-showMessage("messageArea", "Deleted", "warning");
-}).catch(e => showMessage("messageArea", e.message, "danger"));
+showMessage("Deleted", "warning");
+}).catch(e => showMessage(e.message, "danger"));
 }
 };
-modalDeleteBtn.addEventListener('click', () => { if (currentDeleteId) window.confirmDelete(currentDeleteId); });
+modalDeleteBtn.addEventListener('click', () => { if(currentDeleteId) window.confirmDelete(currentDeleteId); });
 function setLoading(isLoading) {
 saveBtn.disabled = isLoading;
 document.getElementById('btnLoader').classList.toggle('d-none', !isLoading);
 }
-function createDateSelectors(prefix, member, data = {}) {
-const days = Array.from({ length: 32 }, (_, i) => i + 1);
-const getSelected = (type, val) => (data[`${prefix}${type}`] == val ? 'selected' : '');
-const getDaySelected = (d) => (data[`${prefix}Day`] == d ? 'selected' : '');
-return `
-<div class="date-group">
-<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="day">
-<option value="" disabled>Day</option>
-${days.map(d => `<option value="${d}" ${getDaySelected(d)}>${d}</option>`).join('')}
-</select>
-<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="month">
-<option value="" disabled>Month</option>
-${nepaliMonths.map(m => `<option value="${m}" ${getSelected('Month', m)}>${m}</option>`).join('')}
-</select>
-<select class="form-select form-select-sm date-part" data-member="${member}" data-prefix="${prefix}" data-type="year">
-<option value="" disabled>Year</option>
-${Array.from({ length: 11 }, (_, i) => 2075 + i).map(y => `<option value="${y}" ${getSelected('Year', y)}>${y}</option>`).join('')}
-</select>
-</div>`;
+function showMessage(msg, type) {
+messageArea.textContent = msg;
+messageArea.className = `mt-2 text-center small fw-bold text-${type}`;
+setTimeout(() => messageArea.textContent = '', 3000);
 }
-function renderInputs(dataToFill = null) {
-membersContainer.innerHTML = '';
-members.forEach((member) => {
-const d = dataToFill && dataToFill.members[member] ? dataToFill.members[member] : {};
-const div = document.createElement('div');
-div.className = `member-card ${dataToFill ? 'edit-mode' : ''}`;
-div.innerHTML = `
-<div class="member-name"><i class="fas fa-user-circle text-primary"></i> ${member}</div>
-<div class="section-title">Financials (Cash Flow)</div>
-<div class="row g-2">
-<div class="col-6"><label class="input-label">Deposit</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="deposit" value="${d.deposit || 0}"></div>
-<div class="col-6"><label class="input-label">Interest</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interest" value="${d.interest || 0}"></div>
-<div class="col-6"><label class="input-label">Installment</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="installment" value="${d.installment || 0}"></div>
-<div class="col-6"><label class="input-label">Fine</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="fine" value="${d.fine || 0}"></div>
-</div>
-<div class="section-title">Loan Record (Info Only)</div>
-<div class="row g-2">
-<div class="col-6"><label class="input-label">Loan Amount</label><input type="number" class="form-control form-control-sm calc-input" data-member="${member}" data-type="loanAmount" value="${d.loanAmount || 0}"></div>
-<div class="col-6"><label class="input-label">Rate (%)</label><input type="number" step="0.1" class="form-control form-control-sm calc-input" data-member="${member}" data-type="interestRate" value="${d.interestRate || 0}"></div>
-<div class="col-12"><label class="input-label">Taken Date</label>${createDateSelectors('taken', member, d)}</div>
-<div class="col-12"><label class="input-label">Maturity Date</label>${createDateSelectors('maturity', member, d)}</div>
-</div>`;
-membersContainer.appendChild(div);
-});
-document.querySelectorAll('.calc-input').forEach(input => input.addEventListener('input', calculateTotals));
-calculateTotals();
-}
-function calculateTotals() {
-let grandTotal = 0;
-members.forEach(member => {
-const types = ['deposit', 'interest', 'installment', 'fine'];
-let memberTotal = 0;
-types.forEach(type => {
-const val = parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`)?.value) || 0;
-memberTotal += val;
-});
-grandTotal += memberTotal;
-});
-grandTotalDisplay.textContent = `NPR ${grandTotal.toLocaleString()}`;
-return grandTotal;
-}
-function getDateFromSelects(prefix, member) {
-const day = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="day"]`)?.value;
-const month = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="month"]`)?.value;
-const year = document.querySelector(`.date-part[data-member="${member}"][data-prefix="${prefix}"][data-type="year"]`)?.value;
-if (day && month && year) return `${day} ${month}, ${year}`;
-return '';
-}
-saveBtn.addEventListener('click', async () => {
-if (auth.currentUser.isAnonymous) { showMessage("messageArea", "Guests cannot save data.", "danger"); return; }
-const month = document.getElementById('nepaliMonth').value;
-const year = document.getElementById('entryYear').value;
-if (!year) { showMessage("messageArea", "Enter Year", "danger"); return; }
-let memberData = {};
-let sums = { deposit: 0, interest: 0, installment: 0, fine: 0, loanCount: 0 };
-members.forEach(member => {
-const getVal = (type) => parseFloat(document.querySelector(`.calc-input[data-member="${member}"][data-type="${type}"]`).value) || 0;
-const deposit = getVal('deposit');
-const interest = getVal('interest');
-const installment = getVal('installment');
-const fine = getVal('fine');
-const loanAmount = getVal('loanAmount');
-const interestRate = getVal('interestRate');
-const takenDate = getDateFromSelects('taken', member);
-const maturityDate = getDateFromSelects('maturity', member);
-const cashTotal = deposit + interest + installment + fine;
-memberData[member] = { deposit, interest, installment, fine, loanAmount, interestRate, takenDate, maturityDate, cashTotal };
-sums.deposit += deposit; sums.interest += interest; sums.installment += installment; sums.fine += fine;
-if (loanAmount > 0) sums.loanCount++;
-});
-const grandTotal = Object.values(memberData).reduce((acc, curr) => acc + curr.cashTotal, 0);
-setLoading(true);
-try {
-const payload = { month, year, timestamp: new Date(), members: memberData, totals: { ...sums, grand: grandTotal }, updatedAt: new Date() };
-if (currentEditId) {
-await updateDoc(doc(db, collectionName, currentEditId), payload);
-showMessage("messageArea", "Updated!", "success");
-cancelEdit();
-} else {
-payload.createdAt = new Date();
-payload.createdBy = auth.currentUser.email || "Admin";
-await addDoc(collection(db, collectionName), payload);
-showMessage("messageArea", "Saved!", "success");
-renderInputs(null);
-}
-loadHistory();
-if (document.getElementById('summary-content').classList.contains('active')) loadSummary();
-} catch (error) {
-console.error(error);
-showMessage("messageArea", "Error: " + error.message, "danger");
-} finally {
-setLoading(false);
-}
-});
 window.copyToClipboard = (text) => {
 navigator.clipboard.writeText(text).then(() => {
 alert("Account Number Copied: " + text);
@@ -1594,7 +1275,7 @@ alert("Account Number Copied: " + text);
 console.error('Failed to copy: ', err);
 });
 };
-// Expose all window functions
+// Expose globals
 window.editRecord = editRecord;
 window.cancelEdit = cancelEdit;
 window.showLoanDetails = showLoanDetails;
@@ -1605,8 +1286,6 @@ window.switchTab = switchTab;
 window.logout = logout;
 window.loginAsGuest = loginAsGuest;
 window.copyToClipboard = copyToClipboard;
-window.loadMemberLoanInfo = loadMemberLoanInfo;
-window.calculateRemaining = calculateRemaining;
 </script>
 </body>
 </html>
